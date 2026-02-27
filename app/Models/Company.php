@@ -10,8 +10,22 @@ class Company extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 'logo', 'phone', 'email', 'address',
-        'signature', 'footer_message', 'kra_pin', 'owner_id'
+        'name',
+        'logo',
+        'phone',
+        'email',
+        'address',
+        'signature',
+        'footer_message',
+        'kra_pin',
+        'owner_id',
+        'mpesa_paybill',
+        'mpesa_account',
+        'mpesa_till',
+        'mpesa_number',
+        'bank_name',
+        'bank_account',
+        'bank_branch'
     ];
 
     public function owner()

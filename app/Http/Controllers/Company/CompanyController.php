@@ -27,7 +27,20 @@ class CompanyController extends Controller
         ]);
 
         $company = Auth::user()->company;
-        $data = $request->only(['phone', 'email', 'address', 'footer_message', 'kra_pin']);
+        $data = $request->only([
+            'phone',
+            'email',
+            'address',
+            'footer_message',
+            'kra_pin',
+            'mpesa_paybill',
+            'mpesa_account',
+            'mpesa_till',
+            'mpesa_number',
+            'bank_name',
+            'bank_account',
+            'bank_branch'
+        ]);
 
         if ($request->hasFile('logo')) {
             $data['logo'] = $request->file('logo')->store('logos', 'public');
@@ -62,7 +75,21 @@ class CompanyController extends Controller
         ]);
 
         $company = Auth::user()->company;
-        $data = $request->only(['name', 'phone', 'email', 'address', 'footer_message', 'kra_pin']);
+        $data = $request->only([
+            'name',
+            'phone',
+            'email',
+            'address',
+            'footer_message',
+            'kra_pin',
+            'mpesa_paybill',
+            'mpesa_account',
+            'mpesa_till',
+            'mpesa_number',
+            'bank_name',
+            'bank_account',
+            'bank_branch'
+        ]);
 
         if ($request->hasFile('logo')) {
             $data['logo'] = $request->file('logo')->store('logos', 'public');

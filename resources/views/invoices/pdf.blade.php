@@ -17,21 +17,12 @@
             padding: 30px;
         }
 
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 30px;
+        .header-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
             border-bottom: 3px solid #16a34a;
             padding-bottom: 20px;
-        }
-
-        .company-logo {
-            max-height: 60px;
-        }
-
-        .company-info {
-            text-align: right;
         }
 
         .company-name {
@@ -45,19 +36,6 @@
             font-weight: bold;
             color: #333;
             margin-bottom: 20px;
-        }
-}
-
-        .meta-label {
-            font-size: 10px;
-            text-transform: uppercase;
-            color: #999;
-            margin-bottom: 3px;
-        }
-
-        .meta-value {
-            font-weight: bold;
-            font-size: 13px;
         }
 
         table {
@@ -125,7 +103,7 @@
 
         .footer {
             text-align: center;
-            margin-top: 40px;
+            margin-top: 30px;
             padding-top: 20px;
             border-top: 1px solid #eee;
             font-style: italic;
@@ -133,12 +111,16 @@
             font-size: 11px;
         }
 
-        .signature {
-            margin-top: 40px;
+        .meta-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #999;
+            margin-bottom: 3px;
         }
 
-        .signature img {
-            max-height: 50px;
+        .meta-value {
+            font-weight: bold;
+            font-size: 13px;
         }
 
         .etr-badge {
@@ -148,39 +130,70 @@
             border-radius: 4px;
             font-size: 10px;
             font-weight: bold;
-            display: inline-block;
-            margin-left: 8px;
         }
 
-        .kra-pin {
+        .payment-section {
+            margin-top: 30px;
+            padding: 15px;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 6px;
+        }
+
+        .payment-title {
             font-size: 11px;
-            color: #666;
-            margin-top: 4px;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #16a34a;
+            margin-bottom: 10px;
+        }
+
+        .payment-grid {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .payment-item {
+            font-size: 11px;
+        }
+
+        .payment-label {
+            color: #999;
+            font-size: 10px;
+            text-transform: uppercase;
+        }
+
+        .payment-value {
+            font-weight: bold;
+            color: #333;
         }
     </style>
 </head>
 
 <body>
 
+
     <!-- Header -->
-    <div class="header">
-        <div>
-            @if ($company->logo)
-                <img src="{{ public_path('storage/' . $company->logo) }}" class="company-logo" alt="Logo">
-            @endif
-            <div style="margin-top: 8px;">
-                <div style="font-size: 11px; color: #666;">{{ $company->phone }}</div>
+    <table class="header-table" style="margin-bottom: 0; padding-bottom: 15px;">
+        <tr>
+            <td style="width: 50%; vertical-align: middle; padding: 0 0 15px 0; border: none;">
+                @if ($company->logo)
+                    <img src="{{ public_path('storage/' . $company->logo) }}" style="max-height: 60px; max-width: 160px;"
+                        alt="Logo">
+                @endif
+                <div style="margin-top: 6px; font-size: 11px; color: #666;">{{ $company->phone }}</div>
                 <div style="font-size: 11px; color: #666;">{{ $company->email }}</div>
                 @if ($invoice->etr_enabled && $company->kra_pin)
-                    <div class="kra-pin">KRA PIN: {{ $company->kra_pin }}</div>
+                    <div style="font-size: 11px; color: #666;">KRA PIN: {{ $company->kra_pin }}</div>
                 @endif
-            </div>
-        </div>
-        <div class="company-info">
-            <div class="company-name">{{ $company->name }}</div>
-            <div style="font-size: 11px; color: #666; margin-top: 4px;">{{ $company->address }}</div>
-        </div>
-    </div>
+            </td>
+            <td style="width: 50%; vertical-align: middle; text-align: right; padding: 0 0 15px 0; border: none;">
+                <div class="company-name">{{ $company->name }}</div>
+                <div style="font-size: 11px; color: #666; margin-top: 4px;">{{ $company->address }}</div>
+            </td>
+        </tr>
+    </table>
 
     <!-- Title -->
     <div style="display: flex; align-items: center; margin-bottom: 20px;">
@@ -288,7 +301,52 @@
             <span>Ksh {{ number_format($invoice->grand_total, 2) }}</span>
         </div>
     </div>
-
+    <!-- Payment Details -->
+    @if ($company->mpesa_paybill || $company->mpesa_till || $company->mpesa_number || $company->bank_name)
+        <div class="payment-section">
+            <div class="payment-title">💳 Payment Details</div>
+            <table style="width: 100%; margin: 0;">
+                <tr>
+                    @if ($company->mpesa_paybill)
+                        <td style="border: none; padding: 4px 12px 4px 0; vertical-align: top; width: 25%;">
+                            <div class="payment-label">Paybill</div>
+                            <div class="payment-value">{{ $company->mpesa_paybill }}</div>
+                            @if ($company->mpesa_account)
+                                <div class="payment-label" style="margin-top: 2px;">Account</div>
+                                <div class="payment-value">{{ $company->mpesa_account }}</div>
+                            @endif
+                        </td>
+                    @endif
+                    @if ($company->mpesa_till)
+                        <td style="border: none; padding: 4px 12px 4px 0; vertical-align: top; width: 25%;">
+                            <div class="payment-label">Till Number</div>
+                            <div class="payment-value">{{ $company->mpesa_till }}</div>
+                        </td>
+                    @endif
+                    @if ($company->mpesa_number)
+                        <td style="border: none; padding: 4px 12px 4px 0; vertical-align: top; width: 25%;">
+                            <div class="payment-label">M-Pesa Number</div>
+                            <div class="payment-value">{{ $company->mpesa_number }}</div>
+                        </td>
+                    @endif
+                    @if ($company->bank_name)
+                        <td style="border: none; padding: 4px 0; vertical-align: top; width: 25%;">
+                            <div class="payment-label">Bank</div>
+                            <div class="payment-value">{{ $company->bank_name }}</div>
+                            @if ($company->bank_account)
+                                <div class="payment-label" style="margin-top: 2px;">Account</div>
+                                <div class="payment-value">{{ $company->bank_account }}</div>
+                            @endif
+                            @if ($company->bank_branch)
+                                <div class="payment-label" style="margin-top: 2px;">Branch</div>
+                                <div class="payment-value">{{ $company->bank_branch }}</div>
+                            @endif
+                        </td>
+                    @endif
+                </tr>
+            </table>
+        </div>
+    @endif
     <!-- Signature -->
     @if ($company->signature)
         <div class="signature">
