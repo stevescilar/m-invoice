@@ -13,6 +13,10 @@ use App\Http\Controllers\Quotation\QuotationController;
 use App\Http\Controllers\Expense\ExpenseController;
 use App\Http\Controllers\Subscription\SubscriptionController;
 
+Route::get('/', function () {
+    return redirect()->route('login');
+});
+
 // Guest routes
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'showLogin'])->name('login');

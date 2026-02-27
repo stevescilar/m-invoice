@@ -4,13 +4,17 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void {
-        Schema::create('service_categories', function (Blueprint $table) {
+        Schema::create('expenses', function (Blueprint $table) {
             $table->id();
             $table->foreignId('company_id')->constrained()->cascadeOnDelete();
-            $table->string('name');
+            $table->string('category');
             $table->text('description')->nullable();
+            $table->decimal('amount', 10, 2);
+            $table->string('receipt_path')->nullable();
+            $table->date('expense_date');
+            $table->foreignId('created_by')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
         });
     }
-    public function down(): void { Schema::dropIfExists('service_categories'); }
+    public function down(): void { Schema::dropIfExists('expenses'); }
 };
