@@ -21,6 +21,7 @@
             <a href="{{ route('quotations.index') }}" class="text-gray-600 hover:text-green-600">Quotations</a>
             <a href="{{ route('expenses.index') }}" class="text-gray-600 hover:text-green-600">Expenses</a>
             <a href="{{ route('categories.index') }}" class="text-gray-600 hover:text-green-600">Catalog</a>
+            <a href="{{ route('company.settings') }}" class="text-gray-600 hover:text-green-600">Settings</a>
             <form action="{{ route('logout') }}" method="POST">
                 @csrf
                 <button class="text-red-500 hover:text-red-700">Logout</button>
