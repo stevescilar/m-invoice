@@ -59,6 +59,7 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('quotations', QuotationController::class);
         Route::post('quotations/{quotation}/send', [QuotationController::class, 'send'])->name('quotations.send');
         Route::post('quotations/{quotation}/convert', [QuotationController::class, 'convertToInvoice'])->name('quotations.convert');
+        Route::get('quotations/{quotation}/download', [QuotationController::class, 'download'])->name('quotations.download');
 
         // Expenses
         Route::resource('expenses', ExpenseController::class);

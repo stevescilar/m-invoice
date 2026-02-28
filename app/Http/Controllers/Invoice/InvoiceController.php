@@ -132,23 +132,33 @@ class InvoiceController extends Controller
     }
 
     public function edit(Invoice $invoice)
-    {
-        $this->authorizeInvoice($invoice);
+{
+    $this->authorizeInvoice($invoice);
 
-        if ($invoice->status === 'paid') {
-            return redirect()->route('invoices.show', $invoice)
-                ->with('error', 'Paid invoices cannot be edited.');
-        }
-
-        $clients = Client::where('company_id', Auth::user()->company_id)->orderBy('name')->get();
-        $categories = ServiceCategory::where('company_id', Auth::user()->company_id)
-            ->with('catalogItems')
-            ->get();
-
-        $invoice->load('items');
-
-        return view('invoices.edit', compact('invoice', 'clients', 'categories'));
+    if ($invoice->status === 'paid') {
+        return redirect()->route('invoices.show', $invoice)
+            ->with('error', 'Paid invoices cannot be edited.');
     }
+
+    $clients = Client::where('company_id', Auth::user()->company_id)->orderBy('name')->get();
+    $categories = ServiceCategory::where('company_id', Auth::user()->company_id)
+        ->with('catalogItems')
+        ->get();
+
+    $invoice->load('items');
+
+    $invoiceItems = $invoice->items->map(function($i) {
+        return [
+            'catalog_item_id' => $i->catalog_item_id,
+            'description' => $i->description,
+            'quantity' => (float)$i->quantity,
+            'unit_price' => (float)$i->unit_price,
+            'is_labour' => (bool)$i->is_labour,
+        ];
+    })->values()->toArray();
+
+    return view('invoices.edit', compact('invoice', 'clients', 'categories', 'invoiceItems'));
+}
 
     public function update(Request $request, Invoice $invoice)
     {

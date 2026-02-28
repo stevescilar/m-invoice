@@ -10,9 +10,10 @@ class QuotationItem extends Model
     use HasFactory;
 
     protected $fillable = [
-        'quotation_id', 'catalog_item_id', 'description',
-        'quantity', 'unit_price', 'total_price', 'is_labour'
-    ];
+    'quotation_id', 'catalog_item_id', 'description',
+    'quantity', 'unit_price', 'buying_price', 'profit',
+    'margin_percentage', 'total_price', 'is_labour'
+];
 
     protected $casts = [
         'is_labour' => 'boolean',
