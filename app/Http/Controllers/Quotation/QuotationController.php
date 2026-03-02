@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Quotation;
 
+use App\Mail\QuotationMail;
+use Illuminate\Support\Facades\Mail;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Controllers\Controller;
 use App\Models\Quotation;
@@ -257,8 +259,21 @@ class QuotationController extends Controller
     public function send(Quotation $quotation)
     {
         $this->authorizeQuotation($quotation);
-        $quotation->update(['status' => 'sent']);
-        return back()->with('success', 'Quotation marked as sent.');
+
+        if (!$quotation->client->email) {
+            return back()->with('error', 'This client has no email address.');
+        }
+
+        $quotation->load('client', 'items');
+        $company = Auth::user()->company;
+
+        try {
+            Mail::to($quotation->client->email)->send(new QuotationMail($quotation, $company));
+            $quotation->update(['status' => 'sent']);
+            return back()->with('success', 'Quotation sent to ' . $quotation->client->email);
+        } catch (\Exception $e) {
+            return back()->with('error', 'Failed to send email: ' . $e->getMessage());
+        }
     }
 
     public function convertToInvoice(Quotation $quotation)
@@ -270,8 +285,9 @@ class QuotationController extends Controller
         }
 
         DB::transaction(function () use ($quotation) {
-            $count         = Invoice::where('company_id', Auth::user()->company_id)->count() + 1;
-            $invoiceNumber = 'INV-' . str_pad($count, 6, '0', STR_PAD_LEFT);
+            $last = Invoice::orderByDesc('id')->value('invoice_number');
+            $lastNumber = $last ? (int) substr($last, 4) : 0;
+            $invoiceNumber = 'INV-' . str_pad($lastNumber + 1, 6, '0', STR_PAD_LEFT);
 
             $invoice = Invoice::create([
                 'company_id'             => $quotation->company_id,
@@ -327,8 +343,9 @@ class QuotationController extends Controller
 
     private function generateQuotationNumber(): string
     {
-        $count = Quotation::where('company_id', Auth::user()->company_id)->count() + 1;
-        return 'QT-' . str_pad($count, 6, '0', STR_PAD_LEFT);
+        $last = Quotation::orderByDesc('id')->value('quotation_number');
+        $lastNumber = $last ? (int) substr($last, 3) : 0;
+        return 'QT-' . str_pad($lastNumber + 1, 6, '0', STR_PAD_LEFT);
     }
 
     private function authorizeQuotation(Quotation $quotation): void

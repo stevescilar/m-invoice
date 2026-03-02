@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Invoice;
 
+use App\Mail\InvoiceMail;
+use Illuminate\Support\Facades\Mail;
 use App\Http\Controllers\Controller;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
@@ -241,10 +243,16 @@ class InvoiceController extends Controller
             return back()->with('error', 'This client has no email address.');
         }
 
-        // We will wire up actual email sending when we set up mail
-        $invoice->update(['status' => 'sent']);
+        $invoice->load('client', 'items');
+        $company = Auth::user()->company;
 
-        return back()->with('success', 'Invoice marked as sent.');
+        try {
+            Mail::to($invoice->client->email)->send(new InvoiceMail($invoice, $company));
+            $invoice->update(['status' => 'sent']);
+            return back()->with('success', 'Invoice sent to ' . $invoice->client->email);
+        } catch (\Exception $e) {
+            return back()->with('error', 'Failed to send email: ' . $e->getMessage());
+        }
     }
 
     public function markPaid(Request $request, Invoice $invoice)
@@ -300,9 +308,9 @@ class InvoiceController extends Controller
 
     private function generateInvoiceNumber(): string
     {
-        $company_id = Auth::user()->company_id;
-        $count = Invoice::where('company_id', $company_id)->count() + 1;
-        return 'INV-' . str_pad($count, 6, '0', STR_PAD_LEFT);
+        $last = Invoice::orderByDesc('id')->value('invoice_number');
+        $lastNumber = $last ? (int) substr($last, 4) : 0;
+        return 'INV-' . str_pad($lastNumber + 1, 6, '0', STR_PAD_LEFT);
     }
 
     private function getNextRecurrenceDate(string $date, string $interval): string

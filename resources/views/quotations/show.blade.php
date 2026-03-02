@@ -29,13 +29,6 @@
     </div>
 </div>
 
-@if(session('success'))
-    <div class="bg-green-100 text-green-700 px-4 py-3 rounded mb-4 text-sm">{{ session('success') }}</div>
-@endif
-@if(session('error'))
-    <div class="bg-red-100 text-red-600 px-4 py-3 rounded mb-4 text-sm">{{ session('error') }}</div>
-@endif
-
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
     <!-- Quotation Details -->
