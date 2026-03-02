@@ -64,10 +64,17 @@ Route::middleware(['auth'])->group(function () {
         // Expenses
         Route::resource('expenses', ExpenseController::class);
 
-        // Subscriptions
-        Route::get('/subscription', [SubscriptionController::class, 'index'])->name('subscription.index');
-        Route::post('/subscription/subscribe', [SubscriptionController::class, 'subscribe'])->name('subscription.subscribe');
+        
+        // Subscription
+        Route::middleware(['auth', 'active.company'])->group(function () {
+            Route::get('/subscription', [SubscriptionController::class, 'index'])->name('subscription.index');
+            Route::post('/subscription/pay', [SubscriptionController::class, 'initiatePay'])->name('subscription.pay');
+            Route::post('/subscription/status', [SubscriptionController::class, 'checkStatus'])->name('subscription.status');
+        });
 
         Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
     });
 });
+// M-Pesa Callback (outside auth middleware)
+Route::post('/api/mpesa/callback', [SubscriptionController::class, 'callback']);
+Route::post('/subscription/bypass', [SubscriptionController::class, 'activateBypass'])->name('subscription.bypass');

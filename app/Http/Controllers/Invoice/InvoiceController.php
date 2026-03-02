@@ -275,9 +275,17 @@ class InvoiceController extends Controller
     public function download(Invoice $invoice)
     {
         $this->authorizeInvoice($invoice);
-        $invoice->load('client', 'items');
-        $company = Auth::user()->company;
 
+        $company      = Auth::user()->company;
+        $subscription = $company->subscription;
+
+        // Check if allowed to download
+        if (!$subscription || !$subscription->canDownloadPdf()) {
+            return redirect()->route('subscription.index')
+                ->with('error', 'Your trial has expired. Please subscribe to download invoices.');
+        }
+
+        $invoice->load('client', 'items');
         $pdf = Pdf::loadView('invoices.pdf', compact('invoice', 'company'));
 
         return $pdf->download('invoice-' . $invoice->invoice_number . '.pdf');

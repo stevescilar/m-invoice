@@ -48,12 +48,13 @@ class RegisterController extends Controller
 
             // Create free subscription
             Subscription::create([
-                'company_id' => $company->id,
-                'plan' => 'free',
-                'status' => 'active',
-                'auto_renew' => false,
-                'starts_at' => now(),
-                'ends_at' => null,
+                'company_id'    => $company->id,
+                'plan'          => 'trial',
+                'status'        => 'trial',
+                'on_trial'      => true,
+                'trial_ends_at' => now()->addDays(3),
+                'starts_at'     => now(),
+                'ends_at'       => null,
             ]);
 
             Auth::login($user);

@@ -3,14 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class SubscriptionTransaction extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
-        'company_id', 'plan', 'amount', 'mpesa_code', 'status'
+        'company_id', 'plan', 'amount', 'mpesa_code',
+        'status', 'checkout_request_id', 'reference'
     ];
 
     public function company()

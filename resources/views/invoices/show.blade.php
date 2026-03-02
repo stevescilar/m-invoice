@@ -124,9 +124,10 @@
                         <span>Ksh {{ number_format($invoice->vat_amount, 2) }}</span>
                     </div>
                 @endif
+                
                 <div class="flex justify-between font-bold text-gray-800 border-t pt-2 text-base">
                     <span>Grand Total</span>
-                    <span class="text-green-600">Ksh {{ number_format($invoice->grand_total, 2) }}</span>
+                    <span class="sensitive">Ksh {{ number_format($invoice->grand_total, 2) }}</span>
                 </div>
             </div>
 

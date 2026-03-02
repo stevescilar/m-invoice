@@ -168,12 +168,29 @@
             font-weight: bold;
             color: #333;
         }
+        .watermark {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 80px;
+            font-weight: bold;
+            color: rgba(22, 163, 74, 0.06);
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 0;
+            letter-spacing: 10px;
+        }
+        body > *:not(.watermark) {
+            position: relative;
+            z-index: 1;
+        }
     </style>
 </head>
 
 <body>
 
-
+    <div class="watermark">{{ strtoupper($company->name) }}</div>
     <!-- Header -->
     <table class="header-table" style="margin-bottom: 0; padding-bottom: 15px;">
         <tr>

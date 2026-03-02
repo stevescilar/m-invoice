@@ -28,6 +28,8 @@ return [
 
     'env' => env('APP_ENV', 'production'),
 
+    'owner_bypass_code' => env('OWNER_BYPASS_CODE', ''),
+
     /*
     |--------------------------------------------------------------------------
     | Application Debug Mode

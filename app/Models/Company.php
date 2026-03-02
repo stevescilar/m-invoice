@@ -48,6 +48,11 @@ class Company extends Model
         return $this->hasMany(ServiceCategory::class);
     }
 
+    public function hasBypass(): bool
+    {
+        return (bool) $this->is_bypass;
+    }
+
     public function catalogItems()
     {
         return $this->hasMany(CatalogItem::class);

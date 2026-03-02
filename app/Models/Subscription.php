@@ -3,20 +3,20 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Subscription extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
-        'company_id', 'plan', 'status', 'auto_renew', 'starts_at', 'ends_at'
+        'company_id', 'plan', 'status', 'auto_renew',
+        'trial_ends_at', 'on_trial', 'starts_at', 'ends_at'
     ];
 
     protected $casts = [
-        'starts_at' => 'datetime',
-        'ends_at' => 'datetime',
-        'auto_renew' => 'boolean',
+        'trial_ends_at' => 'datetime',
+        'starts_at'     => 'datetime',
+        'ends_at'       => 'datetime',
+        'on_trial'      => 'boolean',
+        'auto_renew'    => 'boolean',
     ];
 
     public function company()
@@ -24,13 +24,27 @@ class Subscription extends Model
         return $this->belongsTo(Company::class);
     }
 
-    public function isActive(): bool
+    public function isOnTrial(): bool
     {
-        return $this->status === 'active' && $this->ends_at?->isFuture();
+        return $this->on_trial && $this->trial_ends_at && $this->trial_ends_at->isFuture();
     }
 
-    public function isFree(): bool
+    public function isActive(): bool
     {
-        return $this->plan === 'free';
+        if ($this->isOnTrial()) return true;
+        return $this->status === 'active' && ($this->ends_at === null || $this->ends_at->isFuture());
+    }
+
+    public function canDownloadPdf(): bool
+    {
+        // Check company bypass first
+        if ($this->company->hasBypass()) return true;
+        return $this->isOnTrial() || $this->isActive();
+    }
+
+    public function daysLeftOnTrial(): int
+    {
+        if (!$this->isOnTrial()) return 0;
+        return (int) now()->diffInDays($this->trial_ends_at);
     }
 }
