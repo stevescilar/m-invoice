@@ -10,10 +10,10 @@ class Quotation extends Model
     use HasFactory;
 
     protected $fillable = [
-        'company_id', 'client_id', 'quotation_number', 'issue_date', 'expiry_date',
-        'status', 'material_cost', 'labour_cost', 'grand_total', 'notes',
-        'converted_invoice_id', 'created_by'
-    ];
+    'company_id', 'client_id', 'quotation_number', 'issue_date', 'expiry_date',
+    'status', 'material_cost', 'labour_cost', 'grand_total', 'notes',
+    'converted_invoice_id', 'created_by', 'total_cost', 'total_profit', 'overall_margin'
+];
 
     protected $casts = [
         'issue_date' => 'date',
