@@ -120,6 +120,11 @@ class QuotationController extends Controller
                     'total_price'       => $totalPrice,
                     'is_labour'         => !empty($item['is_labour']),
                 ]);
+                // Update catalog item buying price if it came from catalog
+                if (!empty($item['catalog_item_id'])) {
+                    \App\Models\CatalogItem::where('id', $item['catalog_item_id'])
+                        ->update(['default_buying_price' => $buyingPrice]);
+                }
             }
         });
 
@@ -269,19 +274,23 @@ class QuotationController extends Controller
             $invoiceNumber = 'INV-' . str_pad($count, 6, '0', STR_PAD_LEFT);
 
             $invoice = Invoice::create([
-                'company_id'     => $quotation->company_id,
-                'client_id'      => $quotation->client_id,
-                'invoice_number' => $invoiceNumber,
-                'issue_date'     => now()->toDateString(),
-                'due_date'       => now()->addDays(14)->toDateString(),
-                'status'         => 'draft',
-                'etr_enabled'    => false,
-                'vat_amount'     => 0,
-                'material_cost'  => $quotation->material_cost,
-                'labour_cost'    => $quotation->labour_cost,
-                'grand_total'    => $quotation->grand_total,
-                'notes'          => $quotation->notes,
-                'created_by'     => Auth::id(),
+                'company_id'             => $quotation->company_id,
+                'client_id'              => $quotation->client_id,
+                'invoice_number'         => $invoiceNumber,
+                'issue_date'             => now()->toDateString(),
+                'due_date'               => now()->addDays(14)->toDateString(),
+                'status'                 => 'draft',
+                'etr_enabled'            => false,
+                'vat_amount'             => 0,
+                'material_cost'          => $quotation->material_cost,
+                'labour_cost'            => $quotation->labour_cost,
+                'grand_total'            => $quotation->grand_total,
+                'total_cost'             => $quotation->total_cost,
+                'total_profit'           => $quotation->total_profit,
+                'overall_margin'         => $quotation->overall_margin,
+                'profit_from_quotation'  => true,
+                'notes'                  => $quotation->notes,
+                'created_by'             => Auth::id(),
             ]);
 
             foreach ($quotation->items as $item) {

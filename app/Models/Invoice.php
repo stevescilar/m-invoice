@@ -12,7 +12,8 @@ class Invoice extends Model
     protected $fillable = [
         'company_id', 'client_id', 'invoice_number', 'issue_date', 'due_date',
         'status', 'etr_enabled', 'vat_amount', 'material_cost', 'labour_cost',
-        'grand_total', 'notes', 'is_recurring', 'recurrence_interval',
+        'grand_total', 'total_cost', 'total_profit', 'overall_margin',
+        'profit_from_quotation', 'notes', 'is_recurring', 'recurrence_interval',
         'next_recurrence_date', 'mpesa_code', 'paid_at', 'created_by'
     ];
 

@@ -10,7 +10,8 @@ class CatalogItem extends Model
     use HasFactory;
 
     protected $fillable = [
-        'company_id', 'service_category_id', 'name', 'default_unit_price', 'unit_of_measure'
+    'company_id', 'service_category_id', 'name',
+    'default_unit_price', 'default_buying_price', 'unit_of_measure'
     ];
 
     public function company()

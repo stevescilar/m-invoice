@@ -75,7 +75,7 @@
                     </div>
                     @foreach($category->catalogItems as $catalogItem)
                     <button type="button"
-                        @click="addCatalogItem({{ $catalogItem->id }}, '{{ addslashes($catalogItem->name) }}', {{ $catalogItem->default_unit_price }}); open = false"
+                    @click="addCatalogItem({{ $catalogItem->id }}, '{{ addslashes($catalogItem->name) }}', {{ $catalogItem->default_unit_price }}, {{ $catalogItem->default_buying_price }}); open = false"@click="addCatalogItem({{ $catalogItem->id }}, '{{ addslashes($catalogItem->name) }}', {{ $catalogItem->default_unit_price }}); open = false"
                         class="w-full text-left px-4 py-2 text-sm hover:bg-green-50 hover:text-green-700">
                         {{ $catalogItem->name }}
                         <span class="text-gray-400 text-xs ml-1">Ksh {{ number_format($catalogItem->default_unit_price, 2) }}</span>
@@ -219,8 +219,8 @@
                 this.items.push({ catalog_item_id: null, description: '', quantity: 1, unit_price: 0, buying_price: 0, is_labour: false });
             },
     
-            addCatalogItem(id, name, price) {
-                this.items.push({ catalog_item_id: id, description: name, quantity: 1, unit_price: price, buying_price: 0, is_labour: false });
+            addCatalogItem(id, name, price, buyingPrice) {
+                this.items.push({ catalog_item_id: id, description: name, quantity: 1, unit_price: price, buying_price: buyingPrice, is_labour: false });
                 this.calculateTotals();
             },
     

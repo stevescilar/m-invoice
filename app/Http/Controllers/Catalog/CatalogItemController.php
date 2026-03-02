@@ -41,6 +41,7 @@ class CatalogItemController extends Controller
             'name' => 'required|string|max:255',
             'default_unit_price' => 'required|numeric|min:0',
             'unit_of_measure' => 'required|string|max:50',
+            'default_buying_price' => 'nullable|numeric|min:0',
         ]);
 
         CatalogItem::create([
@@ -49,6 +50,7 @@ class CatalogItemController extends Controller
             'name' => $request->name,
             'default_unit_price' => $request->default_unit_price,
             'unit_of_measure' => $request->unit_of_measure,
+            'default_buying_price' => $request->default_buying_price ?? 0,
         ]);
 
         return redirect()->route('catalog-items.index')->with('success', 'Item added to catalog.');
@@ -76,13 +78,15 @@ class CatalogItemController extends Controller
             'name' => 'required|string|max:255',
             'default_unit_price' => 'required|numeric|min:0',
             'unit_of_measure' => 'required|string|max:50',
+            'default_buying_price' => 'nullable|numeric|min:0',
         ]);
 
         $item->update($request->only([
             'service_category_id',
             'name',
             'default_unit_price',
-            'unit_of_measure'
+            'default_buying_price',
+            'unit_of_measure',
         ]));
 
         return redirect()->route('catalog-items.index')->with('success', 'Item updated.');

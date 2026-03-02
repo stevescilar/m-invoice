@@ -42,6 +42,13 @@
                     class="w-full border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400">
             </div>
             <div>
+                <label class="block text-sm text-gray-600 mb-1">Default Buying Price (Ksh)</label>
+                <input type="number" name="default_buying_price" value="{{ old('default_buying_price', 0) }}"
+                    min="0" step="0.01"
+                    class="w-full border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 bg-blue-50">
+                <p class="text-xs text-gray-400 mt-1">Your cost price — private, not shown to clients</p>
+            </div>
+            <div>
                 <label class="block text-sm text-gray-600 mb-1">Unit of Measure <span class="text-red-500">*</span></label>
                 <select name="unit_of_measure"
                     class="w-full border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400">
