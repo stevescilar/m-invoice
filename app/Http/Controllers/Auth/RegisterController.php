@@ -3,17 +3,18 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use App\Models\Company;
 use App\Models\Subscription;
+use App\Models\User;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class RegisterController extends Controller
 {
-    public function showRegister()
+    public function showRegistrationForm()
     {
         return view('auth.register');
     }
@@ -21,45 +22,43 @@ class RegisterController extends Controller
     public function register(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|min:8|confirmed',
-            'company_name' => 'required|string|max:255',
+            'name'                  => 'required|string|max:255',
+            'email'                 => 'required|email|unique:users,email',
+            'password'              => 'required|min:8|confirmed',
+            'company_name'          => 'required|string|max:255',
         ]);
 
-        DB::transaction(function () use ($request) {
-            // Create user first without company
-            $user = User::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'password' => Hash::make($request->password),
-                'role' => 'owner',
-                'is_active' => true,
-            ]);
+        $company = Company::create([
+            'name'  => $request->company_name,
+            'email' => $request->email,
+            'phone' => '',
+            'slug'  => Str::slug($request->company_name . '-' . Str::random(6)),
+        ]);
 
-            // Create company
-            $company = Company::create([
-                'name' => $request->company_name,
-                'owner_id' => $user->id,
-            ]);
+        $user = User::create([
+            'company_id' => $company->id,
+            'name'       => $request->name,
+            'email'      => $request->email,
+            'password'   => Hash::make($request->password),
+            'role'       => 'owner',
+            'is_active'  => true,
+        ]);
 
-            // Attach company to user
-            $user->update(['company_id' => $company->id]);
+        $company->update(['owner_id' => $user->id]);
 
-            // Create free subscription
-            Subscription::create([
-                'company_id'    => $company->id,
-                'plan'          => 'trial',
-                'status'        => 'trial',
-                'on_trial'      => true,
-                'trial_ends_at' => now()->addDays(3),
-                'starts_at'     => now(),
-                'ends_at'       => null,
-            ]);
+        Subscription::create([
+            'company_id'    => $company->id,
+            'plan'          => 'trial',
+            'status'        => 'trial',
+            'on_trial'      => true,
+            'trial_ends_at' => now()->addDays(3),
+            'starts_at'     => now(),
+        ]);
 
-            Auth::login($user);
-        });
+        event(new Registered($user));
 
-        return redirect()->route('company.setup');
+        Auth::login($user);
+
+        return redirect()->route('verification.notice');
     }
 }

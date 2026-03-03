@@ -21,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => \App\Http\Middleware\EnsureIsAdmin::class,
             'active.company' => \App\Http\Middleware\EnsureHasActiveCompany::class,
             'valid.subscription' => \App\Http\Middleware\EnsureSubscriptionValid::class,
+            \App\Http\Middleware\EnsureUserIsActive::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
