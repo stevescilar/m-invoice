@@ -41,8 +41,8 @@ Route::middleware('guest')->group(function () {
 
 // Email Verification (auth, no active.company needed)
 Route::middleware('auth')->group(function () {
-    Route::get('/email/verify', function () {
-        if (auth()->user()->hasVerifiedEmail()) {
+    Route::get('/email/verify', function (\Illuminate\Http\Request $request) {
+        if ($request->user()->hasVerifiedEmail()) {
             return redirect()->route('dashboard');
         }
         return view('auth.verify-email');
