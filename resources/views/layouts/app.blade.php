@@ -109,7 +109,74 @@
         @yield('content')
     </main>
 
+    <!-- Auto logout warning -->
+<div id="inactivity-warning" class="hidden fixed bottom-4 right-4 bg-yellow-50 border border-yellow-300 rounded-xl shadow-lg p-4 z-50 max-w-sm">
+    <p class="text-sm font-semibold text-yellow-800">⚠️ Still there?</p>
+    <p class="text-xs text-yellow-600 mt-1">You'll be logged out in <span id="countdown">60</span> seconds due to inactivity.</p>
+    <button onclick="resetTimer()"
+        class="mt-3 w-full bg-yellow-500 text-white py-1.5 rounded-lg text-sm hover:bg-yellow-600">
+        Keep me logged in
+    </button>
+</div>
 
+<script>
+const INACTIVE_LIMIT = 25 * 60 * 1000; // 25 minutes (warn 5 mins before 30 min session)
+const WARNING_TIME   = 60; // seconds to show warning before logout
+
+let inactivityTimer;
+let countdownTimer;
+let countdownValue = WARNING_TIME;
+const warning = document.getElementById('inactivity-warning');
+const countdownEl = document.getElementById('countdown');
+
+function startTimer() {
+    clearTimeout(inactivityTimer);
+    inactivityTimer = setTimeout(showWarning, INACTIVE_LIMIT);
+}
+
+function showWarning() {
+    countdownValue = WARNING_TIME;
+    warning.classList.remove('hidden');
+    countdownTimer = setInterval(() => {
+        countdownValue--;
+        countdownEl.textContent = countdownValue;
+        if (countdownValue <= 0) {
+            clearInterval(countdownTimer);
+            logoutUser();
+        }
+    }, 1000);
+}
+
+function resetTimer() {
+    clearInterval(countdownTimer);
+    warning.classList.add('hidden');
+    startTimer();
+}
+
+async function logoutUser() {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '{{ route("logout") }}';
+    const csrf = document.createElement('input');
+    csrf.type  = 'hidden';
+    csrf.name  = '_token';
+    csrf.value = '{{ csrf_token() }}';
+    form.appendChild(csrf);
+    document.body.appendChild(form);
+    form.submit();
+}
+
+// Reset timer on any user activity
+['mousemove', 'keydown', 'click', 'scroll', 'touchstart'].forEach(event => {
+    document.addEventListener(event, () => {
+        if (!warning.classList.contains('hidden')) return;
+        startTimer();
+    });
+});
+
+// Start on page load
+startTimer();
+</script>
     <script>
         // Disable right click
         document.addEventListener('contextmenu', function(e) {

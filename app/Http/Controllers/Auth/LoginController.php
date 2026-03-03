@@ -8,37 +8,38 @@ use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
-    public function showLogin()
+    public function showLoginForm()
     {
         return view('auth.login');
     }
-
     public function login(Request $request)
-    {
-        $credentials = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
+        {
+            $request->validate([
+                'email'    => 'required|email',
+                'password' => 'required|string',
+            ]);
 
-        if (Auth::attempt($credentials, $request->boolean('remember'))) {
+            $credentials = $request->only('email', 'password');
+            $remember    = $request->boolean('remember');
+
+            if (!Auth::attempt($credentials, $remember)) {
+                return back()->withErrors([
+                    'email' => 'These credentials do not match our records.',
+                ])->onlyInput('email');
+            }
+
             $request->session()->regenerate();
 
             $user = Auth::user();
 
+            // Check if user is active
             if (!$user->is_active) {
                 Auth::logout();
-                return back()->withErrors(['email' => 'Your account is inactive.']);
-            }
-
-            if (!$user->company_id) {
-                return redirect()->route('company.setup');
+                return back()->with('error', 'Your account has been deactivated.');
             }
 
             return redirect()->intended(route('dashboard'));
         }
-
-        return back()->withErrors(['email' => 'Invalid credentials.'])->onlyInput('email');
-    }
 
     public function logout(Request $request)
     {
