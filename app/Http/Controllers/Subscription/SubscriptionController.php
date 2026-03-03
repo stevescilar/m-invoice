@@ -168,7 +168,7 @@ class SubscriptionController extends Controller
             'plan'     => 'yearly',
             'status'   => 'active',
             'on_trial' => false,
-            'ends_at'  => now()->addYears(100),
+            'ends_at'  => now()->addYears(10),
         ]);
 
         return back()->with('success', 'Developer bypass activated. Enjoy free access!');
