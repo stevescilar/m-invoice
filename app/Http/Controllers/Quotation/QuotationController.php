@@ -18,20 +18,43 @@ use Illuminate\Support\Facades\DB;
 
 class QuotationController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $quotations = Quotation::where('company_id', Auth::user()->company_id)
-            ->with('client')
-            ->latest()
-            ->paginate(15);
+        $company = auth()->user()->company;
+        $status  = $request->get('status', 'all');
+        $search  = $request->get('search');
+        $sort    = $request->get('sort', 'latest');
+
+        $query = Quotation::where('company_id', $company->id)->with('client');
+
+        if ($status !== 'all') {
+            $query->where('status', $status);
+        }
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('quotation_number', 'like', "%{$search}%")
+                ->orWhereHas('client', fn($q) => $q->where('name', 'like', "%{$search}%"));
+            });
+        }
+
+        match($sort) {
+            'oldest'       => $query->oldest(),
+            'amount_high'  => $query->orderByDesc('grand_total'),
+            'amount_low'   => $query->orderBy('grand_total'),
+            'expiry_soon'  => $query->orderBy('expiry_date'),
+            default        => $query->latest(),
+        };
+
+        $quotations = $query->paginate(15);
 
         $stats = [
-            'all'       => Quotation::where('company_id', Auth::user()->company_id)->count(),
-            'draft'     => Quotation::where('company_id', Auth::user()->company_id)->where('status', 'draft')->count(),
-            'sent'      => Quotation::where('company_id', Auth::user()->company_id)->where('status', 'sent')->count(),
-            'approved'  => Quotation::where('company_id', Auth::user()->company_id)->where('status', 'approved')->count(),
-            'rejected'  => Quotation::where('company_id', Auth::user()->company_id)->where('status', 'rejected')->count(),
-            'converted' => Quotation::where('company_id', Auth::user()->company_id)->where('status', 'converted')->count(),
+            'all'       => Quotation::where('company_id', $company->id)->count(),
+            'draft'     => Quotation::where('company_id', $company->id)->where('status', 'draft')->count(),
+            'sent'      => Quotation::where('company_id', $company->id)->where('status', 'sent')->count(),
+            'approved'  => Quotation::where('company_id', $company->id)->where('status', 'approved')->count(),
+            'rejected'  => Quotation::where('company_id', $company->id)->where('status', 'rejected')->count(),
+            'converted' => Quotation::where('company_id', $company->id)->where('status', 'converted')->count(),
         ];
 
         return view('quotations.index', compact('quotations', 'stats'));

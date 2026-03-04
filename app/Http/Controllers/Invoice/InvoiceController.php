@@ -17,20 +17,43 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class InvoiceController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $invoices = Invoice::where('company_id', Auth::user()->company_id)
-            ->with('client')
-            ->latest()
-            ->paginate(15);
+        $company = auth()->user()->company;
+        $status  = $request->get('status', 'all');
+        $search  = $request->get('search');
+        $sort    = $request->get('sort', 'latest');
+
+        $query = Invoice::where('company_id', $company->id)->with('client');
+
+        if ($status !== 'all') {
+            $query->where('status', $status);
+        }
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('invoice_number', 'like', "%{$search}%")
+                ->orWhereHas('client', fn($q) => $q->where('name', 'like', "%{$search}%"));
+            });
+        }
+
+        match($sort) {
+            'oldest'      => $query->oldest(),
+            'amount_high' => $query->orderByDesc('grand_total'),
+            'amount_low'  => $query->orderBy('grand_total'),
+            'due_soon'    => $query->orderBy('due_date'),
+            default       => $query->latest(),
+        };
+
+        $invoices = $query->paginate(15);
 
         $stats = [
-            'all' => Invoice::where('company_id', Auth::user()->company_id)->count(),
-            'draft' => Invoice::where('company_id', Auth::user()->company_id)->where('status', 'draft')->count(),
-            'sent' => Invoice::where('company_id', Auth::user()->company_id)->where('status', 'sent')->count(),
-            'paid' => Invoice::where('company_id', Auth::user()->company_id)->where('status', 'paid')->count(),
-            'overdue' => Invoice::where('company_id', Auth::user()->company_id)->where('status', 'overdue')->count(),
-            'stalled' => Invoice::where('company_id', Auth::user()->company_id)->where('status', 'stalled')->count(),
+            'all'     => Invoice::where('company_id', $company->id)->count(),
+            'draft'   => Invoice::where('company_id', $company->id)->where('status', 'draft')->count(),
+            'sent'    => Invoice::where('company_id', $company->id)->where('status', 'sent')->count(),
+            'paid'    => Invoice::where('company_id', $company->id)->where('status', 'paid')->count(),
+            'overdue' => Invoice::where('company_id', $company->id)->where('status', 'overdue')->count(),
+            'stalled' => Invoice::where('company_id', $company->id)->where('status', 'stalled')->count(),
         ];
 
         return view('invoices.index', compact('invoices', 'stats'));
