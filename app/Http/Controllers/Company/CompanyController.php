@@ -103,4 +103,34 @@ class CompanyController extends Controller
 
         return back()->with('success', 'Settings updated successfully.');
     }
+
+    public function updatePassword(Request $request)
+{
+    $user = auth()->user();
+
+    // Google user with no real password (has google_id and null password)
+    $isGoogleOnly = $user->google_id && !$user->password;
+
+    $rules = [
+        'password' => 'required|min:8|confirmed',
+    ];
+
+    // Only require current password if user has an actual password set
+    if (!$isGoogleOnly) {
+        $rules['current_password'] = 'required';
+    }
+
+    $request->validate($rules);
+
+    // Verify current password if applicable
+    if (!$isGoogleOnly) {
+        if (!\Illuminate\Support\Facades\Hash::check($request->current_password, $user->password)) {
+            return back()->with('error', 'Current password is incorrect.')->withInput();
+        }
+    }
+
+    $user->update(['password' => \Illuminate\Support\Facades\Hash::make($request->password)]);
+
+    return back()->with('success', 'Password updated successfully.');
+}
 }

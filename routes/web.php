@@ -61,6 +61,7 @@ Route::middleware('auth')->group(function () {
 
     // Logout
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+    Route::post('/settings/password', [CompanyController::class, 'updatePassword'])->name('password.update.profile');
 });
 
 // Protected routes
