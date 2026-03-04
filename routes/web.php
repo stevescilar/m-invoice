@@ -18,8 +18,8 @@ use App\Http\Controllers\Subscription\SubscriptionController;
 
 // Root
 Route::get('/', function () {
-    return redirect()->route('login');
-});
+    return view('welcome');
+})->name('home');
 
 // Google OAuth
 Route::get('/auth/google', [GoogleAuthController::class, 'redirect'])->name('auth.google');
