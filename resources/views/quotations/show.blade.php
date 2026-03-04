@@ -126,7 +126,7 @@
             <form action="{{ route('quotations.send', $quotation) }}" method="POST" class="mb-2">
                 @csrf
                 <button class="w-full bg-blue-500 text-white py-2 rounded-lg text-sm hover:bg-blue-600">
-                    Sent Quotation
+                    Send Quotation
                 </button>
             </form>
             @endif
