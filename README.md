@@ -1,5 +1,5 @@
 # M-Invoice
-
+[![wakatime](https://wakatime.com/badge/user/563ecbb7-89c4-4563-82c1-258e14191d74/project/b0182d87-f326-41a7-8003-877498f468d0.svg)](https://wakatime.com/badge/user/563ecbb7-89c4-4563-82c1-258e14191d74/project/b0182d87-f326-41a7-8003-877498f468d0)
 A comprehensive invoice management system built with Laravel 12, featuring invoicing, quotations, expense tracking, and M-Pesa payment integration.
 
 ## Features
