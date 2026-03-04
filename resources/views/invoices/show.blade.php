@@ -206,6 +206,8 @@
                 </div>
             @endif
             
+            
+            <!-- Invoice Meta -->
             @if($invoice->is_recurring)
             <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 mt-4">
                 <p class="text-sm font-semibold text-blue-700 flex items-center gap-2 mb-3">
@@ -243,7 +245,6 @@
                 </div>
             </div>
             @endif
-            <!-- Invoice Meta -->
             <div class="bg-white rounded-xl shadow p-5 text-sm space-y-2">
                 <h3 class="font-semibold text-gray-700 mb-2">Details</h3>
                 <div class="flex justify-between text-gray-500">

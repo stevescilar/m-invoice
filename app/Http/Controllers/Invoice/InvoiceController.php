@@ -126,7 +126,19 @@ class InvoiceController extends Controller
                 'next_recurrence_date' => $request->boolean('is_recurring') ? $this->getNextRecurrenceDate($request->issue_date, $request->recurrence_interval) : null,
                 'created_by' => Auth::id(),
             ]);
-
+            if ($request->boolean('is_recurring')) {
+                $invoice->update([
+                    'is_recurring'        => true,
+                    'recurring_frequency' => $request->recurring_frequency ?? 'monthly',
+                    'recurring_next_date' => $request->recurring_next_date
+                        ? \Carbon\Carbon::parse($request->recurring_next_date)
+                        : $invoice->getNextRecurringDate(),
+                    'recurring_ends_at'   => $request->recurring_ends_at
+                        ? \Carbon\Carbon::parse($request->recurring_ends_at)
+                        : null,
+                    'recurring_active'    => true,
+                ]);
+            }
             foreach ($items as $item) {
                 InvoiceItem::create([
                     'invoice_id' => $invoice->id,
@@ -144,19 +156,7 @@ class InvoiceController extends Controller
                 $this->createReminders($invoice);
             }
                         // Handle recurring
-            if ($request->boolean('is_recurring')) {
-                $invoice->update([
-                    'is_recurring'        => true,
-                    'recurring_frequency' => $request->recurring_frequency ?? 'monthly',
-                    'recurring_next_date' => $request->recurring_next_date
-                        ? \Carbon\Carbon::parse($request->recurring_next_date)
-                        : $invoice->getNextRecurringDate(),
-                    'recurring_ends_at'   => $request->recurring_ends_at
-                        ? \Carbon\Carbon::parse($request->recurring_ends_at)
-                        : null,
-                    'recurring_active'    => true,
-                ]);
-            }
+            
         });
 
         return redirect()->route('invoices.index')->with('success', 'Invoice created successfully.');
