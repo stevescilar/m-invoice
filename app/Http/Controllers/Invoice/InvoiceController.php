@@ -143,6 +143,20 @@ class InvoiceController extends Controller
             if ($request->due_date) {
                 $this->createReminders($invoice);
             }
+                        // Handle recurring
+            if ($request->boolean('is_recurring')) {
+                $invoice->update([
+                    'is_recurring'        => true,
+                    'recurring_frequency' => $request->recurring_frequency ?? 'monthly',
+                    'recurring_next_date' => $request->recurring_next_date
+                        ? \Carbon\Carbon::parse($request->recurring_next_date)
+                        : $invoice->getNextRecurringDate(),
+                    'recurring_ends_at'   => $request->recurring_ends_at
+                        ? \Carbon\Carbon::parse($request->recurring_ends_at)
+                        : null,
+                    'recurring_active'    => true,
+                ]);
+            }
         });
 
         return redirect()->route('invoices.index')->with('success', 'Invoice created successfully.');
@@ -374,5 +388,30 @@ class InvoiceController extends Controller
         if ($invoice->company_id !== Auth::user()->company_id) {
             abort(403);
         }
+    }
+
+    public function pauseRecurring(Invoice $invoice)
+    {
+        if ($invoice->company_id !== auth()->user()->company_id) abort(403);
+        $invoice->update(['recurring_active' => false]);
+        return back()->with('success', 'Recurring invoice paused.');
+    }
+
+    public function resumeRecurring(Invoice $invoice)
+    {
+        if ($invoice->company_id !== auth()->user()->company_id) abort(403);
+        $invoice->update(['recurring_active' => true]);
+        return back()->with('success', 'Recurring invoice resumed.');
+    }
+
+    public function cancelRecurring(Invoice $invoice)
+    {
+        if ($invoice->company_id !== auth()->user()->company_id) abort(403);
+        $invoice->update([
+            'is_recurring'      => false,
+            'recurring_active'  => false,
+            'recurring_next_date' => null,
+        ]);
+        return back()->with('success', 'Recurring cancelled. No more invoices will be generated.');
     }
 }

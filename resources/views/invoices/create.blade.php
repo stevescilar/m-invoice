@@ -58,6 +58,52 @@
                             <input type="date" name="due_date"
                                 class="w-full border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400">
                         </div>
+                        <!-- Recurring Options -->
+                        <div class="border-t pt-4 mt-4" x-data="{ recurring: {{ old('is_recurring') ? 'true' : 'false' }} }">
+                            <label class="flex items-center gap-2 cursor-pointer mb-4">
+                                <input type="checkbox" name="is_recurring" value="1"
+                                    x-model="recurring"
+                                    {{ old('is_recurring') ? 'checked' : '' }}
+                                    class="w-4 h-4 accent-green-600">
+                                <span class="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+                                    <i data-lucide="repeat" class="w-4 h-4 text-blue-500"></i>
+                                    Make this a recurring invoice
+                                </span>
+                            </label>
+
+                            <div x-show="recurring" x-transition class="bg-blue-50 border border-blue-100 rounded-xl p-4 space-y-4">
+                                <p class="text-xs text-blue-600 font-medium flex items-center gap-1">
+                                    <i data-lucide="info" class="w-3.5 h-3.5"></i>
+                                    A new draft invoice will be auto-generated at each interval
+                                </p>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-600 mb-1">Frequency</label>
+                                        <select name="recurring_frequency"
+                                            class="w-full border border-blue-200 bg-white rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                            <option value="weekly"    {{ old('recurring_frequency') === 'weekly'    ? 'selected' : '' }}>Weekly</option>
+                                            <option value="monthly"   {{ old('recurring_frequency', 'monthly') === 'monthly'   ? 'selected' : '' }}>Monthly</option>
+                                            <option value="quarterly" {{ old('recurring_frequency') === 'quarterly' ? 'selected' : '' }}>Quarterly (Every 3 months)</option>
+                                            <option value="yearly"    {{ old('recurring_frequency') === 'yearly'    ? 'selected' : '' }}>Yearly</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-600 mb-1">First Recurrence Date</label>
+                                        <input type="date" name="recurring_next_date"
+                                            value="{{ old('recurring_next_date') }}"
+                                            class="w-full border border-blue-200 bg-white rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                    </div>
+                                    <div class="col-span-2">
+                                        <label class="block text-sm font-medium text-gray-600 mb-1">
+                                            End Date <span class="text-gray-400 font-normal">(optional — leave blank to recur forever)</span>
+                                        </label>
+                                        <input type="date" name="recurring_ends_at"
+                                            value="{{ old('recurring_ends_at') }}"
+                                            class="w-full border border-blue-200 bg-white rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                    </div>
+                                </div>
+                            </div>
+</div>
                         <div>
                             <label class="block text-sm text-gray-600 mb-1">Notes</label>
                             <textarea name="notes" rows="2"

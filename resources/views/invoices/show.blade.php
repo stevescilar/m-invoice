@@ -205,7 +205,44 @@
                     @endif
                 </div>
             @endif
-
+            
+            @if($invoice->is_recurring)
+            <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 mt-4">
+                <p class="text-sm font-semibold text-blue-700 flex items-center gap-2 mb-3">
+                    <i data-lucide="repeat" class="w-4 h-4"></i>
+                    Recurring Invoice
+                    <span class="text-xs font-normal text-blue-500 ml-1">
+                        {{ ucfirst($invoice->recurring_frequency) }} ·
+                        Next: {{ $invoice->recurring_next_date?->format('M j, Y') ?? '—' }}
+                        {{ $invoice->recurring_ends_at ? '· Ends: ' . $invoice->recurring_ends_at->format('M j, Y') : '· No end date' }}
+                    </span>
+                </p>
+                <div class="flex gap-2">
+                    @if($invoice->recurring_active)
+                    <form method="POST" action="{{ route('invoices.recurring.pause', $invoice) }}">
+                        @csrf
+                        <button class="flex items-center gap-1.5 px-3 py-1.5 bg-yellow-100 text-yellow-700 rounded-lg text-xs font-medium hover:bg-yellow-200">
+                            <i data-lucide="pause-circle" class="w-3.5 h-3.5"></i> Pause
+                        </button>
+                    </form>
+                    @else
+                    <form method="POST" action="{{ route('invoices.recurring.resume', $invoice) }}">
+                        @csrf
+                        <button class="flex items-center gap-1.5 px-3 py-1.5 bg-green-100 text-green-700 rounded-lg text-xs font-medium hover:bg-green-200">
+                            <i data-lucide="play-circle" class="w-3.5 h-3.5"></i> Resume
+                        </button>
+                    </form>
+                    @endif
+                    <form method="POST" action="{{ route('invoices.recurring.cancel', $invoice) }}"
+                        onsubmit="return confirm('Cancel recurring? No more invoices will be generated.')">
+                        @csrf
+                        <button class="flex items-center gap-1.5 px-3 py-1.5 bg-red-100 text-red-600 rounded-lg text-xs font-medium hover:bg-red-200">
+                            <i data-lucide="x-circle" class="w-3.5 h-3.5"></i> Cancel Recurring
+                        </button>
+                    </form>
+                </div>
+            </div>
+            @endif
             <!-- Invoice Meta -->
             <div class="bg-white rounded-xl shadow p-5 text-sm space-y-2">
                 <h3 class="font-semibold text-gray-700 mb-2">Details</h3>

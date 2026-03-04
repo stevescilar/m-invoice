@@ -62,6 +62,10 @@ Route::middleware('auth')->group(function () {
     // Logout
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
     Route::post('/settings/password', [CompanyController::class, 'updatePassword'])->name('password.update.profile');
+
+    Route::post('/invoices/{invoice}/recurring/pause',  [InvoiceController::class, 'pauseRecurring'])->name('invoices.recurring.pause');
+    Route::post('/invoices/{invoice}/recurring/resume', [InvoiceController::class, 'resumeRecurring'])->name('invoices.recurring.resume');
+    Route::post('/invoices/{invoice}/recurring/cancel', [InvoiceController::class, 'cancelRecurring'])->name('invoices.recurring.cancel');
 });
 
 // Protected routes

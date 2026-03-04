@@ -14,7 +14,8 @@ class Invoice extends Model
         'status', 'etr_enabled', 'vat_amount', 'material_cost', 'labour_cost',
         'grand_total', 'total_cost', 'total_profit', 'overall_margin',
         'profit_from_quotation', 'notes', 'is_recurring', 'recurrence_interval',
-        'next_recurrence_date', 'mpesa_code', 'paid_at', 'created_by'
+        'next_recurrence_date', 'mpesa_code', 'paid_at', 'created_by','recurring_frequency',
+        'recurring_next_date', 'recurring_ends_at', 'recurring_active', 'recurring_parent_id',
     ];
 
     protected $casts = [
@@ -24,6 +25,9 @@ class Invoice extends Model
         'paid_at' => 'datetime',
         'etr_enabled' => 'boolean',
         'is_recurring' => 'boolean',
+        'recurring_active'   => 'boolean',
+        'recurring_next_date' => 'date',
+        'recurring_ends_at'  => 'date',
     ];
 
     public function company()
@@ -74,5 +78,25 @@ class Invoice extends Model
     public function scopeUnpaid($query)
     {
         return $query->whereIn('status', ['sent', 'overdue', 'stalled']);
+    }
+    public function recurringChildren()
+    {
+        return $this->hasMany(Invoice::class, 'recurring_parent_id');
+    }
+
+    public function recurringParent()
+    {
+        return $this->belongsTo(Invoice::class, 'recurring_parent_id');
+    }
+
+    public function getNextRecurringDate(): \Carbon\Carbon
+    {
+        $date = $this->recurring_next_date ?? $this->due_date ?? now();
+        return match($this->recurring_frequency) {
+            'weekly'    => $date->copy()->addWeek(),
+            'quarterly' => $date->copy()->addMonths(3),
+            'yearly'    => $date->copy()->addYear(),
+            default     => $date->copy()->addMonth(),
+        };
     }
 }
