@@ -9,45 +9,67 @@ use Illuminate\Support\Facades\Auth;
 
 class ExpenseController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $expenses = Expense::where('company_id', Auth::user()->company_id)
-            ->latest('expense_date')
-            ->paginate(15);
+        $company  = auth()->user()->company;
+        $search   = $request->get('search');
+        $category = $request->get('category');
+        $period   = $request->get('period', 'all');
+        $sort     = $request->get('sort', 'latest');
 
-        $stats = [
-            'total_this_month' => Expense::where('company_id', Auth::user()->company_id)
-                ->whereMonth('expense_date', now()->month)
-                ->whereYear('expense_date', now()->year)
-                ->sum('amount'),
-            'total_this_year' => Expense::where('company_id', Auth::user()->company_id)
-                ->whereYear('expense_date', now()->year)
-                ->sum('amount'),
-            'total_all' => Expense::where('company_id', Auth::user()->company_id)
-                ->sum('amount'),
-        ];
+        $query = Expense::where('company_id', $company->id);
 
-        // Monthly breakdown for chart
-        $monthlyExpenses = [];
-        for ($i = 5; $i >= 0; $i--) {
-            $month = now()->subMonths($i);
-            $monthlyExpenses[] = [
-                'month'  => $month->format('M Y'),
-                'amount' => Expense::where('company_id', Auth::user()->company_id)
-                    ->whereMonth('expense_date', $month->month)
-                    ->whereYear('expense_date', $month->year)
-                    ->sum('amount'),
-            ];
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('description', 'like', "%{$search}%")
+                ->orWhere('category', 'like', "%{$search}%");
+            });
         }
 
-        // By category
-        $byCategory = Expense::where('company_id', Auth::user()->company_id)
+        if ($category) {
+            $query->where('category', $category);
+        }
+
+        match($period) {
+            'this_month'  => $query->whereMonth('expense_date', now()->month)->whereYear('expense_date', now()->year),
+            'last_month'  => $query->whereMonth('expense_date', now()->subMonth()->month)->whereYear('expense_date', now()->subMonth()->year),
+            'this_year'   => $query->whereYear('expense_date', now()->year),
+            default       => null,
+        };
+
+        match($sort) {
+            'oldest'      => $query->oldest('expense_date'),
+            'amount_high' => $query->orderByDesc('amount'),
+            'amount_low'  => $query->orderBy('amount'),
+            default       => $query->latest('expense_date'),
+        };
+
+        $expenses = $query->paginate(15);
+
+        $stats = [
+            'total_this_month' => Expense::where('company_id', $company->id)->whereMonth('expense_date', now()->month)->whereYear('expense_date', now()->year)->sum('amount'),
+            'total_this_year'  => Expense::where('company_id', $company->id)->whereYear('expense_date', now()->year)->sum('amount'),
+            'total_all'        => Expense::where('company_id', $company->id)->sum('amount'),
+        ];
+
+        $byCategory = Expense::where('company_id', $company->id)
             ->selectRaw('category, SUM(amount) as total')
             ->groupBy('category')
             ->orderByDesc('total')
             ->get();
 
-        return view('expenses.index', compact('expenses', 'stats', 'monthlyExpenses', 'byCategory'));
+        $monthlyExpenses = collect(range(5, 0))->map(function($i) use ($company) {
+            $date = now()->subMonths($i);
+            return [
+                'month'  => $date->format('M Y'),
+                'amount' => Expense::where('company_id', $company->id)
+                    ->whereMonth('expense_date', $date->month)
+                    ->whereYear('expense_date', $date->year)
+                    ->sum('amount'),
+            ];
+        })->toArray();
+
+        return view('expenses.index', compact('expenses', 'stats', 'byCategory', 'monthlyExpenses'));
     }
 
     public function create()
