@@ -14,25 +14,40 @@ use Illuminate\Support\Str;
 
 class RegisterController extends Controller
 {
-    public function showRegistrationForm()
+    public function showRegistrationForm(Request $request)
     {
-        return view('auth.register');
+        $ref = $request->query('ref');
+        return view('auth.register', compact('ref'));
     }
 
     public function register(Request $request)
     {
         $request->validate([
-            'name'                  => 'required|string|max:255',
-            'email'                 => 'required|email|unique:users,email',
-            'password'              => 'required|min:8|confirmed',
-            'company_name'          => 'required|string|max:255',
+            'name'         => 'required|string|max:255',
+            'email'        => 'required|email|unique:users,email',
+            'password'     => 'required|min:8|confirmed',
+            'company_name' => 'required|string|max:255',
         ]);
 
+        // Check referral code
+        $referrer    = null;
+        $bonusDays   = 0;
+        $trialDays   = 3;
+
+        if ($request->ref) {
+            $referrer = Company::where('referral_code', $request->ref)->first();
+            if ($referrer) {
+                $bonusDays = 1;
+                $trialDays = 4;
+            }
+        }
+
         $company = Company::create([
-            'name'  => $request->company_name,
-            'email' => $request->email,
-            'phone' => '',
-            'slug'  => Str::slug($request->company_name . '-' . Str::random(6)),
+            'name'          => $request->company_name,
+            'email'         => $request->email,
+            'phone'         => '',
+            'slug'          => Str::slug($request->company_name . '-' . Str::random(6)),
+            'referral_code' => strtoupper(Str::random(8)),
         ]);
 
         $user = User::create([
@@ -51,12 +66,22 @@ class RegisterController extends Controller
             'plan'          => 'trial',
             'status'        => 'trial',
             'on_trial'      => true,
-            'trial_ends_at' => now()->addDays(3),
+            'trial_ends_at' => now()->addDays($trialDays),
             'starts_at'     => now(),
         ]);
 
-        event(new Registered($user));
+        // Reward referrer with +1 day
+        if ($referrer) {
+            $referrer->increment('referral_count');
+            $sub = $referrer->subscription;
+            if ($sub && $sub->isOnTrial()) {
+                $sub->update(['trial_ends_at' => $sub->trial_ends_at->addDay()]);
+            } elseif ($sub && $sub->isActive() && $sub->ends_at) {
+                $sub->update(['ends_at' => $sub->ends_at->addDay()]);
+            }
+        }
 
+        event(new Registered($user));
         Auth::login($user);
 
         return redirect()->route('verification.notice');

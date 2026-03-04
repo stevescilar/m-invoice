@@ -1167,7 +1167,30 @@
         </div>
     </div>
 </div>
-
+<!-- Referral Section -->
+<div style="max-width:1200px;margin:0 auto;padding:2rem 2rem 6rem;">
+    <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:3rem;display:flex;align-items:center;gap:3rem;flex-wrap:wrap;">
+        <div style="flex:1;min-width:280px;">
+            <div class="section-tag">Referral Program</div>
+            <h2 style="font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;margin-bottom:1rem;">
+                Share & earn<br><span style="color:var(--green-light)">free days</span>
+            </h2>
+            <p style="color:rgba(255,255,255,0.5);line-height:1.7;margin-bottom:1.5rem;">
+                Every business that signs up using your unique referral link gives you <strong style="color:#fff;">+1 free day</strong> on your subscription. Share the QR code or your link anywhere.
+            </p>
+            <a href="/register" class="btn-primary" style="display:inline-flex;">
+                Get Your Referral Link →
+            </a>
+        </div>
+        <div style="flex-shrink:0;background:white;padding:1.5rem;border-radius:16px;text-align:center;">
+            <p style="color:#111;font-size:0.75rem;font-weight:600;margin-bottom:0.75rem;text-transform:uppercase;letter-spacing:0.1em;">Try M-Invoice Free</p>
+            <!-- Static QR pointing to register page -->
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&color=16a34a&data={{ urlencode(url('/register')) }}"
+                alt="QR Code" style="width:140px;height:140px;display:block;">
+            <p style="color:#666;font-size:0.7rem;margin-top:0.75rem;">Scan to sign up free</p>
+        </div>
+    </div>
+</div>
 <!-- FOOTER -->
 <footer>
     <div class="footer-inner">

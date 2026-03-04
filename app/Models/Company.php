@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Notification;
 
 class Company extends Model
 {
@@ -25,7 +26,9 @@ class Company extends Model
         'mpesa_number',
         'bank_name',
         'bank_account',
-        'bank_branch'
+        'bank_branch',
+        'referral_code',
+        'referral_count'
     ];
 
     public function owner()
@@ -86,5 +89,9 @@ class Company extends Model
     public function notifications()
     {
         return $this->hasMany(Notification::class);
+    }
+    public function getReferralUrl(): string
+    {
+        return url('/register?ref=' . $this->referral_code);
     }
 }

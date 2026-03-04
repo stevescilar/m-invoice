@@ -151,7 +151,37 @@
     </div>
 
 </div>
+<!-- Referral QR Code -->
+<div class="bg-white rounded-xl shadow p-5 mt-6">
+    <div class="flex flex-col md:flex-row items-center gap-6">
+        <div class="flex-shrink-0">
+            {!! QrCode::size(140)->color(22, 163, 74)->generate(auth()->user()->company->getReferralUrl()) !!}
+        </div>
+        <div>
+            <h2 class="font-bold text-gray-800 text-lg mb-1">Share M-Invoice & Earn Free Days</h2>
+            <p class="text-gray-500 text-sm mb-3">
+                Share your unique QR code or link. Every business that registers using your link
+                gives you <strong class="text-green-600">+1 free day</strong> on your subscription.
+            </p>
+            <div class="flex items-center gap-2 bg-gray-50 border rounded-lg px-4 py-2 mb-3">
+                <span class="text-sm text-gray-600 truncate flex-1" id="referral-link">{{ auth()->user()->company->getReferralUrl() }}</span>
+                <button onclick="copyReferral()" class="text-green-600 text-sm font-medium hover:text-green-700 flex-shrink-0">Copy</button>
+            </div>
+            <p class="text-xs text-gray-400">
+                You've referred <strong>{{ auth()->user()->company->referral_count }}</strong> business(es) so far.
+            </p>
+        </div>
+    </div>
+</div>
 
+<script>
+function copyReferral() {
+    const link = document.getElementById('referral-link').textContent.trim();
+    navigator.clipboard.writeText(link);
+    event.target.textContent = 'Copied!';
+    setTimeout(() => event.target.textContent = 'Copy', 2000);
+}
+</script>
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
