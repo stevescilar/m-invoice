@@ -15,6 +15,7 @@ use App\Http\Controllers\Invoice\InvoiceController;
 use App\Http\Controllers\Quotation\QuotationController;
 use App\Http\Controllers\Expense\ExpenseController;
 use App\Http\Controllers\Subscription\SubscriptionController;
+use App\Http\Controllers\Staff\StaffController;
 
 // Root
 Route::get('/', function () {
@@ -102,7 +103,19 @@ Route::middleware(['auth', 'active.company'])->group(function () {
     Route::post('/subscription/pay', [SubscriptionController::class, 'initiatePay'])->name('subscription.pay');
     Route::post('/subscription/status', [SubscriptionController::class, 'checkStatus'])->name('subscription.status');
     Route::post('/subscription/bypass', [SubscriptionController::class, 'activateBypass'])->name('subscription.bypass');
+
+    // Staff management (owner only)
+    Route::get('/staff', [StaffController::class, 'index'])->name('staff.index');
+    Route::post('/staff/invite', [StaffController::class, 'invite'])->name('staff.invite');
+    Route::post('/staff/invitations/{invitation}/resend', [StaffController::class, 'resendInvitation'])->name('staff.invitations.resend');
+    Route::delete('/staff/invitations/{invitation}', [StaffController::class, 'revokeInvitation'])->name('staff.invitations.revoke');
+    Route::post('/staff/{user}/deactivate', [StaffController::class, 'deactivate'])->name('staff.deactivate');
+    Route::delete('/staff/{user}', [StaffController::class, 'destroy'])->name('staff.destroy');
+
 });
 
 // M-Pesa Callback (no auth — called by Safaricom)
 Route::post('/api/mpesa/callback', [SubscriptionController::class, 'callback']);
+// Staff invitation (public - no auth needed)
+Route::get('/invite/{token}', [StaffController::class, 'showAcceptForm'])->name('staff.accept');
+Route::post('/invite/{token}', [StaffController::class, 'acceptInvitation'])->name('staff.accept.submit');

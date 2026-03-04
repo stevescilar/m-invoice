@@ -69,6 +69,9 @@
             <a href="{{ route('categories.index') }}" class="text-gray-600 hover:text-green-600">Catalog</a>
             <a href="{{ route('subscription.index') }}" class="text-gray-600 hover:text-green-600">Subscription</a>
             <a href="{{ route('company.settings') }}" class="text-gray-600 hover:text-green-600">Settings</a>
+            @if(auth()->user()->isOwner())
+            <a href="{{ route('staff.index') }}" class="text-gray-600 hover:text-green-600">Staff</a>
+            @endif
             <form action="{{ route('logout') }}" method="POST">
                 @csrf
                 <button class="text-red-500 hover:text-red-700">Logout</button>

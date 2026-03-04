@@ -169,6 +169,7 @@
     </div>
 
     <!-- Private Profit Summary -->
+    @if(auth()->user()->isOwner())
     <div class="mt-3 p-3 rounded-lg border space-y-2"
         :class="totalProfit >= 0 ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'">
         <p class="text-xs font-bold text-gray-500 uppercase tracking-wide">Profit Summary <span class="text-gray-400 font-normal">(private — not on PDF)</span></p>
@@ -189,6 +190,7 @@
             </span>
         </div>
     </div>
+    @endif 
 </div>
     </div>
 </div>
