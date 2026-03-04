@@ -26,7 +26,12 @@
 
         <!-- Revenue -->
         <div class="bg-white rounded-xl shadow p-5">
-            <p class="text-xs text-gray-500 uppercase mb-1">Revenue</p>
+            <div class="flex items-center justify-between mb-3">
+                <p class="text-xs text-gray-500 uppercase font-medium">Revenue</p>
+                <div class="w-9 h-9 bg-green-50 rounded-lg flex items-center justify-center">
+                    <i data-lucide="trending-up" class="w-4 h-4 text-green-600"></i>
+                </div>
+            </div>
             <div x-show="period === 'today'" class="text-2xl font-bold text-green-600">Ksh {{ number_format($stats['revenue_today'], 2) }}</div>
             <div x-show="period === 'week'" class="text-2xl font-bold text-green-600">Ksh {{ number_format($stats['revenue_this_week'], 2) }}</div>
             <div x-show="period === 'month'" class="text-2xl font-bold text-green-600">Ksh {{ number_format($stats['revenue_this_month'], 2) }}</div>
@@ -36,7 +41,12 @@
 
         <!-- Profit -->
         <div class="bg-white rounded-xl shadow p-5">
-            <p class="text-xs text-gray-500 uppercase mb-1">Profit</p>
+            <div class="flex items-center justify-between mb-3">
+                <p class="text-xs text-gray-500 uppercase font-medium">Profit</p>
+                <div class="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center">
+                    <i data-lucide="circle-dollar-sign" class="w-4 h-4 text-blue-600"></i>
+                </div>
+            </div>
             <div x-show="period === 'today'" class="text-2xl font-bold text-blue-600">Ksh {{ number_format($stats['profit_today'], 2) }}</div>
             <div x-show="period === 'week'" class="text-2xl font-bold text-blue-600">Ksh {{ number_format($stats['profit_this_week'], 2) }}</div>
             <div x-show="period === 'month'" class="text-2xl font-bold text-blue-600">Ksh {{ number_format($stats['profit_this_month'], 2) }}</div>
@@ -46,7 +56,12 @@
 
         <!-- Expenses -->
         <div class="bg-white rounded-xl shadow p-5">
-            <p class="text-xs text-gray-500 uppercase mb-1">Expenses</p>
+            <div class="flex items-center justify-between mb-3">
+                <p class="text-xs text-gray-500 uppercase font-medium">Expenses</p>
+                <div class="w-9 h-9 bg-red-50 rounded-lg flex items-center justify-center">
+                    <i data-lucide="receipt" class="w-4 h-4 text-red-500"></i>
+                </div>
+            </div>
             <div x-show="period === 'today'" class="text-2xl font-bold text-red-500">—</div>
             <div x-show="period === 'week'" class="text-2xl font-bold text-red-500">—</div>
             <div x-show="period === 'month'" class="text-2xl font-bold text-red-500">Ksh {{ number_format($stats['expenses_this_month'], 2) }}</div>
@@ -54,9 +69,14 @@
             <div x-show="period === 'year'" class="text-2xl font-bold text-red-500">Ksh {{ number_format($stats['expenses_this_year'], 2) }}</div>
         </div>
 
-        <!-- Net (Profit - Expenses) -->
+        <!-- Net -->
         <div class="bg-white rounded-xl shadow p-5">
-            <p class="text-xs text-gray-500 uppercase mb-1">Net (Profit - Expenses)</p>
+            <div class="flex items-center justify-between mb-3">
+                <p class="text-xs text-gray-500 uppercase font-medium">Net</p>
+                <div class="w-9 h-9 bg-purple-50 rounded-lg flex items-center justify-center">
+                    <i data-lucide="scale" class="w-4 h-4 text-purple-600"></i>
+                </div>
+            </div>
             @php
                 $netMonth = $stats['profit_this_month'] - $stats['expenses_this_month'];
                 $netYear  = $stats['profit_this_year'] - $stats['expenses_this_year'];
@@ -71,21 +91,41 @@
 
     <!-- Invoice Status -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div class="bg-white rounded-xl shadow p-5 text-center">
-            <p class="text-3xl font-bold text-gray-700">{{ $stats['total_invoices'] }}</p>
-            <p class="text-xs text-gray-500 mt-1">Total Invoices</p>
+        <div class="bg-white rounded-xl shadow p-5 flex items-center gap-4">
+            <div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                <i data-lucide="file-text" class="w-5 h-5 text-gray-600"></i>
+            </div>
+            <div>
+                <p class="text-2xl font-bold text-gray-700">{{ $stats['total_invoices'] }}</p>
+                <p class="text-xs text-gray-500">Total Invoices</p>
+            </div>
         </div>
-        <div class="bg-white rounded-xl shadow p-5 text-center">
-            <p class="text-3xl font-bold text-green-600">{{ $stats['paid_invoices'] }}</p>
-            <p class="text-xs text-gray-500 mt-1">Paid</p>
+        <div class="bg-white rounded-xl shadow p-5 flex items-center gap-4">
+            <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                <i data-lucide="check-circle" class="w-5 h-5 text-green-600"></i>
+            </div>
+            <div>
+                <p class="text-2xl font-bold text-green-600">{{ $stats['paid_invoices'] }}</p>
+                <p class="text-xs text-gray-500">Paid</p>
+            </div>
         </div>
-        <div class="bg-white rounded-xl shadow p-5 text-center">
-            <p class="text-3xl font-bold text-yellow-500">{{ $stats['unpaid_invoices'] }}</p>
-            <p class="text-xs text-gray-500 mt-1">Unpaid</p>
+        <div class="bg-white rounded-xl shadow p-5 flex items-center gap-4">
+            <div class="w-12 h-12 bg-yellow-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                <i data-lucide="clock" class="w-5 h-5 text-yellow-500"></i>
+            </div>
+            <div>
+                <p class="text-2xl font-bold text-yellow-500">{{ $stats['unpaid_invoices'] }}</p>
+                <p class="text-xs text-gray-500">Unpaid</p>
+            </div>
         </div>
-        <div class="bg-white rounded-xl shadow p-5 text-center">
-            <p class="text-3xl font-bold text-red-500">{{ $stats['overdue_invoices'] }}</p>
-            <p class="text-xs text-gray-500 mt-1">Overdue</p>
+        <div class="bg-white rounded-xl shadow p-5 flex items-center gap-4">
+            <div class="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                <i data-lucide="alert-circle" class="w-5 h-5 text-red-500"></i>
+            </div>
+            <div>
+                <p class="text-2xl font-bold text-red-500">{{ $stats['overdue_invoices'] }}</p>
+                <p class="text-xs text-gray-500">Overdue</p>
+            </div>
         </div>
     </div>
 
@@ -93,7 +133,10 @@
 
 <!-- Chart -->
 <div class="bg-white rounded-xl shadow p-5 mt-6">
-    <h2 class="font-semibold text-gray-700 mb-4">Revenue vs Profit (Last 6 Months)</h2>
+    <h2 class="font-semibold text-gray-700 mb-4 flex items-center gap-2">
+        <i data-lucide="bar-chart-2" class="w-4 h-4 text-green-600"></i>
+        Revenue vs Profit (Last 6 Months)
+    </h2>
     <canvas id="revenueChart" height="100"></canvas>
 </div>
 
@@ -103,7 +146,10 @@
     <!-- Recent Invoices -->
     <div class="bg-white rounded-xl shadow p-5">
         <div class="flex justify-between items-center mb-4">
-            <h2 class="font-semibold text-gray-700">Recent Invoices</h2>
+            <h2 class="font-semibold text-gray-700 flex items-center gap-2">
+                <i data-lucide="file-text" class="w-4 h-4 text-green-600"></i>
+                Recent Invoices
+            </h2>
             <a href="{{ route('invoices.index') }}" class="text-sm text-green-600 hover:underline">View all</a>
         </div>
         @forelse($recent_invoices as $invoice)
@@ -132,7 +178,10 @@
     <!-- Overdue Invoices -->
     <div class="bg-white rounded-xl shadow p-5">
         <div class="flex justify-between items-center mb-4">
-            <h2 class="font-semibold text-gray-700">Overdue Invoices</h2>
+            <h2 class="font-semibold text-gray-700 flex items-center gap-2">
+                <i data-lucide="alert-triangle" class="w-4 h-4 text-red-500"></i>
+                Overdue Invoices
+            </h2>
             <a href="{{ route('invoices.index') }}" class="text-sm text-red-500 hover:underline">View all</a>
         </div>
         @forelse($overdue_invoices as $invoice)
@@ -146,11 +195,15 @@
             </div>
         </div>
         @empty
-        <p class="text-sm text-gray-400">No overdue invoices!</p>
+        <p class="text-sm text-gray-400 flex items-center gap-1">
+            <i data-lucide="check-circle" class="w-4 h-4 text-green-500"></i>
+            No overdue invoices!
+        </p>
         @endforelse
     </div>
 
 </div>
+
 <!-- Referral QR Code -->
 <div class="bg-white rounded-xl shadow p-5 mt-6">
     <div class="flex flex-col md:flex-row items-center gap-6">
@@ -158,17 +211,25 @@
             {!! QrCode::size(140)->color(22, 163, 74)->generate(auth()->user()->company->getReferralUrl()) !!}
         </div>
         <div>
-            <h2 class="font-bold text-gray-800 text-lg mb-1">Share M-Invoice & Earn Free Days</h2>
+            <h2 class="font-bold text-gray-800 text-lg mb-1 flex items-center gap-2">
+                <i data-lucide="gift" class="w-5 h-5 text-green-600"></i>
+                Share M-Invoice & Earn Free Days
+            </h2>
             <p class="text-gray-500 text-sm mb-3">
                 Share your unique QR code or link. Every business that registers using your link
                 gives you <strong class="text-green-600">+1 free day</strong> on your subscription.
             </p>
             <div class="flex items-center gap-2 bg-gray-50 border rounded-lg px-4 py-2 mb-3">
+                <i data-lucide="link" class="w-4 h-4 text-gray-400 flex-shrink-0"></i>
                 <span class="text-sm text-gray-600 truncate flex-1" id="referral-link">{{ auth()->user()->company->getReferralUrl() }}</span>
-                <button onclick="copyReferral()" class="text-green-600 text-sm font-medium hover:text-green-700 flex-shrink-0">Copy</button>
+                <button onclick="copyReferral()" class="text-green-600 text-sm font-medium hover:text-green-700 flex-shrink-0 flex items-center gap-1">
+                    <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                    <span id="copy-btn-text">Copy</span>
+                </button>
             </div>
-            <p class="text-xs text-gray-400">
-                You've referred <strong>{{ auth()->user()->company->referral_count }}</strong> business(es) so far.
+            <p class="text-xs text-gray-400 flex items-center gap-1">
+                <i data-lucide="users" class="w-3.5 h-3.5"></i>
+                You've referred <strong class="mx-1">{{ auth()->user()->company->referral_count }}</strong> business(es) so far.
             </p>
         </div>
     </div>
@@ -178,10 +239,12 @@
 function copyReferral() {
     const link = document.getElementById('referral-link').textContent.trim();
     navigator.clipboard.writeText(link);
-    event.target.textContent = 'Copied!';
-    setTimeout(() => event.target.textContent = 'Copy', 2000);
+    const btn = document.getElementById('copy-btn-text');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
 }
 </script>
+
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
@@ -220,6 +283,10 @@ new Chart(ctx, {
         }
     }
 });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => lucide.createIcons());
 </script>
 
 @endsection

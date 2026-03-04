@@ -58,26 +58,76 @@
 <body class="bg-gray-100 min-h-screen">
 
     <!-- Navbar -->
-    <nav class="bg-white shadow px-6 py-4 flex justify-between items-center">
-        <div class="font-bold text-xl text-green-600">{{ auth()->user()->company->name ?? config('app.name') }}</div>
-        <div class="flex items-center gap-4 text-sm">
-            <a href="{{ route('dashboard') }}" class="text-gray-600 hover:text-green-600">Dashboard</a>
-            <a href="{{ route('clients.index') }}" class="text-gray-600 hover:text-green-600">Clients</a>
-            <a href="{{ route('invoices.index') }}" class="text-gray-600 hover:text-green-600">Invoices</a>
-            <a href="{{ route('quotations.index') }}" class="text-gray-600 hover:text-green-600">Quotations</a>
-            <a href="{{ route('expenses.index') }}" class="text-gray-600 hover:text-green-600">Expenses</a>
-            <a href="{{ route('categories.index') }}" class="text-gray-600 hover:text-green-600">Catalog</a>
-            <a href="{{ route('subscription.index') }}" class="text-gray-600 hover:text-green-600">Subscription</a>
-            <a href="{{ route('company.settings') }}" class="text-gray-600 hover:text-green-600">Settings</a>
-            @if(auth()->user()->isOwner())
-            <a href="{{ route('staff.index') }}" class="text-gray-600 hover:text-green-600">Staff</a>
-            @endif
+    <!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+<!-- Navbar -->
+<nav class="bg-white shadow-sm px-6 py-3 flex justify-between items-center sticky top-0 z-50">
+    <div class="font-bold text-lg text-green-600 tracking-tight">
+        {{ auth()->user()->company->name ?? config('app.name') }}
+    </div>
+
+    <div class="flex items-center gap-1 text-sm">
+        <a href="{{ route('dashboard') }}"
+            class="flex items-center gap-1.5 px-3 py-2 rounded-lg transition {{ request()->routeIs('dashboard') ? 'bg-green-50 text-green-700 font-medium' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800' }}">
+            <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard
+        </a>
+        <a href="{{ route('clients.index') }}"
+            class="flex items-center gap-1.5 px-3 py-2 rounded-lg transition {{ request()->routeIs('clients*') ? 'bg-green-50 text-green-700 font-medium' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800' }}">
+            <i data-lucide="users" class="w-4 h-4"></i> Clients
+        </a>
+        <a href="{{ route('invoices.index') }}"
+            class="flex items-center gap-1.5 px-3 py-2 rounded-lg transition {{ request()->routeIs('invoices*') ? 'bg-green-50 text-green-700 font-medium' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800' }}">
+            <i data-lucide="file-text" class="w-4 h-4"></i> Invoices
+        </a>
+        <a href="{{ route('quotations.index') }}"
+            class="flex items-center gap-1.5 px-3 py-2 rounded-lg transition {{ request()->routeIs('quotations*') ? 'bg-green-50 text-green-700 font-medium' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800' }}">
+            <i data-lucide="clipboard-list" class="w-4 h-4"></i> Quotations
+        </a>
+        <a href="{{ route('expenses.index') }}"
+            class="flex items-center gap-1.5 px-3 py-2 rounded-lg transition {{ request()->routeIs('expenses*') ? 'bg-green-50 text-green-700 font-medium' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800' }}">
+            <i data-lucide="wallet" class="w-4 h-4"></i> Expenses
+        </a>
+        <a href="{{ route('categories.index') }}"
+            class="flex items-center gap-1.5 px-3 py-2 rounded-lg transition {{ request()->routeIs('categories*') ? 'bg-green-50 text-green-700 font-medium' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800' }}">
+            <i data-lucide="package" class="w-4 h-4"></i> Catalog
+        </a>
+        @if(auth()->user()->isOwner())
+        <a href="{{ route('staff.index') }}"
+            class="flex items-center gap-1.5 px-3 py-2 rounded-lg transition {{ request()->routeIs('staff*') ? 'bg-green-50 text-green-700 font-medium' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800' }}">
+            <i data-lucide="user-check" class="w-4 h-4"></i> Staff
+        </a>
+        @endif
+        <a href="{{ route('subscription.index') }}"
+            class="flex items-center gap-1.5 px-3 py-2 rounded-lg transition {{ request()->routeIs('subscription*') ? 'bg-green-50 text-green-700 font-medium' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800' }}">
+            <i data-lucide="credit-card" class="w-4 h-4"></i> Subscription
+        </a>
+        <a href="{{ route('company.settings') }}"
+            class="flex items-center gap-1.5 px-3 py-2 rounded-lg transition {{ request()->routeIs('company.settings*') ? 'bg-green-50 text-green-700 font-medium' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800' }}">
+            <i data-lucide="settings" class="w-4 h-4"></i> Settings
+        </a>
+
+        <!-- Divider -->
+        <div class="w-px h-6 bg-gray-200 mx-1"></div>
+
+        <!-- User avatar + logout -->
+        <div class="flex items-center gap-2 pl-1">
+            <div class="w-8 h-8 rounded-full bg-green-100 text-green-700 flex items-center justify-center font-semibold text-xs flex-shrink-0">
+                {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
+            </div>
             <form action="{{ route('logout') }}" method="POST">
                 @csrf
-                <button class="text-red-500 hover:text-red-700">Logout</button>
+                <button class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-red-400 hover:bg-red-50 hover:text-red-600 transition text-sm">
+                    <i data-lucide="log-out" class="w-4 h-4"></i> Logout
+                </button>
             </form>
         </div>
-    </nav>
+    </div>
+</nav>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => lucide.createIcons());
+</script>
     @if(auth()->check() && auth()->user()->company?->subscription?->isOnTrial())
     <div class="bg-blue-600 text-white text-center text-sm py-2 px-4">
         🎉 You are on a free trial —
