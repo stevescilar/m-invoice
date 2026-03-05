@@ -43,34 +43,37 @@ class ProcessRecurringInvoices extends Command
 
                 // Create new invoice
                 $newInvoice = Invoice::create([
-                    'company_id'         => $invoice->company_id,
-                    'client_id'          => $invoice->client_id,
-                    'invoice_number'     => $nextNumber,
-                    'issue_date'         => $newIssueDate,
-                    'due_date'           => $newDueDate,
-                    'status'             => 'draft',
-                    'notes'              => $invoice->notes,
-                    'footer'             => $invoice->footer,
-                    'tax_rate'           => $invoice->tax_rate,
-                    'discount'           => $invoice->discount,
-                    'subtotal'           => $invoice->subtotal,
-                    'tax_amount'         => $invoice->tax_amount,
-                    'grand_total'        => $invoice->grand_total,
-                    'etr_enabled'        => $invoice->etr_enabled,
-                    'is_recurring'       => false, // children are not recurring themselves
-                    'recurring_parent_id' => $invoice->id,
+                    'company_id'            => $invoice->company_id,
+                    'client_id'             => $invoice->client_id,
+                    'invoice_number'        => $nextNumber,
+                    'issue_date'            => $newIssueDate,
+                    'due_date'              => $newDueDate,
+                    'status'                => 'draft',
+                    'notes'                 => $invoice->notes,
+                    'grand_total'           => $invoice->grand_total,
+                    'total_cost'            => $invoice->total_cost,
+                    'total_profit'          => $invoice->total_profit,
+                    'overall_margin'        => $invoice->overall_margin,
+                    'material_cost'         => $invoice->material_cost,
+                    'labour_cost'           => $invoice->labour_cost,
+                    'vat_amount'            => $invoice->vat_amount,
+                    'etr_enabled'           => $invoice->etr_enabled,
+                    'profit_from_quotation' => $invoice->profit_from_quotation,
+                    'is_recurring'          => false,
+                    'recurring_parent_id'   => $invoice->id,
+                    'created_by'            => $invoice->created_by,
                 ]);
 
                 // Copy line items
                 foreach ($invoice->items as $item) {
                     InvoiceItem::create([
-                        'invoice_id'    => $newInvoice->id,
-                        'description'   => $item->description,
-                        'quantity'      => $item->quantity,
-                        'unit_price'    => $item->unit_price,
-                        'buying_price'  => $item->buying_price,
-                        'total'         => $item->total,
-                        'is_labour'     => $item->is_labour,
+                        'invoice_id'   => $newInvoice->id,
+                        'description'  => $item->description,
+                        'quantity'     => $item->quantity,
+                        'unit_price'   => $item->unit_price,
+                        'buying_price' => $item->buying_price,
+                        'total'        => $item->total,
+                        'is_labour'    => $item->is_labour,
                     ]);
                 }
 

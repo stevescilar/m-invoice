@@ -19,16 +19,15 @@ class Invoice extends Model
     ];
 
     protected $casts = [
-        'issue_date' => 'date',
-        'due_date' => 'date',
-        'next_recurrence_date' => 'date',
-        'paid_at' => 'datetime',
-        'etr_enabled' => 'boolean',
-        'is_recurring' => 'boolean',
-        'recurring_active'   => 'boolean',
-        'recurring_next_date' => 'date',
-        'recurring_ends_at'  => 'date',
-    ];
+    'issue_date'          => 'date',
+    'due_date'            => 'date',
+    'recurring_next_date' => 'date',
+    'recurring_ends_at'   => 'date',
+    'paid_at'             => 'datetime',
+    'etr_enabled'         => 'boolean',
+    'is_recurring'        => 'boolean',
+    'recurring_active'    => 'boolean',
+];
 
     public function company()
     {
@@ -89,14 +88,15 @@ class Invoice extends Model
         return $this->belongsTo(Invoice::class, 'recurring_parent_id');
     }
 
-    public function getNextRecurringDate(): \Carbon\Carbon
-    {
-        $date = $this->recurring_next_date ?? $this->due_date ?? now();
-        return match($this->recurring_frequency) {
-            'weekly'    => $date->copy()->addWeek(),
-            'quarterly' => $date->copy()->addMonths(3),
-            'yearly'    => $date->copy()->addYear(),
-            default     => $date->copy()->addMonth(),
-        };
-    }
+ public function getNextRecurringDate(): \Carbon\Carbon
+{
+    $date = $this->recurring_next_date ?? $this->due_date ?? now();
+    $date = \Carbon\Carbon::parse($date);
+    return match($this->recurring_frequency) {
+        'weekly'    => $date->copy()->addWeek(),
+        'quarterly' => $date->copy()->addMonths(3),
+        'yearly'    => $date->copy()->addYear(),
+        default     => $date->copy()->addMonth(),
+    };
+}
 }

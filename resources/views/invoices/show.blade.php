@@ -215,8 +215,8 @@
                     Recurring Invoice
                     <span class="text-xs font-normal text-blue-500 ml-1">
                         {{ ucfirst($invoice->recurring_frequency) }} ·
-                        Next: {{ $invoice->recurring_next_date?->format('M j, Y') ?? '—' }}
-                        {{ $invoice->recurring_ends_at ? '· Ends: ' . $invoice->recurring_ends_at->format('M j, Y') : '· No end date' }}
+                        Next: {{ $invoice->recurring_next_date ? \Carbon\Carbon::parse($invoice->recurring_next_date)->format('M j, Y') : '—' }}
+                        {{ $invoice->recurring_ends_at ? '· Ends: ' . \Carbon\Carbon::parse($invoice->recurring_ends_at)->format('M j, Y') : '· No end date' }}
                     </span>
                 </p>
                 <div class="flex gap-2">
