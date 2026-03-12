@@ -50,6 +50,9 @@
     </style>
 </head>
 <body>
+
+    @php $hasLabour = $quotation->items->where('is_labour', true)->count() > 0; @endphp
+
     <div class="watermark">{{ strtoupper($company->name) }}</div>
 
 <!-- Header -->
@@ -160,6 +163,7 @@
 
 <!-- Totals -->
 <div class="totals">
+    @if($hasLabour)
     <div class="totals-row">
         <span>Material Cost</span>
         <span>Ksh {{ number_format($quotation->material_cost, 2) }}</span>
@@ -168,6 +172,7 @@
         <span>Labour Cost</span>
         <span>Ksh {{ number_format($quotation->labour_cost, 2) }}</span>
     </div>
+    @endif
     <div class="totals-row grand">
         <span>Grand Total</span>
         <span>Ksh {{ number_format($quotation->grand_total, 2) }}</span>

@@ -190,6 +190,8 @@
 
 <body>
 
+    @php $hasLabour = $invoice->items->where('is_labour', true)->count() > 0; @endphp
+
     <div class="watermark">{{ strtoupper($company->name) }}</div>
     <!-- Header -->
     <table class="header-table" style="margin-bottom: 0; padding-bottom: 15px;">
@@ -221,7 +223,6 @@
     </div>
 
     <!-- Meta -->
-    <!-- Meta -->
     <table style="width: 100%; margin-bottom: 30px; border: none;">
         <tr>
             <td style="width: 50%; vertical-align: top; padding: 0;">
@@ -237,8 +238,7 @@
                         <td style="padding: 4px 8px; background: #f9fafb; border-bottom: 1px solid #eee;">
                             <span class="meta-label">Invoice #</span>
                         </td>
-                        <td
-                            style="padding: 4px 8px; background: #f9fafb; border-bottom: 1px solid #eee; text-align: right; font-weight: bold;">
+                        <td style="padding: 4px 8px; background: #f9fafb; border-bottom: 1px solid #eee; text-align: right; font-weight: bold;">
                             {{ $invoice->invoice_number }}
                         </td>
                     </tr>
@@ -264,9 +264,8 @@
                         <td style="padding: 4px 8px;">
                             <span class="meta-label">Status</span>
                         </td>
-                        <td
-                            style="padding: 4px 8px; text-align: right; font-weight: bold;
-                        color: {{ $invoice->status === 'paid' ? '#16a34a' : ($invoice->status === 'overdue' ? '#dc2626' : '#666') }}">
+                        <td style="padding: 4px 8px; text-align: right; font-weight: bold;
+                            color: {{ $invoice->status === 'paid' ? '#16a34a' : ($invoice->status === 'overdue' ? '#dc2626' : '#666') }}">
                             {{ strtoupper($invoice->status) }}
                         </td>
                     </tr>
@@ -299,6 +298,7 @@
 
     <!-- Totals -->
     <div class="totals">
+        @if($hasLabour)
         <div class="totals-row">
             <span>Material Cost</span>
             <span>Ksh {{ number_format($invoice->material_cost, 2) }}</span>
@@ -307,6 +307,7 @@
             <span>Labour Cost</span>
             <span>Ksh {{ number_format($invoice->labour_cost, 2) }}</span>
         </div>
+        @endif
         @if ($invoice->etr_enabled)
             <div class="totals-row vat-row">
                 <span>VAT (16%)</span>
@@ -318,6 +319,7 @@
             <span>Ksh {{ number_format($invoice->grand_total, 2) }}</span>
         </div>
     </div>
+
     <!-- Payment Details -->
     @if ($company->mpesa_paybill || $company->mpesa_till || $company->mpesa_number || $company->bank_name)
         <div class="payment-section">
@@ -364,6 +366,7 @@
             </table>
         </div>
     @endif
+
     <!-- Signature -->
     @if ($company->signature)
         <div class="signature">

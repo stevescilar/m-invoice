@@ -173,13 +173,13 @@
 </div>
 
 <script>
-const INACTIVE_LIMIT = 25 * 60 * 1000; // 25 minutes (warn 5 mins before 30 min session)
-const WARNING_TIME   = 60; // seconds to show warning before logout
+const INACTIVE_LIMIT = 44 * 60 * 1000; // 44 minutes — warn at 44, logout at 45
+const WARNING_TIME   = 60; // 60 second countdown before logout
 
 let inactivityTimer;
 let countdownTimer;
 let countdownValue = WARNING_TIME;
-const warning = document.getElementById('inactivity-warning');
+const warning     = document.getElementById('inactivity-warning');
 const countdownEl = document.getElementById('countdown');
 
 function startTimer() {
@@ -206,25 +206,30 @@ function resetTimer() {
     startTimer();
 }
 
-async function logoutUser() {
-    const form = document.createElement('form');
+function logoutUser() {
+    const form  = document.createElement('form');
     form.method = 'POST';
     form.action = '{{ route("logout") }}';
-    const csrf = document.createElement('input');
-    csrf.type  = 'hidden';
-    csrf.name  = '_token';
-    csrf.value = '{{ csrf_token() }}';
+    const csrf  = document.createElement('input');
+    csrf.type   = 'hidden';
+    csrf.name   = '_token';
+    csrf.value  = '{{ csrf_token() }}';
     form.appendChild(csrf);
     document.body.appendChild(form);
     form.submit();
 }
 
-// Reset timer on any user activity
-['mousemove', 'keydown', 'click', 'scroll', 'touchstart'].forEach(event => {
+// Reset on any activity including form typing
+const activityEvents = [
+    'mousemove', 'keydown', 'keypress', 'click',
+    'scroll', 'touchstart', 'input', 'change', 'focus', 'select'
+];
+
+activityEvents.forEach(event => {
     document.addEventListener(event, () => {
         if (!warning.classList.contains('hidden')) return;
         startTimer();
-    });
+    }, { passive: true });
 });
 
 // Start on page load
