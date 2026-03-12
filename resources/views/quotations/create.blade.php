@@ -4,7 +4,10 @@
 
 <div class="flex items-center gap-3 mb-6">
     <a href="{{ route('quotations.index') }}" class="text-gray-400 hover:text-gray-600">← Back</a>
-    <h1 class="text-2xl font-bold text-gray-800">New Quotation</h1>
+    <div>
+        <h1 class="text-2xl font-bold text-gray-800">New Quotation</h1>
+        <p class="text-xs text-gray-400 mt-0.5">{{ now()->format('l, d M Y • H:i') }}</p>
+    </div>
 </div>
 
 @if($errors->any())
@@ -13,12 +16,18 @@
 </div>
 @endif
 
+{{-- Item types must be defined BEFORE x-data initialises --}}
+<script>
+    const itemTypes     = @json($itemTypes->map(fn($t) => ['id' => $t->id, 'name' => $t->name, 'color' => $t->color]));
+    const defaultTypeId = {{ $itemTypes->firstWhere('is_default', true)?->id ?? ($itemTypes->first()?->id ?? 'null') }};
+</script>
+
 <form method="POST" action="{{ route('quotations.store') }}" x-data="quotationForm()" class="space-y-6">
 @csrf
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-    <!-- Left Column -->
+    {{-- ── LEFT COLUMN ── --}}
     <div class="bg-white rounded-xl shadow p-5 space-y-4">
         <h2 class="font-semibold text-gray-700">Quotation Details</h2>
 
@@ -40,15 +49,17 @@
             </select>
             <a href="{{ route('clients.create') }}" class="text-xs text-green-600 mt-1 inline-block">+ Add new client</a>
         </div>
-        <div>
-            <label class="block text-sm text-gray-600 mb-1">Issue Date <span class="text-red-500">*</span></label>
-            <input type="date" name="issue_date" value="{{ date('Y-m-d') }}" required
-                class="w-full border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400">
-        </div>
-        <div>
-            <label class="block text-sm text-gray-600 mb-1">Expiry Date</label>
-            <input type="date" name="expiry_date"
-                class="w-full border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400">
+        <div class="grid grid-cols-2 gap-3">
+            <div>
+                <label class="block text-sm text-gray-600 mb-1">Issue Date <span class="text-red-500">*</span></label>
+                <input type="date" name="issue_date" value="{{ date('Y-m-d') }}" required
+                    class="w-full border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400">
+            </div>
+            <div>
+                <label class="block text-sm text-gray-600 mb-1">Expiry Date</label>
+                <input type="date" name="expiry_date"
+                    class="w-full border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400">
+            </div>
         </div>
         <div>
             <label class="block text-sm text-gray-600 mb-1">Notes</label>
@@ -58,10 +69,16 @@
         </div>
     </div>
 
-    <!-- Right Column - Line Items -->
-    <div class="bg-white rounded-xl shadow p-5">
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="font-semibold text-gray-700">Line Items</h2>
+    {{-- ── RIGHT COLUMN ── --}}
+    <div class="bg-white rounded-xl shadow p-5 flex flex-col">
+
+        {{-- Header + catalog picker --}}
+        <div class="flex justify-between items-center mb-3">
+            <h2 class="font-semibold text-gray-700">
+                Line Items
+                <span class="ml-1 text-xs font-normal text-gray-400"
+                      x-text="`(${items.length} item${items.length !== 1 ? 's' : ''})`"></span>
+            </h2>
             <div class="relative" x-data="{ open: false }">
                 <button type="button" @click="open = !open"
                     class="text-sm bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg hover:bg-blue-100">
@@ -73,12 +90,12 @@
                     <div class="px-4 py-2 bg-gray-50 text-xs font-semibold text-gray-500 uppercase">
                         {{ $category->name }}
                     </div>
-                    @foreach($category->catalogItems as $catalogItem)
+                    @foreach($category->catalogItems as $ci)
                     <button type="button"
-                    @click="addCatalogItem({{ $catalogItem->id }}, '{{ addslashes($catalogItem->name) }}', {{ $catalogItem->default_unit_price }}, {{ $catalogItem->default_buying_price }}); open = false"@click="addCatalogItem({{ $catalogItem->id }}, '{{ addslashes($catalogItem->name) }}', {{ $catalogItem->default_unit_price }}); open = false"
+                        @click="addCatalogItem({{ $ci->id }}, '{{ addslashes($ci->name) }}', {{ $ci->default_unit_price }}, {{ $ci->default_buying_price ?? 0 }}); open = false"
                         class="w-full text-left px-4 py-2 text-sm hover:bg-green-50 hover:text-green-700">
-                        {{ $catalogItem->name }}
-                        <span class="text-gray-400 text-xs ml-1">Ksh {{ number_format($catalogItem->default_unit_price, 2) }}</span>
+                        {{ $ci->name }}
+                        <span class="text-gray-400 text-xs ml-1">Ksh {{ number_format($ci->default_unit_price, 2) }}</span>
                     </button>
                     @endforeach
                     @endforeach
@@ -86,122 +103,165 @@
             </div>
         </div>
 
-        <div class="space-y-2 mb-4">
+        {{-- Items list (scrollable, collapse-on-add) --}}
+        <div class="space-y-2 mb-3 overflow-y-auto max-h-[380px] pr-0.5">
             <template x-for="(item, index) in items" :key="index">
-                <div class="border rounded-lg p-3 space-y-2 bg-gray-50">
-                    <input type="hidden" :name="`items[${index}][catalog_item_id]`" :value="item.catalog_item_id">
-                    
-                    <!-- Description Row -->
-                    <div class="flex gap-2">
-                        <input type="text" :name="`items[${index}][description]`" x-model="item.description"
-                            placeholder="Item description" required
-                            class="flex-1 border rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-400 bg-white">
-                        <label class="flex items-center gap-1 text-xs text-gray-500 whitespace-nowrap">
-                            
-                        </label>
-                        <button type="button" @click="removeItem(index)"
-                            class="text-red-400 hover:text-red-600 text-lg font-bold">✕</button>
+
+                <div class="border rounded-xl bg-gray-50 overflow-hidden">
+
+                    {{-- Collapsed pill --}}
+                    <div class="flex items-center gap-2 px-3 py-2 cursor-pointer select-none hover:bg-gray-100"
+                         @click="item.expanded = !item.expanded">
+                        <div class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                             :style="`background:${getTypeColor(item.item_type_id)}`"></div>
+                        <span class="flex-1 text-sm text-gray-700 truncate"
+                              x-text="item.description || 'New item…'"></span>
+                        <span class="text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap"
+                              :style="`background:${getTypeColor(item.item_type_id)}22; color:${getTypeColor(item.item_type_id)}`"
+                              x-text="getTypeName(item.item_type_id)"></span>
+                        {{-- sell total --}}
+                        <span class="text-sm font-semibold text-gray-700 whitespace-nowrap">
+                            Ksh&nbsp;<span x-text="((item.quantity||0)*(item.unit_price||0)).toLocaleString('en-KE',{minimumFractionDigits:0})"></span>
+                        </span>
+                        {{-- profit badge --}}
+                        <span class="text-xs font-bold whitespace-nowrap"
+                              :class="((item.quantity||0)*((item.unit_price||0)-(item.buying_price||0))) >= 0 ? 'text-green-600' : 'text-red-500'"
+                              x-show="item.unit_price > 0"
+                              x-text="item.unit_price > 0 ? '+' + (((item.unit_price-item.buying_price)/item.unit_price)*100).toFixed(0)+'%' : ''">
+                        </span>
+                        <i data-lucide="chevron-down"
+                           class="w-4 h-4 text-gray-400 flex-shrink-0 transition-transform duration-150"
+                           :class="item.expanded ? 'rotate-180':''"></i>
                     </div>
 
-                    <!-- Pricing Row -->
-                    <div class="grid grid-cols-2 md:grid-cols-5 gap-2">
-                        <!-- Item Type dropdown -->
-                        <div class="flex-1">
-                            <label class="text-xs text-gray-500 mb-0.5 block">Type</label>
-                            <select :name="`items[${index}][item_type_id]`" x-model="item.item_type_id"
-                                @change="onTypeChange(item)"
-                                class="w-full border rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-400 bg-white">
-                                <template x-for="type in itemTypes" :key="type.id">
-                                    <option :value="type.id" x-text="type.name"></option>
-                                </template>
-                            </select>
+                    {{-- Expanded form --}}
+                    <div x-show="item.expanded" class="border-t px-3 pb-3 pt-2 space-y-2">
+
+                        <input type="hidden" :name="`items[${index}][catalog_item_id]`" :value="item.catalog_item_id">
+                        <input type="hidden" :name="`items[${index}][is_labour]`"       :value="item.is_labour ? 1 : 0">
+
+                        {{-- Description + remove --}}
+                        <div class="flex gap-2">
+                            <input type="text" :name="`items[${index}][description]`" x-model="item.description"
+                                placeholder="Item description" required
+                                class="flex-1 border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-400 bg-white">
+                            <button type="button" @click="removeItem(index)"
+                                class="text-red-400 hover:text-red-600 hover:bg-red-50 p-1.5 rounded-lg flex-shrink-0">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
                         </div>
-                        <div>
-                            <label class="text-xs text-gray-500 font-medium">Qty</label>
-                            <input type="number" :name="`items[${index}][quantity]`" x-model.number="item.quantity"
-                                @input="calculateTotals" min="0.01" step="0.01" required
-                                class="w-full border rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-400 bg-white">
+
+                        {{-- Type + Qty --}}
+                        <div class="grid grid-cols-3 gap-2">
+                            <div class="col-span-2">
+                                <label class="text-xs text-gray-500 mb-0.5 block">Type</label>
+                                <select :name="`items[${index}][item_type_id]`"
+                                    x-model="item.item_type_id"
+                                    @change="onTypeChange(item)"
+                                    class="w-full border rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-400 bg-white">
+                                    <template x-for="type in itemTypes" :key="type.id">
+                                        <option :value="type.id" x-text="type.name"
+                                            :selected="type.id == item.item_type_id"></option>
+                                    </template>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500 mb-0.5 block">Qty</label>
+                                <input type="number" :name="`items[${index}][quantity]`"
+                                    x-model.number="item.quantity" @input="calculateTotals"
+                                    min="0.01" step="0.01" required
+                                    class="w-full border rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-400 bg-white">
+                            </div>
                         </div>
-                        <div>
-                            <label class="text-xs text-blue-500 font-medium">Buying Price (Ksh)</label>
-                            <input type="number" :name="`items[${index}][buying_price]`" x-model.number="item.buying_price"
-                                @input="calculateTotals" min="0" step="0.01" placeholder="0"
-                                class="w-full border border-blue-200 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400 bg-blue-50">
+
+                        {{-- Prices --}}
+                        <div class="grid grid-cols-3 gap-2">
+                            <div>
+                                <label class="text-xs text-blue-500 mb-0.5 block font-medium">Buying (Ksh)</label>
+                                <input type="number" :name="`items[${index}][buying_price]`"
+                                    x-model.number="item.buying_price" @input="calculateTotals"
+                                    min="0" step="0.01" placeholder="0"
+                                    class="w-full border border-blue-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400 bg-blue-50">
+                            </div>
+                            <div>
+                                <label class="text-xs text-green-600 mb-0.5 block font-medium">Selling (Ksh)</label>
+                                <input type="number" :name="`items[${index}][unit_price]`"
+                                    x-model.number="item.unit_price" @input="calculateTotals"
+                                    min="0" step="0.01" required
+                                    class="w-full border border-green-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-400 bg-white">
+                            </div>
+                            <div>
+                                <label class="text-xs mb-0.5 block font-medium"
+                                    :class="((item.unit_price||0)-(item.buying_price||0)) >= 0 ? 'text-green-600' : 'text-red-500'">
+                                    Profit
+                                    <span x-text="item.unit_price > 0 ? '(' + (((item.unit_price-item.buying_price)/item.unit_price)*100).toFixed(1) + '%)' : ''"></span>
+                                </label>
+                                <p class="px-2 py-1.5 text-sm font-bold border rounded-lg"
+                                    :class="((item.quantity||0)*((item.unit_price||0)-(item.buying_price||0))) >= 0 ? 'text-green-600 bg-green-50 border-green-200' : 'text-red-500 bg-red-50 border-red-200'">
+                                    Ksh&nbsp;<span x-text="((item.quantity||0)*((item.unit_price||0)-(item.buying_price||0))).toLocaleString('en-KE',{minimumFractionDigits:0})"></span>
+                                </p>
+                            </div>
                         </div>
-                        <div>
-                            <label class="text-xs text-green-600 font-medium">Selling Price (Ksh)</label>
-                            <input type="number" :name="`items[${index}][unit_price]`" x-model.number="item.unit_price"
-                                @input="calculateTotals" min="0" step="0.01" required
-                                class="w-full border border-green-200 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-400 bg-white">
-                        </div>
-                        <div>
-                            <label class="text-xs text-gray-500 font-medium">Sell Total</label>
-                            <p class="px-3 py-1.5 text-sm font-semibold text-gray-700 bg-white border rounded">
-                                Ksh <span x-text="((item.quantity||0) * (item.unit_price||0)).toLocaleString('en-KE', {minimumFractionDigits: 2})"></span>
-                            </p>
-                        </div>
-                        <div>
-                            <label class="text-xs font-medium"
-                                :class="((item.unit_price||0) - (item.buying_price||0)) >= 0 ? 'text-green-600' : 'text-red-500'">
-                                Profit
-                                <span x-text="item.unit_price > 0 ? '(' + (((item.unit_price - item.buying_price) / item.unit_price) * 100).toFixed(1) + '%)' : ''"></span>
-                            </label>
-                            <p class="px-3 py-1.5 text-sm font-bold border rounded"
-                                :class="((item.quantity||0)*((item.unit_price||0)-(item.buying_price||0))) >= 0 ? 'text-green-600 bg-green-50 border-green-200' : 'text-red-500 bg-red-50 border-red-200'">
-                                Ksh <span x-text="((item.quantity||0)*((item.unit_price||0)-(item.buying_price||0))).toLocaleString('en-KE', {minimumFractionDigits: 2})"></span>
-                            </p>
-                        </div>
-                    </div>
-                </div>
+
+                    </div>{{-- /expanded --}}
+                </div>{{-- /item card --}}
+
             </template>
-        </div>
+        </div>{{-- /items list --}}
 
         <button type="button" @click="addItem"
-            class="w-full border-2 border-dashed border-gray-300 text-gray-400 py-2 rounded-lg text-sm hover:border-green-400 hover:text-green-600">
-            + Add Item Manually
+            class="w-full border-2 border-dashed border-gray-300 text-gray-400 py-2 rounded-lg text-sm hover:border-green-400 hover:text-green-600 mb-4">
+            + Add Item
         </button>
 
-        <!-- Totals -->
-        <!-- Totals -->
-<div class="mt-6 space-y-2 border-t pt-4">
-    <div class="flex justify-between text-sm text-gray-600">
-        <span>Material Cost</span>
-        <span>Ksh <span x-text="materialCost.toLocaleString('en-KE', {minimumFractionDigits: 2})"></span></span>
-    </div>
-    <div class="flex justify-between text-sm text-gray-600">
-        <span>Labour Cost</span>
-        <span>Ksh <span x-text="labourCost.toLocaleString('en-KE', {minimumFractionDigits: 2})"></span></span>
-    </div>
-    <div class="flex justify-between font-bold text-gray-800 border-t pt-2">
-        <span>Grand Total</span>
-        <span class="text-green-600">Ksh <span x-text="grandTotal.toLocaleString('en-KE', {minimumFractionDigits: 2})"></span></span>
-    </div>
+        {{-- ── TOTALS ── --}}
+        <div class="border-t pt-4 space-y-1.5">
 
-    <!-- Private Profit Summary -->
-    @if(auth()->user()->isOwner())
-    <div class="mt-3 p-3 rounded-lg border space-y-2"
-        :class="totalProfit >= 0 ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'">
-        <p class="text-xs font-bold text-gray-500 uppercase tracking-wide">Profit Summary <span class="text-gray-400 font-normal">(private — not on PDF)</span></p>
-        <div class="flex justify-between text-sm text-gray-600">
-            <span>Total Cost</span>
-            <span class="text-red-500 font-medium">Ksh <span x-text="totalCost.toLocaleString('en-KE', {minimumFractionDigits: 2})"></span></span>
-        </div>
-        <div class="flex justify-between text-sm font-bold">
-            <span>Total Profit</span>
-            <span :class="totalProfit >= 0 ? 'text-green-600' : 'text-red-500'">
-                Ksh <span x-text="totalProfit.toLocaleString('en-KE', {minimumFractionDigits: 2})"></span>
-            </span>
-        </div>
-        <div class="flex justify-between text-sm font-bold">
-            <span>Overall Margin</span>
-            <span :class="overallMargin >= 0 ? 'text-green-600' : 'text-red-500'"
-                x-text="overallMargin.toFixed(1) + '%'">
-            </span>
-        </div>
-    </div>
-    @endif 
-</div>
-    </div>
+            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Cost Breakdown</p>
+
+            <template x-for="row in typeBreakdownList" :key="row.name">
+                <div class="flex justify-between text-sm text-gray-600" x-show="row.amount > 0">
+                    <span class="flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full inline-block" :style="`background:${row.color}`"></span>
+                        <span x-text="row.name"></span>
+                    </span>
+                    <span>Ksh <span x-text="row.amount.toLocaleString('en-KE',{minimumFractionDigits:2})"></span></span>
+                </div>
+            </template>
+
+            <div class="flex justify-between font-bold text-gray-800 border-t pt-2 mt-1">
+                <span>Grand Total</span>
+                <span class="text-green-600">Ksh <span x-text="grandTotal.toLocaleString('en-KE',{minimumFractionDigits:2})"></span></span>
+            </div>
+
+            {{-- Profit summary --}}
+            @if(auth()->user()->isOwner())
+            <div class="mt-2 p-3 rounded-lg border space-y-1.5 transition-colors"
+                 :class="totalProfit >= 0 ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'">
+                <p class="text-xs font-bold text-gray-500 uppercase tracking-wide">
+                    Profit Summary <span class="text-gray-400 font-normal normal-case">(private — not on PDF)</span>
+                </p>
+                <div class="flex justify-between text-sm text-gray-600">
+                    <span>Total Cost</span>
+                    <span class="text-red-500 font-medium">Ksh <span x-text="totalCost.toLocaleString('en-KE',{minimumFractionDigits:2})"></span></span>
+                </div>
+                <div class="flex justify-between text-sm font-bold">
+                    <span>Total Profit</span>
+                    <span :class="totalProfit >= 0 ? 'text-green-600' : 'text-red-500'">
+                        Ksh <span x-text="totalProfit.toLocaleString('en-KE',{minimumFractionDigits:2})"></span>
+                    </span>
+                </div>
+                <div class="flex justify-between text-sm font-bold">
+                    <span>Overall Margin</span>
+                    <span :class="overallMargin >= 0 ? 'text-green-600' : 'text-red-500'"
+                          x-text="overallMargin.toFixed(1) + '%'"></span>
+                </div>
+            </div>
+            @endif
+
+        </div>{{-- /totals --}}
+    </div>{{-- /right --}}
+
 </div>
 
 <div class="flex gap-3 justify-end">
@@ -216,61 +276,103 @@
 </form>
 
 <script>
-    function quotationForm() {
-        return {
-            items: [{ catalog_item_id: null, description: '', quantity: 1, unit_price: 0, buying_price: 0, is_labour: false }],
-            materialCost: 0,
-            labourCost: 0,
-            grandTotal: 0,
-            totalCost: 0,
-            totalProfit: 0,
-            overallMargin: 0,
-    
-            addItem() {
-                this.items.push({ catalog_item_id: null, description: '', quantity: 1, unit_price: 0, buying_price: 0, is_labour: false });
-            },
-    
-            addCatalogItem(id, name, price, buyingPrice) {
-                this.items.push({ catalog_item_id: id, description: name, quantity: 1, unit_price: price, buying_price: buyingPrice, is_labour: false });
+function quotationForm() {
+    return {
+        items: [{
+            catalog_item_id: null,
+            description:     '',
+            quantity:        1,
+            unit_price:      0,
+            buying_price:    0,
+            item_type_id:    defaultTypeId,
+            is_labour:       false,
+            expanded:        true,
+        }],
+        typeBreakdown:     {},
+        typeBreakdownList: [],
+        grandTotal:        0,
+        totalCost:         0,
+        totalProfit:       0,
+        overallMargin:     0,
+
+        getTypeColor(id) {
+            const t = itemTypes.find(t => t.id == id);
+            return t ? t.color : '#6b7280';
+        },
+
+        getTypeName(id) {
+            const t = itemTypes.find(t => t.id == id);
+            return t ? t.name : '';
+        },
+
+        onTypeChange(item) {
+            const t = itemTypes.find(t => t.id == item.item_type_id);
+            item.is_labour = t ? t.name.toLowerCase() === 'labour' : false;
+            this.calculateTotals();
+        },
+
+        addItem() {
+            this.items.forEach(i => i.expanded = false);
+            this.items.push({
+                catalog_item_id: null, description: '', quantity: 1,
+                unit_price: 0, buying_price: 0,
+                item_type_id: defaultTypeId, is_labour: false, expanded: true,
+            });
+        },
+
+        addCatalogItem(id, name, price, buyingPrice) {
+            this.items.forEach(i => i.expanded = false);
+            this.items.push({
+                catalog_item_id: id, description: name, quantity: 1,
+                unit_price: price, buying_price: buyingPrice || 0,
+                item_type_id: defaultTypeId, is_labour: false, expanded: true,
+            });
+            this.calculateTotals();
+        },
+
+        removeItem(index) {
+            if (this.items.length > 1) {
+                this.items.splice(index, 1);
                 this.calculateTotals();
-            },
-    
-            removeItem(index) {
-                if (this.items.length > 1) {
-                    this.items.splice(index, 1);
-                    this.calculateTotals();
-                }
-            },
-    
-            calculateTotals() {
-                this.materialCost = 0;
-                this.labourCost   = 0;
-                this.totalCost    = 0;
-    
-                this.items.forEach(item => {
-                    const qty       = item.quantity    || 0;
-                    const sell      = item.unit_price  || 0;
-                    const buy       = item.buying_price || 0;
-                    const sellTotal = qty * sell;
-                    const costTotal = qty * buy;
-                    this.totalCost += costTotal;
-                    if (item.is_labour) {
-                        this.labourCost += sellTotal;
-                    } else {
-                        this.materialCost += sellTotal;
-                    }
-                });
-    
-                this.grandTotal    = this.materialCost + this.labourCost;
-                this.totalProfit   = this.grandTotal - this.totalCost;
-                this.overallMargin = this.grandTotal > 0 ? (this.totalProfit / this.grandTotal) * 100 : 0;
-            },
-    
-            init() {
-                this.$watch('items', () => this.calculateTotals(), { deep: true });
             }
+        },
+
+        calculateTotals() {
+            const breakdown = {};
+            this.totalCost = 0;
+
+            this.items.forEach(item => {
+                const qty       = item.quantity     || 0;
+                const sell      = item.unit_price   || 0;
+                const buy       = item.buying_price || 0;
+                const sellTotal = qty * sell;
+                this.totalCost += qty * buy;
+                const typeName  = this.getTypeName(item.item_type_id) || 'Material';
+                breakdown[typeName] = (breakdown[typeName] || 0) + sellTotal;
+                // keep is_labour in sync
+                item.is_labour = this.getTypeName(item.item_type_id).toLowerCase() === 'labour';
+            });
+
+            this.typeBreakdown = breakdown;
+            this.typeBreakdownList = Object.keys(breakdown).map(name => ({
+                name,
+                amount: breakdown[name],
+                color: this.getTypeColor(
+                    this.items.find(i => this.getTypeName(i.item_type_id) === name)?.item_type_id
+                ),
+            }));
+
+            this.grandTotal    = Object.values(breakdown).reduce((a, b) => a + b, 0);
+            this.totalProfit   = this.grandTotal - this.totalCost;
+            this.overallMargin = this.grandTotal > 0 ? (this.totalProfit / this.grandTotal) * 100 : 0;
+        },
+
+        init() {
+            this.$watch('items', () => this.calculateTotals(), { deep: true });
+            this.calculateTotals();
         }
     }
-    </script>
+}
+</script>
 
 @endsection
