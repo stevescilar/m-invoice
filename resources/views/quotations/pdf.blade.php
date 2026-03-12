@@ -162,23 +162,32 @@
 </table>
 
 <!-- Totals -->
-<div class="totals">
-    @if($hasLabour)
-    <div class="totals-row">
-        <span>Material Cost</span>
-        <span>Ksh {{ number_format($quotation->material_cost, 2) }}</span>
+@php
+    $typeBreakdown = $quotation->items
+        ->groupBy(fn($item) => optional($item->itemType)->name ?? 'Material')
+        ->map(fn($items) => $items->sum('total_price'));
+    @endphp
+    <!-- Totals -->
+    <div class="totals">
+        @foreach($typeBreakdown as $typeName => $typeTotal)
+            @if($typeTotal > 0)
+            <div class="totals-row">
+                <span>{{ $typeName }}</span>
+                <span>Ksh {{ number_format($typeTotal, 2) }}</span>
+            </div>
+            @endif
+        @endforeach
+        @if($quotation->etr_enabled)
+        <div class="totals-row vat-row">
+            <span>VAT (16%)</span>
+            <span>Ksh {{ number_format($quotation->vat_amount, 2) }}</span>
+        </div>
+        @endif
+        <div class="totals-row grand">
+            <span>Grand Total</span>
+            <span>Ksh {{ number_format($quotation->grand_total, 2) }}</span>
+        </div>
     </div>
-    <div class="totals-row">
-        <span>Labour Cost</span>
-        <span>Ksh {{ number_format($quotation->labour_cost, 2) }}</span>
-    </div>
-    @endif
-    <div class="totals-row grand">
-        <span>Grand Total</span>
-        <span>Ksh {{ number_format($quotation->grand_total, 2) }}</span>
-    </div>
-</div>
-
 <!-- Notes -->
 @if($quotation->notes)
 <div style="margin-top: 30px; padding: 15px; background: #f9fafb; border-radius: 6px; border: 1px solid #eee;">

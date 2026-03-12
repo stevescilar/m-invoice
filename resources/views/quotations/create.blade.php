@@ -97,9 +97,7 @@
                             placeholder="Item description" required
                             class="flex-1 border rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-400 bg-white">
                         <label class="flex items-center gap-1 text-xs text-gray-500 whitespace-nowrap">
-                            <input type="checkbox" :name="`items[${index}][is_labour]`" value="1" x-model="item.is_labour"
-                                class="accent-orange-500">
-                            Labour
+                            
                         </label>
                         <button type="button" @click="removeItem(index)"
                             class="text-red-400 hover:text-red-600 text-lg font-bold">✕</button>
@@ -107,6 +105,17 @@
 
                     <!-- Pricing Row -->
                     <div class="grid grid-cols-2 md:grid-cols-5 gap-2">
+                        <!-- Item Type dropdown -->
+                        <div class="flex-1">
+                            <label class="text-xs text-gray-500 mb-0.5 block">Type</label>
+                            <select :name="`items[${index}][item_type_id]`" x-model="item.item_type_id"
+                                @change="onTypeChange(item)"
+                                class="w-full border rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-400 bg-white">
+                                <template x-for="type in itemTypes" :key="type.id">
+                                    <option :value="type.id" x-text="type.name"></option>
+                                </template>
+                            </select>
+                        </div>
                         <div>
                             <label class="text-xs text-gray-500 font-medium">Qty</label>
                             <input type="number" :name="`items[${index}][quantity]`" x-model.number="item.quantity"

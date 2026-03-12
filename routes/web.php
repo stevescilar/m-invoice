@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Settings\ItemTypeController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\GoogleAuthController;
@@ -16,6 +17,7 @@ use App\Http\Controllers\Quotation\QuotationController;
 use App\Http\Controllers\Expense\ExpenseController;
 use App\Http\Controllers\Subscription\SubscriptionController;
 use App\Http\Controllers\Staff\StaffController;
+use App\Http\Controllers\Payment\PaymentController;
 
 // Root
 Route::get('/', function () {
@@ -66,6 +68,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/invoices/{invoice}/recurring/pause',  [InvoiceController::class, 'pauseRecurring'])->name('invoices.recurring.pause');
     Route::post('/invoices/{invoice}/recurring/resume', [InvoiceController::class, 'resumeRecurring'])->name('invoices.recurring.resume');
     Route::post('/invoices/{invoice}/recurring/cancel', [InvoiceController::class, 'cancelRecurring'])->name('invoices.recurring.cancel');
+
+    Route::post('/settings/item-types',              [ItemTypeController::class, 'store'])->name('item-types.store');
+    Route::put('/settings/item-types/{itemType}',    [ItemTypeController::class, 'update'])->name('item-types.update');
+    Route::post('/settings/item-types/{itemType}/toggle', [ItemTypeController::class, 'toggle'])->name('item-types.toggle');
+    Route::delete('/settings/item-types/{itemType}', [ItemTypeController::class, 'destroy'])->name('item-types.destroy');
 });
 
 // Protected routes

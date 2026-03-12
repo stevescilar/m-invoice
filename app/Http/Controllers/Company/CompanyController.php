@@ -58,7 +58,8 @@ class CompanyController extends Controller
     public function settings()
     {
         $company = Auth::user()->company;
-        return view('company.settings', compact('company'));
+        $itemTypes = auth()->user()->company->itemTypes()->get();
+        return view('company.settings', compact('itemTypes','company'));
     }
 
     public function updateSettings(Request $request)

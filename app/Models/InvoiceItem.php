@@ -11,7 +11,7 @@ class InvoiceItem extends Model
 
     protected $fillable = [
         'invoice_id', 'catalog_item_id', 'description',
-        'quantity', 'unit_price', 'total_price', 'is_labour'
+        'quantity', 'unit_price', 'total_price', 'is_labour','item_type_id',
     ];
 
     protected $casts = [
@@ -26,5 +26,10 @@ class InvoiceItem extends Model
     public function catalogItem()
     {
         return $this->belongsTo(CatalogItem::class);
+    }
+
+    public function itemType()
+    {
+        return $this->belongsTo(ItemType::class);
     }
 }

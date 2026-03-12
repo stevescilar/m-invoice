@@ -12,8 +12,8 @@ class QuotationItem extends Model
     protected $fillable = [
     'quotation_id', 'catalog_item_id', 'description',
     'quantity', 'unit_price', 'buying_price', 'profit',
-    'margin_percentage', 'total_price', 'is_labour'
-];
+    'margin_percentage', 'total_price', 'is_labour','item_type_id',
+    ];
 
     protected $casts = [
         'is_labour' => 'boolean',
@@ -27,5 +27,9 @@ class QuotationItem extends Model
     public function catalogItem()
     {
         return $this->belongsTo(CatalogItem::class);
+    }
+    public function itemType()
+    {
+        return $this->belongsTo(ItemType::class);
     }
 }

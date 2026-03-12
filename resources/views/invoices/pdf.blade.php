@@ -295,24 +295,26 @@
             @endforeach
         </tbody>
     </table>
-
+    @php
+    $typeBreakdown = $invoice->items
+        ->groupBy(fn($item) => optional($item->itemType)->name ?? 'Material')
+        ->map(fn($items) => $items->sum('total_price'));
+    @endphp
     <!-- Totals -->
     <div class="totals">
-        @if($hasLabour)
-        <div class="totals-row">
-            <span>Material Cost</span>
-            <span>Ksh {{ number_format($invoice->material_cost, 2) }}</span>
-        </div>
-        <div class="totals-row">
-            <span>Labour Cost</span>
-            <span>Ksh {{ number_format($invoice->labour_cost, 2) }}</span>
-        </div>
-        @endif
-        @if ($invoice->etr_enabled)
-            <div class="totals-row vat-row">
-                <span>VAT (16%)</span>
-                <span>Ksh {{ number_format($invoice->vat_amount, 2) }}</span>
+        @foreach($typeBreakdown as $typeName => $typeTotal)
+            @if($typeTotal > 0)
+            <div class="totals-row">
+                <span>{{ $typeName }}</span>
+                <span>Ksh {{ number_format($typeTotal, 2) }}</span>
             </div>
+            @endif
+        @endforeach
+        @if($invoice->etr_enabled)
+        <div class="totals-row vat-row">
+            <span>VAT (16%)</span>
+            <span>Ksh {{ number_format($invoice->vat_amount, 2) }}</span>
+        </div>
         @endif
         <div class="totals-row grand">
             <span>Grand Total</span>
@@ -367,6 +369,13 @@
         </div>
     @endif
 
+    <!-- Notes -->
+@if($invoice->notes)
+<div style="margin-top: 30px; padding: 15px; background: #f9fafb; border-radius: 6px; border: 1px solid #eee;">
+    <div style="font-size: 10px; text-transform: uppercase; color: #999; margin-bottom: 5px;">Terms & Notes</div>
+    <div style="font-size: 11px; color: #555;">{{ $invoice->notes }}</div>
+</div>
+@endif
     <!-- Signature -->
     @if ($company->signature)
         <div class="signature">

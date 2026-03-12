@@ -66,10 +66,11 @@ class QuotationController extends Controller
         $categories = ServiceCategory::where('company_id', Auth::user()->company_id)
             ->with('catalogItems')
             ->get();
+        $itemTypes = auth()->user()->company->itemTypes()->where('is_active', true)->get();
 
         $quotationNumber = $this->generateQuotationNumber();
 
-        return view('quotations.create', compact('clients', 'categories', 'quotationNumber'));
+        return view('quotations.create', compact('clients', 'categories', 'quotationNumber','itemTypes'));
     }
 
     public function store(Request $request)
@@ -122,6 +123,10 @@ class QuotationController extends Controller
                 'overall_margin'  => $overallMargin,
                 'notes'           => $request->notes,
                 'created_by'      => Auth::id(),
+                'item_type_id' => $item['item_type_id'] ?? null,
+                'is_labour'    => isset($item['item_type_id'])
+                ? \App\Models\ItemType::find($item['item_type_id'])?->name === 'Labour'
+                : false,
             ]);
 
             foreach ($items as $item) {

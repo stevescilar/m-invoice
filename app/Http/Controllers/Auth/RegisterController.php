@@ -49,6 +49,20 @@ class RegisterController extends Controller
             'slug'          => Str::slug($request->company_name . '-' . Str::random(6)),
             'referral_code' => strtoupper(Str::random(8)),
         ]);
+        
+        // Seed default item types
+        $defaultTypes = [
+            ['name' => 'Material',      'color' => '#16a34a', 'is_default' => true,  'sort_order' => 0],
+            ['name' => 'Labour',        'color' => '#2563eb', 'is_default' => false, 'sort_order' => 1],
+            ['name' => 'Transport',     'color' => '#f97316', 'is_default' => false, 'sort_order' => 2],
+            ['name' => 'Accommodation', 'color' => '#7c3aed', 'is_default' => false, 'sort_order' => 3],
+            ['name' => 'Fuel',          'color' => '#dc2626', 'is_default' => false, 'sort_order' => 4],
+        ];
+
+        foreach ($defaultTypes as $type) {
+            \App\Models\ItemType::create(array_merge($type, ['company_id' => $company->id]));
+        }
+
 
         $user = User::create([
             'company_id' => $company->id,

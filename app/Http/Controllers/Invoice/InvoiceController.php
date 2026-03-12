@@ -65,10 +65,11 @@ class InvoiceController extends Controller
         $categories = ServiceCategory::where('company_id', Auth::user()->company_id)
             ->with('catalogItems')
             ->get();
+        $itemTypes = auth()->user()->company->itemTypes()->where('is_active', true)->get();
 
         $invoiceNumber = $this->generateInvoiceNumber();
 
-        return view('invoices.create', compact('clients', 'categories', 'invoiceNumber'));
+        return view('invoices.create', compact('clients', 'categories', 'invoiceNumber','itemTypes'));
     }
 
     public function store(Request $request)
@@ -125,6 +126,10 @@ class InvoiceController extends Controller
                 'recurrence_interval' => $request->recurrence_interval,
                 'next_recurrence_date' => $request->boolean('is_recurring') ? $this->getNextRecurrenceDate($request->issue_date, $request->recurrence_interval) : null,
                 'created_by' => Auth::id(),
+                'item_type_id' => $item['item_type_id'] ?? null,
+                'is_labour'    => isset($item['item_type_id'])
+                ? \App\Models\ItemType::find($item['item_type_id'])?->name === 'Labour'
+                : false,
             ]);
             if ($request->boolean('is_recurring')) {
                 $invoice->update([
@@ -258,6 +263,7 @@ class InvoiceController extends Controller
                     'unit_price' => $item['unit_price'],
                     'total_price' => $item['quantity'] * $item['unit_price'],
                     'is_labour' => !empty($item['is_labour']),
+                    
                 ]);
             }
         });

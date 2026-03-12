@@ -94,4 +94,8 @@ class Company extends Model
     {
         return url('/register?ref=' . $this->referral_code);
     }
+    public function itemTypes()
+    {
+        return $this->hasMany(\App\Models\ItemType::class)->orderBy('sort_order');
+    }
 }
