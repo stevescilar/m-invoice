@@ -61,44 +61,43 @@ class InvoiceController extends Controller
 
     public function create()
     {
-        $clients = Client::where('company_id', Auth::user()->company_id)->orderBy('name')->get();
+        $clients    = Client::where('company_id', Auth::user()->company_id)->orderBy('name')->get();
         $categories = ServiceCategory::where('company_id', Auth::user()->company_id)
-            ->with('catalogItems')
-            ->get();
-        $itemTypes = auth()->user()->company->itemTypes()->where('is_active', true)->get();
+            ->with('catalogItems')->get();
+        $itemTypes      = auth()->user()->company->itemTypes()->where('is_active', true)->get();
+        $invoiceNumber  = $this->generateInvoiceNumber();
 
-        $invoiceNumber = $this->generateInvoiceNumber();
-
-        return view('invoices.create', compact('clients', 'categories', 'invoiceNumber','itemTypes'));
+        return view('invoices.create', compact('clients', 'categories', 'invoiceNumber', 'itemTypes'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'client_id' => 'required|exists:clients,id',
-            'invoice_number' => 'required|string|unique:invoices,invoice_number',
-            'issue_date' => 'required|date',
-            'due_date' => 'nullable|date|after_or_equal:issue_date',
-            'notes' => 'nullable|string',
-            'etr_enabled' => 'boolean',
-            'is_recurring' => 'boolean',
-            'recurrence_interval' => 'nullable|in:weekly,monthly',
-            'items' => 'required|array|min:1',
-            'items.*.description' => 'required|string',
-            'items.*.quantity' => 'required|numeric|min:0.01',
-            'items.*.unit_price' => 'required|numeric|min:0',
-            'items.*.is_labour' => 'nullable|boolean',
+            'client_id'            => 'required|exists:clients,id',
+            'invoice_number'       => 'required|string|unique:invoices,invoice_number',
+            'issue_date'           => 'required|date',
+            'due_date'             => 'nullable|date|after_or_equal:issue_date',
+            'notes'                => 'nullable|string',
+            'etr_enabled'          => 'boolean',
+            'items'                => 'required|array|min:1',
+            'items.*.description'  => 'required|string',
+            'items.*.quantity'     => 'required|numeric|min:0.01',
+            'items.*.unit_price'   => 'required|numeric|min:0',
+            'items.*.is_labour'    => 'nullable|boolean',
+            'items.*.item_type_id' => 'nullable|exists:item_types,id',
         ]);
 
         DB::transaction(function () use ($request) {
-            $etrEnabled = $request->boolean('etr_enabled');
-            $items = $request->input('items');
-
+            $etrEnabled   = $request->boolean('etr_enabled');
+            $items        = $request->input('items');
             $materialCost = 0;
-            $labourCost = 0;
+            $labourCost   = 0;
+            $totalCost    = 0;
 
             foreach ($items as $item) {
-                $total = $item['quantity'] * $item['unit_price'];
+                $total     = $item['quantity'] * $item['unit_price'];
+                $costTotal = $item['quantity'] * ($item['buying_price'] ?? 0);
+                $totalCost += $costTotal;
                 if (!empty($item['is_labour'])) {
                     $labourCost += $total;
                 } else {
@@ -106,31 +105,31 @@ class InvoiceController extends Controller
                 }
             }
 
-            $vatAmount = $etrEnabled ? round($materialCost * 0.16, 2) : 0;
+            $vatAmount  = $etrEnabled ? round($materialCost * 0.16, 2) : 0;
             $grandTotal = $materialCost + $labourCost + $vatAmount;
+            $totalProfit  = $grandTotal - $totalCost - $vatAmount;
+            $overallMargin = $grandTotal > 0 ? round(($totalProfit / $grandTotal) * 100, 2) : 0;
 
             $invoice = Invoice::create([
-                'company_id' => Auth::user()->company_id,
-                'client_id' => $request->client_id,
+                'company_id'     => Auth::user()->company_id,
+                'client_id'      => $request->client_id,
                 'invoice_number' => $request->invoice_number,
-                'issue_date' => $request->issue_date,
-                'due_date' => $request->due_date,
-                'status' => 'draft',
-                'etr_enabled' => $etrEnabled,
-                'vat_amount' => $vatAmount,
-                'material_cost' => $materialCost,
-                'labour_cost' => $labourCost,
-                'grand_total' => $grandTotal,
-                'notes' => $request->notes,
-                'is_recurring' => $request->boolean('is_recurring'),
-                'recurrence_interval' => $request->recurrence_interval,
-                'next_recurrence_date' => $request->boolean('is_recurring') ? $this->getNextRecurrenceDate($request->issue_date, $request->recurrence_interval) : null,
-                'created_by' => Auth::id(),
-                'item_type_id' => $item['item_type_id'] ?? null,
-                'is_labour'    => isset($item['item_type_id'])
-                ? \App\Models\ItemType::find($item['item_type_id'])?->name === 'Labour'
-                : false,
+                'issue_date'     => $request->issue_date,
+                'due_date'       => $request->due_date,
+                'status'         => 'draft',
+                'etr_enabled'    => $etrEnabled,
+                'vat_amount'     => $vatAmount,
+                'material_cost'  => $materialCost,
+                'labour_cost'    => $labourCost,
+                'grand_total'    => $grandTotal,
+                'total_cost'     => $totalCost,
+                'total_profit'   => $totalProfit,
+                'overall_margin' => $overallMargin,
+                'notes'          => $request->notes,
+                'created_by'     => Auth::id(),
             ]);
+
+            // Handle recurring
             if ($request->boolean('is_recurring')) {
                 $invoice->update([
                     'is_recurring'        => true,
@@ -144,24 +143,24 @@ class InvoiceController extends Controller
                     'recurring_active'    => true,
                 ]);
             }
+
             foreach ($items as $item) {
                 InvoiceItem::create([
-                    'invoice_id' => $invoice->id,
+                    'invoice_id'      => $invoice->id,
                     'catalog_item_id' => $item['catalog_item_id'] ?? null,
-                    'description' => $item['description'],
-                    'quantity' => $item['quantity'],
-                    'unit_price' => $item['unit_price'],
-                    'total_price' => $item['quantity'] * $item['unit_price'],
-                    'is_labour' => !empty($item['is_labour']),
+                    'description'     => $item['description'],
+                    'quantity'        => $item['quantity'],
+                    'unit_price'      => $item['unit_price'],
+                    'buying_price'    => $item['buying_price'] ?? 0,
+                    'total_price'     => $item['quantity'] * $item['unit_price'],
+                    'is_labour'       => !empty($item['is_labour']),
+                    'item_type_id'    => $item['item_type_id'] ?? null,
                 ]);
             }
 
-            // Create reminders
             if ($request->due_date) {
                 $this->createReminders($invoice);
             }
-                        // Handle recurring
-            
         });
 
         return redirect()->route('invoices.index')->with('success', 'Invoice created successfully.');
@@ -170,65 +169,86 @@ class InvoiceController extends Controller
     public function show(Invoice $invoice)
     {
         $this->authorizeInvoice($invoice);
-        $invoice->load('client', 'items', 'items.catalogItem');
-        $company = Auth::user()->company;
+
+        $company      = Auth::user()->company;
+        $subscription = $company->subscription;
+
+        if (!$subscription || !$subscription->canDownloadPdf()) {
+            return redirect()->route('subscription.index')
+                ->with('error', 'Your trial has expired. Please subscribe to view invoices.');
+        }
+
+        $invoice->load('client', 'items', 'items.catalogItem', 'items.itemType');
         return view('invoices.show', compact('invoice', 'company'));
     }
 
     public function edit(Invoice $invoice)
-{
-    $this->authorizeInvoice($invoice);
+    {
+        $this->authorizeInvoice($invoice);
 
-    if ($invoice->status === 'paid') {
-        return redirect()->route('invoices.show', $invoice)
-            ->with('error', 'Paid invoices cannot be edited.');
+        $company      = Auth::user()->company;
+        $subscription = $company->subscription;
+
+        if (!$subscription || !$subscription->canDownloadPdf()) {
+            return redirect()->route('subscription.index')
+                ->with('error', 'Your trial has expired. Please subscribe to edit invoices.');
+        }
+
+        if ($invoice->status === 'paid') {
+            return redirect()->route('invoices.show', $invoice)
+                ->with('error', 'Paid invoices cannot be edited.');
+        }
+
+        $clients    = Client::where('company_id', Auth::user()->company_id)->orderBy('name')->get();
+        $categories = ServiceCategory::where('company_id', Auth::user()->company_id)
+            ->with('catalogItems')->get();
+        $itemTypes  = auth()->user()->company->itemTypes()->where('is_active', true)->get();
+
+        $invoice->load('items');
+
+        $invoiceItems = $invoice->items->map(function($i) {
+            return [
+                'catalog_item_id' => $i->catalog_item_id,
+                'description'     => $i->description,
+                'quantity'        => (float)$i->quantity,
+                'unit_price'      => (float)$i->unit_price,
+                'buying_price'    => (float)$i->buying_price,
+                'is_labour'       => (bool)$i->is_labour,
+                'item_type_id'    => $i->item_type_id,
+            ];
+        })->values()->toArray();
+
+        return view('invoices.edit', compact('invoice', 'clients', 'categories', 'invoiceItems', 'itemTypes'));
     }
-
-    $clients = Client::where('company_id', Auth::user()->company_id)->orderBy('name')->get();
-    $categories = ServiceCategory::where('company_id', Auth::user()->company_id)
-        ->with('catalogItems')
-        ->get();
-
-    $invoice->load('items');
-
-    $invoiceItems = $invoice->items->map(function($i) {
-        return [
-            'catalog_item_id' => $i->catalog_item_id,
-            'description' => $i->description,
-            'quantity' => (float)$i->quantity,
-            'unit_price' => (float)$i->unit_price,
-            'is_labour' => (bool)$i->is_labour,
-        ];
-    })->values()->toArray();
-
-    return view('invoices.edit', compact('invoice', 'clients', 'categories', 'invoiceItems'));
-}
 
     public function update(Request $request, Invoice $invoice)
     {
         $this->authorizeInvoice($invoice);
 
         $request->validate([
-            'client_id' => 'required|exists:clients,id',
-            'issue_date' => 'required|date',
-            'due_date' => 'nullable|date|after_or_equal:issue_date',
-            'notes' => 'nullable|string',
-            'etr_enabled' => 'boolean',
-            'items' => 'required|array|min:1',
-            'items.*.description' => 'required|string',
-            'items.*.quantity' => 'required|numeric|min:0.01',
-            'items.*.unit_price' => 'required|numeric|min:0',
+            'client_id'            => 'required|exists:clients,id',
+            'issue_date'           => 'required|date',
+            'due_date'             => 'nullable|date|after_or_equal:issue_date',
+            'notes'                => 'nullable|string',
+            'etr_enabled'          => 'boolean',
+            'items'                => 'required|array|min:1',
+            'items.*.description'  => 'required|string',
+            'items.*.quantity'     => 'required|numeric|min:0.01',
+            'items.*.unit_price'   => 'required|numeric|min:0',
+            'items.*.item_type_id' => 'nullable|exists:item_types,id',
         ]);
 
         DB::transaction(function () use ($request, $invoice) {
-            $etrEnabled = $request->boolean('etr_enabled');
-            $items = $request->input('items');
-
+            $etrEnabled   = $request->boolean('etr_enabled');
+            $items        = $request->input('items');
             $materialCost = 0;
-            $labourCost = 0;
+            $labourCost   = 0;
+            $totalCost    = 0;
 
             foreach ($items as $item) {
-                $total = $item['quantity'] * $item['unit_price'];
+                $total     = $item['quantity'] * $item['unit_price'];
+                $costTotal = $item['quantity'] * ($item['buying_price'] ?? 0);
+                $totalCost += $costTotal;
                 if (!empty($item['is_labour'])) {
                     $labourCost += $total;
                 } else {
@@ -236,34 +256,39 @@ class InvoiceController extends Controller
                 }
             }
 
-            $vatAmount = $etrEnabled ? round($materialCost * 0.16, 2) : 0;
-            $grandTotal = $materialCost + $labourCost + $vatAmount;
+            $vatAmount     = $etrEnabled ? round($materialCost * 0.16, 2) : 0;
+            $grandTotal    = $materialCost + $labourCost + $vatAmount;
+            $totalProfit   = $grandTotal - $totalCost - $vatAmount;
+            $overallMargin = $grandTotal > 0 ? round(($totalProfit / $grandTotal) * 100, 2) : 0;
 
             $invoice->update([
-                'client_id' => $request->client_id,
-                'issue_date' => $request->issue_date,
-                'due_date' => $request->due_date,
-                'etr_enabled' => $etrEnabled,
-                'vat_amount' => $vatAmount,
-                'material_cost' => $materialCost,
-                'labour_cost' => $labourCost,
-                'grand_total' => $grandTotal,
-                'notes' => $request->notes,
+                'client_id'      => $request->client_id,
+                'issue_date'     => $request->issue_date,
+                'due_date'       => $request->due_date,
+                'etr_enabled'    => $etrEnabled,
+                'vat_amount'     => $vatAmount,
+                'material_cost'  => $materialCost,
+                'labour_cost'    => $labourCost,
+                'grand_total'    => $grandTotal,
+                'total_cost'     => $totalCost,
+                'total_profit'   => $totalProfit,
+                'overall_margin' => $overallMargin,
+                'notes'          => $request->notes,
             ]);
 
-            // Delete old items and recreate
             $invoice->items()->delete();
 
             foreach ($items as $item) {
                 InvoiceItem::create([
-                    'invoice_id' => $invoice->id,
+                    'invoice_id'      => $invoice->id,
                     'catalog_item_id' => $item['catalog_item_id'] ?? null,
-                    'description' => $item['description'],
-                    'quantity' => $item['quantity'],
-                    'unit_price' => $item['unit_price'],
-                    'total_price' => $item['quantity'] * $item['unit_price'],
-                    'is_labour' => !empty($item['is_labour']),
-                    
+                    'description'     => $item['description'],
+                    'quantity'        => $item['quantity'],
+                    'unit_price'      => $item['unit_price'],
+                    'buying_price'    => $item['buying_price'] ?? 0,
+                    'total_price'     => $item['quantity'] * $item['unit_price'],
+                    'is_labour'       => !empty($item['is_labour']),
+                    'item_type_id'    => $item['item_type_id'] ?? null,
                 ]);
             }
         });
@@ -307,9 +332,9 @@ class InvoiceController extends Controller
         ]);
 
         $invoice->update([
-            'status' => 'paid',
+            'status'    => 'paid',
             'mpesa_code' => $request->mpesa_code,
-            'paid_at' => now(),
+            'paid_at'   => now(),
         ]);
 
         return back()->with('success', 'Invoice marked as paid.');
@@ -322,13 +347,12 @@ class InvoiceController extends Controller
         $company      = Auth::user()->company;
         $subscription = $company->subscription;
 
-        // Check if allowed to download
         if (!$subscription || !$subscription->canDownloadPdf()) {
             return redirect()->route('subscription.index')
                 ->with('error', 'Your trial has expired. Please subscribe to download invoices.');
         }
 
-        $invoice->load('client', 'items');
+        $invoice->load('client', 'items', 'items.itemType');
         $pdf = Pdf::loadView('invoices.pdf', compact('invoice', 'company'));
 
         return $pdf->download('invoice-' . $invoice->invoice_number . '.pdf');
@@ -341,9 +365,9 @@ class InvoiceController extends Controller
         DB::transaction(function () use ($invoice) {
             $newInvoice = $invoice->replicate();
             $newInvoice->invoice_number = $this->generateInvoiceNumber();
-            $newInvoice->status = 'draft';
+            $newInvoice->status     = 'draft';
             $newInvoice->issue_date = now();
-            $newInvoice->paid_at = null;
+            $newInvoice->paid_at    = null;
             $newInvoice->mpesa_code = null;
             $newInvoice->save();
 
@@ -355,45 +379,6 @@ class InvoiceController extends Controller
         });
 
         return redirect()->route('invoices.index')->with('success', 'Invoice duplicated successfully.');
-    }
-
-    private function generateInvoiceNumber(): string
-    {
-        $last = Invoice::orderByDesc('id')->value('invoice_number');
-        $lastNumber = $last ? (int) substr($last, 4) : 0;
-        return 'INV-' . str_pad($lastNumber + 1, 6, '0', STR_PAD_LEFT);
-    }
-
-    private function getNextRecurrenceDate(string $date, string $interval): string
-    {
-        return $interval === 'weekly'
-            ? now()->parse($date)->addWeek()->toDateString()
-            : now()->parse($date)->addMonth()->toDateString();
-    }
-
-    private function createReminders(Invoice $invoice): void
-    {
-        $reminders = [
-            ['type' => 'before_due', 'date' => $invoice->due_date->subDays(3)],
-            ['type' => 'on_due', 'date' => $invoice->due_date],
-            ['type' => 'after_due', 'date' => $invoice->due_date->addDays(7)],
-        ];
-
-        foreach ($reminders as $reminder) {
-            InvoiceReminder::create([
-                'invoice_id' => $invoice->id,
-                'reminder_type' => $reminder['type'],
-                'scheduled_at' => $reminder['date'],
-                'status' => 'pending',
-            ]);
-        }
-    }
-
-    private function authorizeInvoice(Invoice $invoice): void
-    {
-        if ($invoice->company_id !== Auth::user()->company_id) {
-            abort(403);
-        }
     }
 
     public function pauseRecurring(Invoice $invoice)
@@ -414,10 +399,42 @@ class InvoiceController extends Controller
     {
         if ($invoice->company_id !== auth()->user()->company_id) abort(403);
         $invoice->update([
-            'is_recurring'      => false,
-            'recurring_active'  => false,
+            'is_recurring'        => false,
+            'recurring_active'    => false,
             'recurring_next_date' => null,
         ]);
         return back()->with('success', 'Recurring cancelled. No more invoices will be generated.');
+    }
+
+    private function generateInvoiceNumber(): string
+    {
+        $last = Invoice::orderByDesc('id')->value('invoice_number');
+        $lastNumber = $last ? (int) substr($last, 4) : 0;
+        return 'INV-' . str_pad($lastNumber + 1, 6, '0', STR_PAD_LEFT);
+    }
+
+    private function createReminders(Invoice $invoice): void
+    {
+        $reminders = [
+            ['type' => 'before_due', 'date' => $invoice->due_date->copy()->subDays(3)],
+            ['type' => 'on_due',     'date' => $invoice->due_date->copy()],
+            ['type' => 'after_due',  'date' => $invoice->due_date->copy()->addDays(7)],
+        ];
+
+        foreach ($reminders as $reminder) {
+            InvoiceReminder::create([
+                'invoice_id'    => $invoice->id,
+                'reminder_type' => $reminder['type'],
+                'scheduled_at'  => $reminder['date'],
+                'status'        => 'pending',
+            ]);
+        }
+    }
+
+    private function authorizeInvoice(Invoice $invoice): void
+    {
+        if ($invoice->company_id !== Auth::user()->company_id) {
+            abort(403);
+        }
     }
 }

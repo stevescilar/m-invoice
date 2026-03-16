@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Catalog;
 
 use App\Http\Controllers\Controller;
 use App\Models\ServiceCategory;
+use App\Models\CatalogItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -27,23 +28,41 @@ class ServiceCategoryController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name'        => 'required|string|max:255',
             'description' => 'nullable|string',
         ]);
 
         ServiceCategory::create([
-            'company_id' => Auth::user()->company_id,
-            'name' => $request->name,
+            'company_id'  => Auth::user()->company_id,
+            'name'        => $request->name,
             'description' => $request->description,
         ]);
 
         return redirect()->route('categories.index')->with('success', 'Category created successfully.');
     }
 
-    public function show(ServiceCategory $category)
+    public function show(Request $request, ServiceCategory $category)
     {
         $this->authorizeCategory($category);
-        $items = $category->catalogItems()->latest()->get();
+
+        $search = $request->get('search');
+        $sort   = $request->get('sort', 'name');
+
+        $query = CatalogItem::where('service_category_id', $category->id);
+
+        if ($search) {
+            $query->where('name', 'like', "%{$search}%");
+        }
+
+        match($sort) {
+            'price_high' => $query->orderByDesc('default_unit_price'),
+            'price_low'  => $query->orderBy('default_unit_price'),
+            'newest'     => $query->latest(),
+            default      => $query->orderBy('name'),
+        };
+
+        $items = $query->paginate(7)->withQueryString();
+
         return view('catalog.categories.show', compact('category', 'items'));
     }
 
@@ -58,7 +77,7 @@ class ServiceCategoryController extends Controller
         $this->authorizeCategory($category);
 
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name'        => 'required|string|max:255',
             'description' => 'nullable|string',
         ]);
 

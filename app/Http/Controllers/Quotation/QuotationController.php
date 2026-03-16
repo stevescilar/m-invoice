@@ -39,11 +39,11 @@ class QuotationController extends Controller
         }
 
         match($sort) {
-            'oldest'       => $query->oldest(),
-            'amount_high'  => $query->orderByDesc('grand_total'),
-            'amount_low'   => $query->orderBy('grand_total'),
-            'expiry_soon'  => $query->orderBy('expiry_date'),
-            default        => $query->latest(),
+            'oldest'      => $query->oldest(),
+            'amount_high' => $query->orderByDesc('grand_total'),
+            'amount_low'  => $query->orderBy('grand_total'),
+            'expiry_soon' => $query->orderBy('expiry_date'),
+            default       => $query->latest(),
         };
 
         $quotations = $query->paginate(15);
@@ -62,29 +62,28 @@ class QuotationController extends Controller
 
     public function create()
     {
-        $clients = Client::where('company_id', Auth::user()->company_id)->orderBy('name')->get();
+        $clients    = Client::where('company_id', Auth::user()->company_id)->orderBy('name')->get();
         $categories = ServiceCategory::where('company_id', Auth::user()->company_id)
-            ->with('catalogItems')
-            ->get();
-        $itemTypes = auth()->user()->company->itemTypes()->where('is_active', true)->get();
-
+            ->with('catalogItems')->get();
+        $itemTypes       = auth()->user()->company->itemTypes()->where('is_active', true)->get();
         $quotationNumber = $this->generateQuotationNumber();
 
-        return view('quotations.create', compact('clients', 'categories', 'quotationNumber','itemTypes'));
+        return view('quotations.create', compact('clients', 'categories', 'quotationNumber', 'itemTypes'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'client_id'          => 'required|exists:clients,id',
-            'quotation_number'   => 'required|string|unique:quotations,quotation_number',
-            'issue_date'         => 'required|date',
-            'expiry_date'        => 'nullable|date|after_or_equal:issue_date',
-            'notes'              => 'nullable|string',
-            'items'              => 'required|array|min:1',
-            'items.*.description' => 'required|string',
-            'items.*.quantity'   => 'required|numeric|min:0.01',
-            'items.*.unit_price' => 'required|numeric|min:0',
+            'client_id'            => 'required|exists:clients,id',
+            'quotation_number'     => 'required|string|unique:quotations,quotation_number',
+            'issue_date'           => 'required|date',
+            'expiry_date'          => 'nullable|date|after_or_equal:issue_date',
+            'notes'                => 'nullable|string',
+            'items'                => 'required|array|min:1',
+            'items.*.description'  => 'required|string',
+            'items.*.quantity'     => 'required|numeric|min:0.01',
+            'items.*.unit_price'   => 'required|numeric|min:0',
+            'items.*.item_type_id' => 'nullable|exists:item_types,id',
         ]);
 
         DB::transaction(function () use ($request) {
@@ -109,34 +108,30 @@ class QuotationController extends Controller
             $overallMargin = $grandTotal > 0 ? round(($totalProfit / $grandTotal) * 100, 2) : 0;
 
             $quotation = Quotation::create([
-                'company_id'      => Auth::user()->company_id,
-                'client_id'       => $request->client_id,
+                'company_id'       => Auth::user()->company_id,
+                'client_id'        => $request->client_id,
                 'quotation_number' => $request->quotation_number,
-                'issue_date'      => $request->issue_date,
-                'expiry_date'     => $request->expiry_date,
-                'status'          => 'draft',
-                'material_cost'   => $materialCost,
-                'labour_cost'     => $labourCost,
-                'grand_total'     => $grandTotal,
-                'total_cost'      => $totalCost,
-                'total_profit'    => $totalProfit,
-                'overall_margin'  => $overallMargin,
-                'notes'           => $request->notes,
-                'created_by'      => Auth::id(),
-                'item_type_id' => $item['item_type_id'] ?? null,
-                'is_labour'    => isset($item['item_type_id'])
-                ? \App\Models\ItemType::find($item['item_type_id'])?->name === 'Labour'
-                : false,
+                'issue_date'       => $request->issue_date,
+                'expiry_date'      => $request->expiry_date,
+                'status'           => 'draft',
+                'material_cost'    => $materialCost,
+                'labour_cost'      => $labourCost,
+                'grand_total'      => $grandTotal,
+                'total_cost'       => $totalCost,
+                'total_profit'     => $totalProfit,
+                'overall_margin'   => $overallMargin,
+                'notes'            => $request->notes,
+                'created_by'       => Auth::id(),
             ]);
 
             foreach ($items as $item) {
-                $quantity        = $item['quantity'];
-                $unitPrice       = $item['unit_price'];
-                $buyingPrice     = $item['buying_price'] ?? 0;
-                $totalPrice      = $quantity * $unitPrice;
-                $itemCost        = $quantity * $buyingPrice;
-                $profit          = $totalPrice - $itemCost;
-                $marginPct       = $totalPrice > 0 ? round(($profit / $totalPrice) * 100, 2) : 0;
+                $quantity    = $item['quantity'];
+                $unitPrice   = $item['unit_price'];
+                $buyingPrice = $item['buying_price'] ?? 0;
+                $totalPrice  = $quantity * $unitPrice;
+                $itemCost    = $quantity * $buyingPrice;
+                $profit      = $totalPrice - $itemCost;
+                $marginPct   = $totalPrice > 0 ? round(($profit / $totalPrice) * 100, 2) : 0;
 
                 QuotationItem::create([
                     'quotation_id'      => $quotation->id,
@@ -149,8 +144,9 @@ class QuotationController extends Controller
                     'margin_percentage' => $marginPct,
                     'total_price'       => $totalPrice,
                     'is_labour'         => !empty($item['is_labour']),
+                    'item_type_id'      => $item['item_type_id'] ?? null,
                 ]);
-                // Update catalog item buying price if it came from catalog
+
                 if (!empty($item['catalog_item_id'])) {
                     \App\Models\CatalogItem::where('id', $item['catalog_item_id'])
                         ->update(['default_buying_price' => $buyingPrice]);
@@ -164,8 +160,16 @@ class QuotationController extends Controller
     public function show(Quotation $quotation)
     {
         $this->authorizeQuotation($quotation);
-        $quotation->load('client', 'items');
-        $company = Auth::user()->company;
+
+        $company      = Auth::user()->company;
+        $subscription = $company->subscription;
+
+        if (!$subscription || !$subscription->canDownloadPdf()) {
+            return redirect()->route('subscription.index')
+                ->with('error', 'Your trial has expired. Please subscribe to view quotations.');
+        }
+
+        $quotation->load('client', 'items', 'items.itemType');
         return view('quotations.show', compact('quotation', 'company'));
     }
 
@@ -173,30 +177,39 @@ class QuotationController extends Controller
     {
         $this->authorizeQuotation($quotation);
 
+        $company      = Auth::user()->company;
+        $subscription = $company->subscription;
+
+        if (!$subscription || !$subscription->canDownloadPdf()) {
+            return redirect()->route('subscription.index')
+                ->with('error', 'Your trial has expired. Please subscribe to edit quotations.');
+        }
+
         if (in_array($quotation->status, ['converted', 'approved'])) {
             return redirect()->route('quotations.show', $quotation)
                 ->with('error', 'This quotation cannot be edited.');
         }
 
-        $clients = Client::where('company_id', Auth::user()->company_id)->orderBy('name')->get();
+        $clients    = Client::where('company_id', Auth::user()->company_id)->orderBy('name')->get();
         $categories = ServiceCategory::where('company_id', Auth::user()->company_id)
-            ->with('catalogItems')
-            ->get();
+            ->with('catalogItems')->get();
+        $itemTypes  = auth()->user()->company->itemTypes()->where('is_active', true)->get();
 
         $quotation->load('items');
 
-        $quotationItems = $quotation->items->map(function ($i) {
+        $quotationItems = $quotation->items->map(function($i) {
             return [
                 'catalog_item_id' => $i->catalog_item_id,
                 'description'     => $i->description,
-                'quantity'        => (float) $i->quantity,
-                'unit_price'      => (float) $i->unit_price,
-                'buying_price'    => (float) $i->buying_price,
-                'is_labour'       => (bool) $i->is_labour,
+                'quantity'        => (float)$i->quantity,
+                'unit_price'      => (float)$i->unit_price,
+                'buying_price'    => (float)$i->buying_price,
+                'is_labour'       => (bool)$i->is_labour,
+                'item_type_id'    => $i->item_type_id,
             ];
         })->values()->toArray();
 
-        return view('quotations.edit', compact('quotation', 'clients', 'categories', 'quotationItems'));
+        return view('quotations.edit', compact('quotation', 'clients', 'categories', 'quotationItems', 'itemTypes'));
     }
 
     public function update(Request $request, Quotation $quotation)
@@ -204,14 +217,15 @@ class QuotationController extends Controller
         $this->authorizeQuotation($quotation);
 
         $request->validate([
-            'client_id'           => 'required|exists:clients,id',
-            'issue_date'          => 'required|date',
-            'expiry_date'         => 'nullable|date',
-            'notes'               => 'nullable|string',
-            'items'               => 'required|array|min:1',
-            'items.*.description' => 'required|string',
-            'items.*.quantity'    => 'required|numeric|min:0.01',
-            'items.*.unit_price'  => 'required|numeric|min:0',
+            'client_id'            => 'required|exists:clients,id',
+            'issue_date'           => 'required|date',
+            'expiry_date'          => 'nullable|date',
+            'notes'                => 'nullable|string',
+            'items'                => 'required|array|min:1',
+            'items.*.description'  => 'required|string',
+            'items.*.quantity'     => 'required|numeric|min:0.01',
+            'items.*.unit_price'   => 'required|numeric|min:0',
+            'items.*.item_type_id' => 'nullable|exists:item_types,id',
         ]);
 
         DB::transaction(function () use ($request, $quotation) {
@@ -270,6 +284,7 @@ class QuotationController extends Controller
                     'margin_percentage' => $marginPct,
                     'total_price'       => $totalPrice,
                     'is_labour'         => !empty($item['is_labour']),
+                    'item_type_id'      => $item['item_type_id'] ?? null,
                 ]);
             }
         });
@@ -313,28 +328,28 @@ class QuotationController extends Controller
         }
 
         DB::transaction(function () use ($quotation) {
-            $last = Invoice::orderByDesc('id')->value('invoice_number');
+            $last       = Invoice::orderByDesc('id')->value('invoice_number');
             $lastNumber = $last ? (int) substr($last, 4) : 0;
             $invoiceNumber = 'INV-' . str_pad($lastNumber + 1, 6, '0', STR_PAD_LEFT);
 
             $invoice = Invoice::create([
-                'company_id'             => $quotation->company_id,
-                'client_id'              => $quotation->client_id,
-                'invoice_number'         => $invoiceNumber,
-                'issue_date'             => now()->toDateString(),
-                'due_date'               => now()->addDays(14)->toDateString(),
-                'status'                 => 'draft',
-                'etr_enabled'            => false,
-                'vat_amount'             => 0,
-                'material_cost'          => $quotation->material_cost,
-                'labour_cost'            => $quotation->labour_cost,
-                'grand_total'            => $quotation->grand_total,
-                'total_cost'             => $quotation->total_cost,
-                'total_profit'           => $quotation->total_profit,
-                'overall_margin'         => $quotation->overall_margin,
-                'profit_from_quotation'  => true,
-                'notes'                  => $quotation->notes,
-                'created_by'             => Auth::id(),
+                'company_id'            => $quotation->company_id,
+                'client_id'             => $quotation->client_id,
+                'invoice_number'        => $invoiceNumber,
+                'issue_date'            => now()->toDateString(),
+                'due_date'              => now()->addDays(14)->toDateString(),
+                'status'                => 'draft',
+                'etr_enabled'           => false,
+                'vat_amount'            => 0,
+                'material_cost'         => $quotation->material_cost,
+                'labour_cost'           => $quotation->labour_cost,
+                'grand_total'           => $quotation->grand_total,
+                'total_cost'            => $quotation->total_cost,
+                'total_profit'          => $quotation->total_profit,
+                'overall_margin'        => $quotation->overall_margin,
+                'profit_from_quotation' => true,
+                'notes'                 => $quotation->notes,
+                'created_by'            => Auth::id(),
             ]);
 
             foreach ($quotation->items as $item) {
@@ -344,8 +359,10 @@ class QuotationController extends Controller
                     'description'     => $item->description,
                     'quantity'        => $item->quantity,
                     'unit_price'      => $item->unit_price,
+                    'buying_price'    => $item->buying_price,
                     'total_price'     => $item->total_price,
                     'is_labour'       => $item->is_labour,
+                    'item_type_id'    => $item->item_type_id,
                 ]);
             }
 
@@ -361,11 +378,18 @@ class QuotationController extends Controller
     public function download(Quotation $quotation)
     {
         $this->authorizeQuotation($quotation);
-        $quotation->load('client', 'items');
-        $company = Auth::user()->company;
+
+        $company      = Auth::user()->company;
+        $subscription = $company->subscription;
+
+        if (!$subscription || !$subscription->canDownloadPdf()) {
+            return redirect()->route('subscription.index')
+                ->with('error', 'Your trial has expired. Please subscribe to download quotations.');
+        }
+
+        $quotation->load('client', 'items', 'items.itemType');
 
         $pdf = Pdf::loadView('quotations.pdf', compact('quotation', 'company'));
-
         return $pdf->download('quotation-' . $quotation->quotation_number . '.pdf');
     }
 

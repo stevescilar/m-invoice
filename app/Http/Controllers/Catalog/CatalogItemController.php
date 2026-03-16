@@ -10,16 +10,40 @@ use Illuminate\Support\Facades\Auth;
 
 class CatalogItemController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $items = CatalogItem::where('company_id', Auth::user()->company_id)
-            ->with('serviceCategory')
-            ->latest()
-            ->paginate(20);
+        $company    = Auth::user()->company;
+        $search     = $request->get('search');
+        $categoryId = $request->get('category');
+        $sort       = $request->get('sort', 'name');
 
-        $categories = ServiceCategory::where('company_id', Auth::user()->company_id)->get();
+        $query = CatalogItem::where('company_id', $company->id)
+            ->with('serviceCategory');
 
-        return view('catalog.items.index', compact('items', 'categories'));
+        if ($search) {
+            $query->where('name', 'like', "%{$search}%");
+        }
+
+        if ($categoryId) {
+            $query->where('service_category_id', $categoryId);
+        }
+
+        match($sort) {
+            'price_high' => $query->orderByDesc('default_unit_price'),
+            'price_low'  => $query->orderBy('default_unit_price'),
+            'newest'     => $query->latest(),
+            default      => $query->orderBy('name'),
+        };
+
+        $items      = $query->paginate(10)->withQueryString();
+        $categories = ServiceCategory::where('company_id', $company->id)
+            ->withCount('catalogItems')
+            ->orderBy('name')
+            ->get();
+
+        $totalItems = CatalogItem::where('company_id', $company->id)->count();
+
+        return view('catalog.items.index', compact('items', 'categories', 'totalItems'));
     }
 
     public function create()
@@ -37,20 +61,20 @@ class CatalogItemController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'service_category_id' => 'required|exists:service_categories,id',
-            'name' => 'required|string|max:255',
-            'default_unit_price' => 'required|numeric|min:0',
-            'unit_of_measure' => 'required|string|max:50',
+            'service_category_id'  => 'required|exists:service_categories,id',
+            'name'                 => 'required|string|max:255',
+            'default_unit_price'   => 'required|numeric|min:0',
             'default_buying_price' => 'nullable|numeric|min:0',
+            'unit_of_measure'      => 'required|string|max:50',
         ]);
 
         CatalogItem::create([
-            'company_id' => Auth::user()->company_id,
-            'service_category_id' => $request->service_category_id,
-            'name' => $request->name,
-            'default_unit_price' => $request->default_unit_price,
-            'unit_of_measure' => $request->unit_of_measure,
+            'company_id'           => Auth::user()->company_id,
+            'service_category_id'  => $request->service_category_id,
+            'name'                 => $request->name,
+            'default_unit_price'   => $request->default_unit_price,
             'default_buying_price' => $request->default_buying_price ?? 0,
+            'unit_of_measure'      => $request->unit_of_measure,
         ]);
 
         return redirect()->route('catalog-items.index')->with('success', 'Item added to catalog.');
@@ -74,19 +98,16 @@ class CatalogItemController extends Controller
         $this->authorizeItem($item);
 
         $request->validate([
-            'service_category_id' => 'required|exists:service_categories,id',
-            'name' => 'required|string|max:255',
-            'default_unit_price' => 'required|numeric|min:0',
-            'unit_of_measure' => 'required|string|max:50',
+            'service_category_id'  => 'required|exists:service_categories,id',
+            'name'                 => 'required|string|max:255',
+            'default_unit_price'   => 'required|numeric|min:0',
             'default_buying_price' => 'nullable|numeric|min:0',
+            'unit_of_measure'      => 'required|string|max:50',
         ]);
 
         $item->update($request->only([
-            'service_category_id',
-            'name',
-            'default_unit_price',
-            'default_buying_price',
-            'unit_of_measure',
+            'service_category_id', 'name',
+            'default_unit_price', 'default_buying_price', 'unit_of_measure',
         ]));
 
         return redirect()->route('catalog-items.index')->with('success', 'Item updated.');

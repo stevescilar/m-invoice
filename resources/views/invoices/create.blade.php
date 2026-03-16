@@ -18,8 +18,8 @@
 
     {{-- Item types must be defined BEFORE x-data initialises --}}
     <script>
-        const itemTypes     = @json($itemTypes->map(fn($t) => ['id' => $t->id, 'name' => $t->name, 'color' => $t->color]));
-        const defaultTypeId = {{ $itemTypes->firstWhere('is_default', true)?->id ?? ($itemTypes->first()?->id ?? 'null') }};
+        const itemTypes     = @json($itemTypes->map(fn($t) => ['id' => (string)$t->id, 'name' => $t->name, 'color' => $t->color]));
+        const defaultTypeId = "{{ (string)($itemTypes->firstWhere('is_default', true)?->id ?? $itemTypes->first()?->id ?? '') }}";
     </script>
 
     <form method="POST" action="{{ route('invoices.store') }}" x-data="invoiceForm()" class="space-y-6">
@@ -210,8 +210,7 @@
                                             @change="onTypeChange(item)"
                                             class="w-full border rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-400 bg-white">
                                             <template x-for="type in itemTypes" :key="type.id">
-                                                <option :value="type.id" x-text="type.name"
-                                                    :selected="type.id == item.item_type_id"></option>
+                                                <option :value="String(type.id)" x-text="type.name"></option>
                                             </template>
                                         </select>
                                     </div>
@@ -349,12 +348,12 @@
             overallMargin:     0,
 
             getTypeColor(id) {
-                const t = itemTypes.find(t => t.id == id);
+                const t = itemTypes.find(t => String(t.id) === String(id));
                 return t ? t.color : '#6b7280';
             },
 
             getTypeName(id) {
-                const t = itemTypes.find(t => t.id == id);
+                const t = itemTypes.find(t => String(t.id) === String(id));
                 return t ? t.name : '';
             },
 
@@ -369,7 +368,7 @@
                 this.items.push({
                     catalog_item_id: null, description: '', quantity: 1,
                     unit_price: 0, buying_price: 0,
-                    item_type_id: defaultTypeId, is_labour: false, expanded: true,
+                    item_type_id: String(defaultTypeId), is_labour: false, expanded: true,
                 });
             },
 
@@ -378,7 +377,7 @@
                 this.items.push({
                     catalog_item_id: id, description: name, quantity: 1,
                     unit_price: price, buying_price: buyingPrice || 0,
-                    item_type_id: defaultTypeId, is_labour: false, expanded: true,
+                    item_type_id: String(defaultTypeId), is_labour: false, expanded: true,
                 });
                 this.calculateTotals();
             },
