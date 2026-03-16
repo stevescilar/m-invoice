@@ -393,6 +393,33 @@ class QuotationController extends Controller
         return $pdf->download('quotation-' . $quotation->quotation_number . '.pdf');
     }
 
+    public function duplicate(Quotation $quotation)
+    {
+        $this->authorizeQuotation($quotation);
+
+        $quotation->load('items');
+
+        DB::transaction(function () use ($quotation) {
+            $newQuotation = $quotation->replicate();
+            $newQuotation->quotation_number    = $this->generateQuotationNumber();
+            $newQuotation->status              = 'draft';
+            $newQuotation->issue_date          = now()->toDateString();
+            $newQuotation->expiry_date         = now()->addDays(30)->toDateString();
+            $newQuotation->converted_invoice_id = null;
+            $newQuotation->created_by          = Auth::id();
+            $newQuotation->save();
+
+            foreach ($quotation->items as $item) {
+                $newItem = $item->replicate();
+                $newItem->quotation_id = $newQuotation->id;
+                $newItem->save();
+            }
+        });
+
+        return redirect()->route('quotations.index')
+            ->with('success', 'Quotation duplicated as a new draft.');
+    }
+
     private function generateQuotationNumber(): string
     {
         $last = Quotation::orderByDesc('id')->value('quotation_number');

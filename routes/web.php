@@ -106,6 +106,7 @@ Route::middleware(['auth', 'active.company'])->group(function () {
     Route::post('quotations/{quotation}/send', [QuotationController::class, 'send'])->name('quotations.send');
     Route::post('quotations/{quotation}/convert', [QuotationController::class, 'convertToInvoice'])->name('quotations.convert');
     Route::get('quotations/{quotation}/download', [QuotationController::class, 'download'])->name('quotations.download');
+    Route::post('quotations/{quotation}/duplicate', [QuotationController::class, 'duplicate'])->name('quotations.duplicate');
 
     // Expenses
     Route::resource('expenses', ExpenseController::class);

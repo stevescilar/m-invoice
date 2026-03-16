@@ -26,6 +26,13 @@
             Edit
         </a>
         @endif
+        <form method="POST" action="{{ route('quotations.duplicate', $quotation) }}">
+            @csrf
+            <button type="submit"
+                class="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 font-medium transition">
+                <i data-lucide="copy" class="w-4 h-4"></i> Duplicate
+            </button>
+        </form>
     </div>
 </div>
 
@@ -121,7 +128,7 @@
         @if(!in_array($quotation->status, ['converted', 'rejected']))
         <div class="bg-white rounded-xl shadow p-5">
             <h3 class="font-semibold text-gray-700 mb-3">Actions</h3>
-
+            
             @if($quotation->status === 'draft')
             <form action="{{ route('quotations.send', $quotation) }}" method="POST" class="mb-2">
                 @csrf

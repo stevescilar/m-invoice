@@ -458,8 +458,99 @@
 @php $subtotal = $invoice->items->sum('total_price'); @endphp
 <table class="totals-table" style="margin-top: 4px;">
     <tr>
-        <td style="width: 55%; border: none; padding: 0; vertical-align: top;">
-            {{-- empty left side --}}
+        <td style="width: 55%; border: none; padding: 0 16px 0 0; vertical-align: top;">
+
+            {{-- ── PAYMENT BADGES ── --}}
+            @php
+                $hasMpesa = $company->mpesa_paybill || $company->mpesa_till || $company->mpesa_number;
+                $hasBank  = $company->bank_name;
+            @endphp
+
+            @if($hasMpesa || $hasBank)
+            <div style="margin-top: 4px;">
+                <div style="font-size: 9px; text-transform: uppercase; color: #999; letter-spacing: 0.5px; margin-bottom: 8px; font-weight: bold;">Payment Details</div>
+
+                {{-- Paybill badge --}}
+                @if($company->mpesa_paybill)
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px; border-radius: 6px; overflow: hidden; border: 1.5px solid #16a34a;">
+                    <tr>
+                        <td colspan="2" style="border: none; background: #16a34a; padding: 4px 10px; text-align: center;">
+                            <span style="font-size: 10px; font-weight: bold; color: #fff; letter-spacing: 1px; text-transform: uppercase;">LIPA NA M-PESA · PAYBILL</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="border: none; background: #f0fdf4; padding: 6px 10px; text-align: center; width: 50%;">
+                            <div style="font-size: 9px; color: #16a34a; text-transform: uppercase; font-weight: bold;">Paybill Number</div>
+                            <div style="font-size: 18px; font-weight: bold; color: #111; letter-spacing: 3px;">{{ $company->mpesa_paybill }}</div>
+                        </td>
+                        <td style="border: none; background: #f0fdf4; padding: 6px 10px; text-align: center; width: 50%; border-left: 1px solid #bbf7d0;">
+                            <div style="font-size: 9px; color: #16a34a; text-transform: uppercase; font-weight: bold;">Account Number</div>
+                            <div style="font-size: 13px; font-weight: bold; color: #111;">{{ $company->mpesa_account ?? $company->name }}</div>
+                        </td>
+                    </tr>
+                </table>
+                @endif
+
+                {{-- Till badge --}}
+                @if($company->mpesa_till)
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px; border: 1.5px solid #16a34a;">
+                    <tr>
+                        <td style="border: none; background: #16a34a; padding: 4px 10px; text-align: center;">
+                            <span style="font-size: 10px; font-weight: bold; color: #fff; letter-spacing: 1px; text-transform: uppercase;">LIPA NA M-PESA · BUY GOODS</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="border: none; background: #f0fdf4; padding: 6px 10px; text-align: center;">
+                            <div style="font-size: 9px; color: #16a34a; text-transform: uppercase; font-weight: bold;">Till Number</div>
+                            <div style="font-size: 22px; font-weight: bold; color: #111; letter-spacing: 4px;">{{ $company->mpesa_till }}</div>
+                        </td>
+                    </tr>
+                </table>
+                @endif
+
+                {{-- Send Money badge --}}
+                @if($company->mpesa_number)
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px; border: 1.5px solid #16a34a;">
+                    <tr>
+                        <td style="border: none; background: #16a34a; padding: 4px 10px; text-align: center;">
+                            <span style="font-size: 10px; font-weight: bold; color: #fff; letter-spacing: 1px; text-transform: uppercase;">M-PESA · SEND MONEY</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="border: none; background: #f0fdf4; padding: 6px 10px; text-align: center;">
+                            <div style="font-size: 9px; color: #16a34a; text-transform: uppercase; font-weight: bold;">Phone Number</div>
+                            <div style="font-size: 18px; font-weight: bold; color: #111; letter-spacing: 3px;">{{ $company->mpesa_number }}</div>
+                        </td>
+                    </tr>
+                </table>
+                @endif
+
+                {{-- Bank badge --}}
+                @if($company->bank_name)
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px; border: 1.5px solid #1d4ed8;">
+                    <tr>
+                        <td colspan="2" style="border: none; background: #1d4ed8; padding: 4px 10px; text-align: center;">
+                            <span style="font-size: 10px; font-weight: bold; color: #fff; letter-spacing: 1px; text-transform: uppercase;">BANK TRANSFER · {{ strtoupper($company->bank_name) }}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="border: none; background: #eff6ff; padding: 6px 10px; text-align: center; width: 50%;">
+                            <div style="font-size: 9px; color: #1d4ed8; text-transform: uppercase; font-weight: bold;">Account Number</div>
+                            <div style="font-size: 14px; font-weight: bold; color: #111; letter-spacing: 2px;">{{ $company->bank_account ?? '—' }}</div>
+                        </td>
+                        @if($company->bank_branch)
+                        <td style="border: none; background: #eff6ff; padding: 6px 10px; text-align: center; width: 50%; border-left: 1px solid #bfdbfe;">
+                            <div style="font-size: 9px; color: #1d4ed8; text-transform: uppercase; font-weight: bold;">Branch</div>
+                            <div style="font-size: 12px; font-weight: bold; color: #111;">{{ $company->bank_branch }}</div>
+                        </td>
+                        @endif
+                    </tr>
+                </table>
+                @endif
+
+            </div>
+            @endif
+
         </td>
         <td style="width: 45%; border: none; padding: 0; vertical-align: top;">
             <table style="width: 100%; border-collapse: collapse;">
@@ -514,52 +605,7 @@
     </tr>
 </table>
 
-{{-- ══ PAYMENT DETAILS ══ --}}
-@if($company->mpesa_paybill || $company->mpesa_till || $company->mpesa_number || $company->bank_name)
-<div class="payment-section">
-    <div class="payment-title">Payment Details</div>
-    <table class="payment-table">
-        <tr>
-            @if($company->mpesa_paybill)
-            <td>
-                <div class="payment-label">Paybill</div>
-                <div class="payment-value">{{ $company->mpesa_paybill }}</div>
-                @if($company->mpesa_account)
-                    <div class="payment-label" style="margin-top: 3px;">Account</div>
-                    <div class="payment-value">{{ $company->mpesa_account }}</div>
-                @endif
-            </td>
-            @endif
-            @if($company->mpesa_till)
-            <td>
-                <div class="payment-label">Till Number</div>
-                <div class="payment-value">{{ $company->mpesa_till }}</div>
-            </td>
-            @endif
-            @if($company->mpesa_number)
-            <td>
-                <div class="payment-label">M-Pesa Number</div>
-                <div class="payment-value">{{ $company->mpesa_number }}</div>
-            </td>
-            @endif
-            @if($company->bank_name)
-            <td>
-                <div class="payment-label">Bank</div>
-                <div class="payment-value">{{ $company->bank_name }}</div>
-                @if($company->bank_account)
-                    <div class="payment-label" style="margin-top: 3px;">Account</div>
-                    <div class="payment-value">{{ $company->bank_account }}</div>
-                @endif
-                @if($company->bank_branch)
-                    <div class="payment-label" style="margin-top: 3px;">Branch</div>
-                    <div class="payment-value">{{ $company->bank_branch }}</div>
-                @endif
-            </td>
-            @endif
-        </tr>
-    </table>
-</div>
-@endif
+{{-- Payment details moved into the totals left cell above --}}
 
 {{-- ══ NOTES ══ --}}
 @if($invoice->notes)
