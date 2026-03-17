@@ -1,3 +1,4 @@
+@php $brandColor = $company->primary_color ?? '#16a34a'; @endphp
 <!DOCTYPE html>
 <html>
 <head>
@@ -44,14 +45,14 @@
         .header-table {
             width: 100%;
             border-collapse: collapse;
-            border-bottom: 3px solid #16a34a;
+            border-bottom: 3px solid {{ $brandColor }};
             margin-bottom: 20px;
         }
 
         .company-name {
             font-size: 22px;
             font-weight: bold;
-            color: #16a34a;
+            color: {{ $brandColor }};
         }
 
         .company-sub {
@@ -125,7 +126,7 @@
         }
 
         .items-table thead tr {
-            background-color: #16a34a;
+            background-color: {{ $brandColor }};
             color: white;
         }
 
@@ -203,7 +204,7 @@
             padding-top: 10px;
             font-size: 15px;
             font-weight: bold;
-            color: #16a34a;
+            color: {{ $brandColor }};
         }
 
         /* colour swatch in breakdown */
@@ -229,7 +230,7 @@
             font-size: 11px;
             font-weight: bold;
             text-transform: uppercase;
-            color: #16a34a;
+            color: {{ $brandColor }};
             margin-bottom: 10px;
         }
 
@@ -294,8 +295,8 @@
             position: fixed;
             top: 120px;
             right: 40px;
-            border: 4px solid #16a34a;
-            color: #16a34a;
+            border: 4px solid {{ $brandColor }};
+            color: {{ $brandColor }};
             font-size: 36px;
             font-weight: bold;
             padding: 6px 18px;
@@ -308,6 +309,7 @@
     </style>
 </head>
 <body>
+@php $brandColor = $company->primary_color ?? '#16a34a'; @endphp
 
 @php
     /* ── Type breakdown ── */
@@ -316,7 +318,7 @@
         ->map(fn($grp, $name) => [
             'name'  => $name,
             'total' => $grp->sum('total_price'),
-            'color' => optional($grp->first()->itemType)->color ?? '#16a34a',
+            'color' => optional($grp->first()->itemType)->color ?? $brandColor,
         ]);
 
     $multiType = $typeBreakdown->count() > 1;
@@ -408,14 +410,14 @@
                 <tr>
                     <td class="meta-label">Status</td>
                     <td class="tright" style="font-weight: bold;
-                        color: {{ $invoice->status === 'paid' ? '#16a34a' : ($invoice->status === 'overdue' ? '#dc2626' : '#555') }}">
+                        color: {{ $invoice->status === 'paid' ? $brandColor : ($invoice->status === 'overdue' ? '#dc2626' : '#555') }}">
                         {{ strtoupper($invoice->status) }}
                     </td>
                 </tr>
                 @if($invoice->mpesa_code)
                 <tr>
                     <td class="meta-label">M-Pesa Ref</td>
-                    <td class="tright" style="color: #16a34a; font-weight: bold;">{{ $invoice->mpesa_code }}</td>
+                    <td class="tright" style="color: {{ $brandColor }}; font-weight: bold;">{{ $invoice->mpesa_code }}</td>
                 </tr>
                 @endif
             </table>
@@ -438,7 +440,7 @@
         @foreach($invoice->items as $item)
         @php
             $typeName  = optional($item->itemType)->name  ?? 'Material';
-            $typeColor = optional($item->itemType)->color ?? '#16a34a';
+            $typeColor = optional($item->itemType)->color ?? $brandColor;
         @endphp
         <tr>
             <td>{{ $item->description }}</td>
@@ -472,19 +474,19 @@
 
                 {{-- Paybill badge --}}
                 @if($company->mpesa_paybill)
-                <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px; border-radius: 6px; overflow: hidden; border: 1.5px solid #16a34a;">
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px; border-radius: 6px; overflow: hidden; border: 1.5px solid {{ $brandColor }};">
                     <tr>
-                        <td colspan="2" style="border: none; background: #16a34a; padding: 4px 10px; text-align: center;">
+                        <td colspan="2" style="border: none; background: {{ $brandColor }}; padding: 4px 10px; text-align: center;">
                             <span style="font-size: 10px; font-weight: bold; color: #fff; letter-spacing: 1px; text-transform: uppercase;">LIPA NA M-PESA · PAYBILL</span>
                         </td>
                     </tr>
                     <tr>
                         <td style="border: none; background: #f0fdf4; padding: 6px 10px; text-align: center; width: 50%;">
-                            <div style="font-size: 9px; color: #16a34a; text-transform: uppercase; font-weight: bold;">Paybill Number</div>
+                            <div style="font-size: 9px; color: {{ $brandColor }}; text-transform: uppercase; font-weight: bold;">Paybill Number</div>
                             <div style="font-size: 18px; font-weight: bold; color: #111; letter-spacing: 3px;">{{ $company->mpesa_paybill }}</div>
                         </td>
                         <td style="border: none; background: #f0fdf4; padding: 6px 10px; text-align: center; width: 50%; border-left: 1px solid #bbf7d0;">
-                            <div style="font-size: 9px; color: #16a34a; text-transform: uppercase; font-weight: bold;">Account Number</div>
+                            <div style="font-size: 9px; color: {{ $brandColor }}; text-transform: uppercase; font-weight: bold;">Account Number</div>
                             <div style="font-size: 13px; font-weight: bold; color: #111;">{{ $company->mpesa_account ?? $company->name }}</div>
                         </td>
                     </tr>
@@ -493,15 +495,15 @@
 
                 {{-- Till badge --}}
                 @if($company->mpesa_till)
-                <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px; border: 1.5px solid #16a34a;">
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px; border: 1.5px solid {{ $brandColor }};">
                     <tr>
-                        <td style="border: none; background: #16a34a; padding: 4px 10px; text-align: center;">
+                        <td style="border: none; background: {{ $brandColor }}; padding: 4px 10px; text-align: center;">
                             <span style="font-size: 10px; font-weight: bold; color: #fff; letter-spacing: 1px; text-transform: uppercase;">LIPA NA M-PESA · BUY GOODS</span>
                         </td>
                     </tr>
                     <tr>
                         <td style="border: none; background: #f0fdf4; padding: 6px 10px; text-align: center;">
-                            <div style="font-size: 9px; color: #16a34a; text-transform: uppercase; font-weight: bold;">Till Number</div>
+                            <div style="font-size: 9px; color: {{ $brandColor }}; text-transform: uppercase; font-weight: bold;">Till Number</div>
                             <div style="font-size: 22px; font-weight: bold; color: #111; letter-spacing: 4px;">{{ $company->mpesa_till }}</div>
                         </td>
                     </tr>
@@ -510,15 +512,15 @@
 
                 {{-- Send Money badge --}}
                 @if($company->mpesa_number)
-                <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px; border: 1.5px solid #16a34a;">
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px; border: 1.5px solid {{ $brandColor }};">
                     <tr>
-                        <td style="border: none; background: #16a34a; padding: 4px 10px; text-align: center;">
+                        <td style="border: none; background: {{ $brandColor }}; padding: 4px 10px; text-align: center;">
                             <span style="font-size: 10px; font-weight: bold; color: #fff; letter-spacing: 1px; text-transform: uppercase;">M-PESA · SEND MONEY</span>
                         </td>
                     </tr>
                     <tr>
                         <td style="border: none; background: #f0fdf4; padding: 6px 10px; text-align: center;">
-                            <div style="font-size: 9px; color: #16a34a; text-transform: uppercase; font-weight: bold;">Phone Number</div>
+                            <div style="font-size: 9px; color: {{ $brandColor }}; text-transform: uppercase; font-weight: bold;">Phone Number</div>
                             <div style="font-size: 18px; font-weight: bold; color: #111; letter-spacing: 3px;">{{ $company->mpesa_number }}</div>
                         </td>
                     </tr>
@@ -596,7 +598,7 @@
                     <td style="border: none; padding: 10px 8px 6px; font-size: 15px; font-weight: bold; color: #111; border-top: 2px solid #333;">
                         Grand Total
                     </td>
-                    <td style="border: none; padding: 10px 8px 6px; font-size: 15px; font-weight: bold; color: #16a34a; text-align: right; border-top: 2px solid #333;">
+                    <td style="border: none; padding: 10px 8px 6px; font-size: 15px; font-weight: bold; color: {{ $brandColor }}; text-align: right; border-top: 2px solid #333;">
                         Ksh {{ number_format($invoice->grand_total, 2) }}
                     </td>
                 </tr>

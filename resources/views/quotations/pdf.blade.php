@@ -1,3 +1,4 @@
+@php $brandColor = $company->primary_color ?? '#16a34a'; @endphp
 <!DOCTYPE html>
 <html>
 <head>
@@ -73,7 +74,7 @@
         }
         .status-draft     { background: #f3f4f6; color: #6b7280; }
         .status-sent      { background: #eff6ff; color: #2563eb; }
-        .status-approved  { background: #f0fdf4; color: #16a34a; }
+        .status-approved  { background: #f0fdf4; color: {{ $brandColor }}; }
         .status-rejected  { background: #fef2f2; color: #dc2626; }
         .status-converted { background: #f5f3ff; color: #7c3aed; }
 
@@ -168,6 +169,7 @@
     </style>
 </head>
 <body>
+@php $brandColor = $company->primary_color ?? '{{ $brandColor }}'; @endphp
 
 @php
     $typeBreakdown = $quotation->items
@@ -308,8 +310,95 @@
 {{-- ══ TOTALS ══ --}}
 <table class="totals-table" style="margin-top: 4px;">
     <tr>
-        <td style="width:55%; border:none; padding:0; vertical-align:top;">
-            {{-- left intentionally empty --}}
+        <td style="width:55%; border:none; padding:0 16px 0 0; vertical-align:top;">
+
+            {{-- ── PAYMENT BADGES ── --}}
+            @php
+                $hasMpesa = $company->mpesa_paybill || $company->mpesa_till || $company->mpesa_number;
+                $hasBank  = $company->bank_name;
+            @endphp
+
+            @if($hasMpesa || $hasBank)
+            <div style="margin-top: 4px;">
+                <div style="font-size: 9px; text-transform: uppercase; color: #999; letter-spacing: 0.5px; margin-bottom: 8px; font-weight: bold;">Payment Details</div>
+
+                @if($company->mpesa_paybill)
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px; border: 1.5px solid {{ $brandColor }};">
+                    <tr>
+                        <td colspan="2" style="border: none; background: {{ $brandColor }}; padding: 4px 10px; text-align: center;">
+                            <span style="font-size: 10px; font-weight: bold; color: #fff; letter-spacing: 1px; text-transform: uppercase;">LIPA NA M-PESA · PAYBILL</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="border: none; background: #f0fdf4; padding: 6px 10px; text-align: center; width: 50%;">
+                            <div style="font-size: 9px; color: {{ $brandColor }}; text-transform: uppercase; font-weight: bold;">Paybill Number</div>
+                            <div style="font-size: 18px; font-weight: bold; color: #111; letter-spacing: 3px;">{{ $company->mpesa_paybill }}</div>
+                        </td>
+                        <td style="border: none; background: #f0fdf4; padding: 6px 10px; text-align: center; width: 50%; border-left: 1px solid #bbf7d0;">
+                            <div style="font-size: 9px; color: {{ $brandColor }}; text-transform: uppercase; font-weight: bold;">Account Number</div>
+                            <div style="font-size: 13px; font-weight: bold; color: #111;">{{ $company->mpesa_account ?? $company->name }}</div>
+                        </td>
+                    </tr>
+                </table>
+                @endif
+
+                @if($company->mpesa_till)
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px; border: 1.5px solid {{ $brandColor }};">
+                    <tr>
+                        <td style="border: none; background: {{ $brandColor }}; padding: 4px 10px; text-align: center;">
+                            <span style="font-size: 10px; font-weight: bold; color: #fff; letter-spacing: 1px; text-transform: uppercase;">LIPA NA M-PESA · BUY GOODS</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="border: none; background: #f0fdf4; padding: 6px 10px; text-align: center;">
+                            <div style="font-size: 9px; color: {{ $brandColor }}; text-transform: uppercase; font-weight: bold;">Till Number</div>
+                            <div style="font-size: 22px; font-weight: bold; color: #111; letter-spacing: 4px;">{{ $company->mpesa_till }}</div>
+                        </td>
+                    </tr>
+                </table>
+                @endif
+
+                @if($company->mpesa_number)
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px; border: 1.5px solid {{ $brandColor }};">
+                    <tr>
+                        <td style="border: none; background: {{ $brandColor }}; padding: 4px 10px; text-align: center;">
+                            <span style="font-size: 10px; font-weight: bold; color: #fff; letter-spacing: 1px; text-transform: uppercase;">M-PESA · SEND MONEY</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="border: none; background: #f0fdf4; padding: 6px 10px; text-align: center;">
+                            <div style="font-size: 9px; color: {{ $brandColor }}; text-transform: uppercase; font-weight: bold;">Phone Number</div>
+                            <div style="font-size: 18px; font-weight: bold; color: #111; letter-spacing: 3px;">{{ $company->mpesa_number }}</div>
+                        </td>
+                    </tr>
+                </table>
+                @endif
+
+                @if($company->bank_name)
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px; border: 1.5px solid #1d4ed8;">
+                    <tr>
+                        <td colspan="2" style="border: none; background: #1d4ed8; padding: 4px 10px; text-align: center;">
+                            <span style="font-size: 10px; font-weight: bold; color: #fff; letter-spacing: 1px; text-transform: uppercase;">BANK TRANSFER · {{ strtoupper($company->bank_name) }}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="border: none; background: #eff6ff; padding: 6px 10px; text-align: center; width: 50%;">
+                            <div style="font-size: 9px; color: #1d4ed8; text-transform: uppercase; font-weight: bold;">Account Number</div>
+                            <div style="font-size: 14px; font-weight: bold; color: #111; letter-spacing: 2px;">{{ $company->bank_account ?? '—' }}</div>
+                        </td>
+                        @if($company->bank_branch)
+                        <td style="border: none; background: #eff6ff; padding: 6px 10px; text-align: center; width: 50%; border-left: 1px solid #bfdbfe;">
+                            <div style="font-size: 9px; color: #1d4ed8; text-transform: uppercase; font-weight: bold;">Branch</div>
+                            <div style="font-size: 12px; font-weight: bold; color: #111;">{{ $company->bank_branch }}</div>
+                        </td>
+                        @endif
+                    </tr>
+                </table>
+                @endif
+
+            </div>
+            @endif
+
         </td>
         <td style="width:45%; border:none; padding:0; vertical-align:top;">
             <table style="width:100%; border-collapse:collapse;">

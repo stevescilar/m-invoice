@@ -73,6 +73,7 @@ class CompanyController extends Controller
             'kra_pin' => 'nullable|string|max:20',
             'logo' => 'nullable|image|max:2048',
             'signature' => 'nullable|image|max:2048',
+            'primary_color' => 'nullable|string|size:7|regex:/^#[0-9A-Fa-f]{6}$/',
         ]);
 
         $company = Auth::user()->company;
@@ -89,7 +90,9 @@ class CompanyController extends Controller
             'mpesa_number',
             'bank_name',
             'bank_account',
-            'bank_branch'
+            'bank_branch',
+            'primary_color',
+
         ]);
 
         if ($request->hasFile('logo')) {

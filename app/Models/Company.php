@@ -28,7 +28,8 @@ class Company extends Model
         'bank_account',
         'bank_branch',
         'referral_code',
-        'referral_count'
+        'referral_count',
+        'primary_color',
     ];
 
     public function owner()
