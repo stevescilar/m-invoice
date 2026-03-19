@@ -106,8 +106,17 @@ class InvoiceController extends Controller
             }
 
             $vatAmount  = $etrEnabled ? round($materialCost * 0.16, 2) : 0;
-            $grandTotal = $materialCost + $labourCost + $vatAmount;
-            $totalProfit  = $grandTotal - $totalCost - $vatAmount;
+            $subtotal   = $materialCost + $labourCost;
+
+            // Discount — either a fixed amount or a percentage of subtotal
+            $discountPct    = (float) ($request->discount_percentage ?? 0);
+            $discountAmount = $discountPct > 0
+                ? round($subtotal * $discountPct / 100, 2)
+                : round((float) ($request->discount_amount ?? 0), 2);
+
+            $grandTotal    = $subtotal - $discountAmount + $vatAmount;
+            $grandTotal    = max(0, $grandTotal);
+            $totalProfit   = $grandTotal - $totalCost - $vatAmount;
             $overallMargin = $grandTotal > 0 ? round(($totalProfit / $grandTotal) * 100, 2) : 0;
 
             $invoice = Invoice::create([
@@ -117,16 +126,18 @@ class InvoiceController extends Controller
                 'issue_date'     => $request->issue_date,
                 'due_date'       => $request->due_date,
                 'status'         => 'draft',
-                'etr_enabled'    => $etrEnabled,
-                'vat_amount'     => $vatAmount,
-                'material_cost'  => $materialCost,
-                'labour_cost'    => $labourCost,
-                'grand_total'    => $grandTotal,
-                'total_cost'     => $totalCost,
-                'total_profit'   => $totalProfit,
-                'overall_margin' => $overallMargin,
-                'notes'          => $request->notes,
-                'created_by'     => Auth::id(),
+                'etr_enabled'         => $etrEnabled,
+                'vat_amount'          => $vatAmount,
+                'material_cost'       => $materialCost,
+                'labour_cost'         => $labourCost,
+                'discount_amount'     => $discountAmount,
+                'discount_percentage' => $discountPct,
+                'grand_total'         => $grandTotal,
+                'total_cost'          => $totalCost,
+                'total_profit'        => $totalProfit,
+                'overall_margin'      => $overallMargin,
+                'notes'               => $request->notes,
+                'created_by'          => Auth::id(),
             ]);
 
             // Handle recurring
@@ -214,7 +225,7 @@ class InvoiceController extends Controller
                 'unit_price'      => (float)$i->unit_price,
                 'buying_price'    => (float)$i->buying_price,
                 'is_labour'       => (bool)$i->is_labour,
-                'item_type_id'    => $i->item_type_id,
+                'item_type_id'    => (string)$i->item_type_id,
             ];
         })->values()->toArray();
 
@@ -257,23 +268,32 @@ class InvoiceController extends Controller
             }
 
             $vatAmount     = $etrEnabled ? round($materialCost * 0.16, 2) : 0;
-            $grandTotal    = $materialCost + $labourCost + $vatAmount;
+            $subtotal      = $materialCost + $labourCost;
+
+            $discountPct    = (float) ($request->discount_percentage ?? 0);
+            $discountAmount = $discountPct > 0
+                ? round($subtotal * $discountPct / 100, 2)
+                : round((float) ($request->discount_amount ?? 0), 2);
+
+            $grandTotal    = max(0, $subtotal - $discountAmount + $vatAmount);
             $totalProfit   = $grandTotal - $totalCost - $vatAmount;
             $overallMargin = $grandTotal > 0 ? round(($totalProfit / $grandTotal) * 100, 2) : 0;
 
             $invoice->update([
-                'client_id'      => $request->client_id,
-                'issue_date'     => $request->issue_date,
-                'due_date'       => $request->due_date,
-                'etr_enabled'    => $etrEnabled,
-                'vat_amount'     => $vatAmount,
-                'material_cost'  => $materialCost,
-                'labour_cost'    => $labourCost,
-                'grand_total'    => $grandTotal,
-                'total_cost'     => $totalCost,
-                'total_profit'   => $totalProfit,
-                'overall_margin' => $overallMargin,
-                'notes'          => $request->notes,
+                'client_id'           => $request->client_id,
+                'issue_date'          => $request->issue_date,
+                'due_date'            => $request->due_date,
+                'etr_enabled'         => $etrEnabled,
+                'vat_amount'          => $vatAmount,
+                'material_cost'       => $materialCost,
+                'labour_cost'         => $labourCost,
+                'discount_amount'     => $discountAmount,
+                'discount_percentage' => $discountPct,
+                'grand_total'         => $grandTotal,
+                'total_cost'          => $totalCost,
+                'total_profit'        => $totalProfit,
+                'overall_margin'      => $overallMargin,
+                'notes'               => $request->notes,
             ]);
 
             $invoice->items()->delete();

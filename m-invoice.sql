@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Mar 16, 2026 at 12:50 PM
+-- Generation Time: Mar 19, 2026 at 02:57 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -85,27 +85,27 @@ CREATE TABLE `catalog_items` (
 
 INSERT INTO `catalog_items` (`id`, `company_id`, `service_category_id`, `name`, `default_unit_price`, `default_buying_price`, `unit_of_measure`, `created_at`, `updated_at`) VALUES
 (1, 1, 1, 'Dahua Camera', 2900.00, 0.00, 'piece', '2026-02-27 10:42:35', '2026-02-27 10:46:48'),
-(2, 4, 2, 'Dahua Camera 2MP (Without Audio)', 2100.00, 1500.00, 'piece', '2026-03-16 06:31:48', '2026-03-16 07:31:42'),
+(2, 4, 2, 'Dahua Camera 2MP (Without Audio)', 2100.00, 1500.00, 'piece', '2026-03-16 06:31:48', '2026-03-19 09:47:59'),
 (3, 4, 2, 'Dahua Camera 2MP (With Audio)', 2700.00, 1900.00, 'piece', '2026-03-16 06:33:03', '2026-03-16 06:33:46'),
-(4, 4, 2, 'Dahua DVR 4 Channel', 4500.00, 3800.00, 'piece', '2026-03-16 06:36:27', '2026-03-16 07:31:42'),
+(4, 4, 2, 'Dahua DVR 4 Channel', 4500.00, 3800.00, 'piece', '2026-03-16 06:36:27', '2026-03-19 09:47:59'),
 (5, 4, 2, 'Dahua DVR 8 Channel', 5800.00, 4800.00, 'piece', '2026-03-16 06:37:15', '2026-03-16 06:37:15'),
 (6, 4, 2, 'Dahua DVR 16 Channel', 10000.00, 8500.00, 'piece', '2026-03-16 06:38:53', '2026-03-16 07:08:22'),
-(7, 4, 2, '500GB Western Digital Hard disk', 4000.00, 2500.00, 'piece', '2026-03-16 06:40:56', '2026-03-16 07:31:42'),
+(7, 4, 2, '500GB Western Digital Hard disk', 4000.00, 2500.00, 'piece', '2026-03-16 06:40:56', '2026-03-19 09:47:59'),
 (8, 4, 2, '1TB Western Digital HardDisk', 6500.00, 5000.00, 'piece', '2026-03-16 06:41:34', '2026-03-16 06:41:34'),
 (9, 4, 2, '3TB Western Digital Hard Disk', 10500.00, 8500.00, 'piece', '2026-03-16 06:42:23', '2026-03-16 06:42:23'),
-(10, 4, 2, 'Coaxial Cable(Power & Data)  100M', 3000.00, 2400.00, 'roll', '2026-03-16 06:45:28', '2026-03-16 06:45:28'),
+(10, 4, 2, 'Coaxial Cable(Power & Data)  100M', 3000.00, 2400.00, 'roll', '2026-03-16 06:45:28', '2026-03-19 09:47:59'),
 (11, 4, 2, 'Coaxial Cable(Power & Data)  200M', 6000.00, 4400.00, 'roll', '2026-03-16 06:46:24', '2026-03-16 07:31:42'),
 (12, 4, 2, 'Coaxial Cable(Power & Data)  305M', 8500.00, 6900.00, 'roll', '2026-03-16 06:47:20', '2026-03-16 07:06:30'),
 (13, 4, 2, 'PSU 5 AMP', 1500.00, 700.00, 'piece', '2026-03-16 06:48:08', '2026-03-16 06:48:08'),
-(14, 4, 2, 'PSU 10 AMP', 2000.00, 1000.00, 'piece', '2026-03-16 06:48:31', '2026-03-16 07:31:42'),
+(14, 4, 2, 'PSU 10 AMP', 2000.00, 1000.00, 'piece', '2026-03-16 06:48:31', '2026-03-19 09:47:59'),
 (15, 4, 2, 'PSU 20 AMP', 3500.00, 1500.00, 'piece', '2026-03-16 06:49:19', '2026-03-16 06:49:19'),
 (16, 4, 2, 'PSU 10 AMP - Closed', 4000.00, 2000.00, 'piece', '2026-03-16 06:50:33', '2026-03-16 06:50:33'),
 (17, 4, 2, 'PSU 20 AMP - Closed', 5500.00, 2500.00, 'piece', '2026-03-16 06:51:08', '2026-03-16 07:07:43'),
-(18, 4, 2, 'BNC Connectors', 30.00, 20.00, 'piece', '2026-03-16 06:53:17', '2026-03-16 07:31:42'),
-(19, 4, 2, 'Power Adapters', 30.00, 20.00, 'piece', '2026-03-16 06:53:33', '2026-03-16 07:31:42'),
-(20, 4, 2, 'Adapter Box', 200.00, 100.00, 'piece', '2026-03-16 06:54:09', '2026-03-16 07:31:42'),
-(21, 4, 2, 'Twin Socket', 500.00, 300.00, 'piece', '2026-03-16 06:55:00', '2026-03-16 07:31:42'),
-(22, 4, 2, 'Power Cable', 300.00, 100.00, 'piece', '2026-03-16 06:55:59', '2026-03-16 07:31:42'),
+(18, 4, 2, 'BNC Connectors', 30.00, 20.00, 'piece', '2026-03-16 06:53:17', '2026-03-19 09:47:59'),
+(19, 4, 2, 'Power Adapters', 30.00, 20.00, 'piece', '2026-03-16 06:53:33', '2026-03-19 09:47:59'),
+(20, 4, 2, 'Adapter Box', 200.00, 100.00, 'piece', '2026-03-16 06:54:09', '2026-03-19 09:47:59'),
+(21, 4, 2, 'Twin Socket', 500.00, 300.00, 'piece', '2026-03-16 06:55:00', '2026-03-19 09:47:59'),
+(22, 4, 2, 'Power Cable', 300.00, 100.00, 'piece', '2026-03-16 06:55:59', '2026-03-19 09:47:59'),
 (23, 4, 2, 'HDMI 3M', 1500.00, 800.00, 'piece', '2026-03-16 06:56:32', '2026-03-16 07:31:42'),
 (24, 4, 2, '32 inch TV Screen', 15000.00, 11500.00, 'piece', '2026-03-16 06:57:02', '2026-03-16 06:57:02');
 
@@ -137,7 +137,8 @@ INSERT INTO `clients` (`id`, `company_id`, `name`, `phone`, `email`, `address`, 
 (2, 2, 'Caleb', '0705549257', 'test@test.com', NULL, 0, NULL, '2026-03-02 03:23:49', '2026-03-02 03:23:49'),
 (3, 4, 'John Wamae', '0722251044', NULL, NULL, 0, NULL, '2026-03-12 03:15:30', '2026-03-12 03:15:30'),
 (4, 3, 'TechGuy Inc', '0705549257', NULL, NULL, 0, NULL, '2026-03-12 09:44:11', '2026-03-12 09:44:11'),
-(5, 4, 'Pastor  Kamau', '07377740498', NULL, NULL, 0, NULL, '2026-03-16 06:09:08', '2026-03-16 06:09:08');
+(5, 4, 'Pastor  Kamau', '07377740498', NULL, NULL, 0, NULL, '2026-03-16 06:09:08', '2026-03-16 06:09:08'),
+(6, 4, 'Josaya', '0711304624', NULL, 'Mountain Mall Area, Garden Estate Road', 0, NULL, '2026-03-19 09:36:41', '2026-03-19 09:36:41');
 
 -- --------------------------------------------------------
 
@@ -154,6 +155,7 @@ CREATE TABLE `companies` (
   `address` text DEFAULT NULL,
   `signature` varchar(255) DEFAULT NULL,
   `footer_message` text DEFAULT NULL,
+  `primary_color` varchar(7) NOT NULL DEFAULT '#16a34a',
   `kra_pin` varchar(255) DEFAULT NULL,
   `owner_id` bigint(20) UNSIGNED DEFAULT NULL,
   `is_bypass` tinyint(1) NOT NULL DEFAULT 0,
@@ -174,11 +176,11 @@ CREATE TABLE `companies` (
 -- Dumping data for table `companies`
 --
 
-INSERT INTO `companies` (`id`, `name`, `logo`, `phone`, `email`, `address`, `signature`, `footer_message`, `kra_pin`, `owner_id`, `is_bypass`, `created_at`, `updated_at`, `mpesa_paybill`, `mpesa_account`, `mpesa_till`, `mpesa_number`, `bank_name`, `bank_account`, `bank_branch`, `referral_code`, `referral_count`) VALUES
-(1, 'Test Company', 'logos/CtGYz75RNugNTraw9M73RTg1uKIDQjzpD9SMe3iL.png', '0705549257', 'benscilar@gmail.com', 'karatina 1090', NULL, 'Thank you for choosing our services', NULL, 1, 0, '2026-02-27 10:18:41', '2026-02-27 11:27:46', '247247', '517451', '51857388', '0705549257', 'Equity Bank', NULL, NULL, NULL, 0),
-(2, 'Muambi CO', NULL, '0705549257', 'benscilar@gmail.com', '90990', NULL, 'Thank you for choosing our services', NULL, 2, 0, '2026-03-02 03:22:26', '2026-03-02 03:23:11', NULL, NULL, NULL, '0705549257', NULL, NULL, NULL, NULL, 0),
-(3, 'Stephen Muambi\'s Business', NULL, '', 'stevemuambi@gmail.com', NULL, NULL, NULL, NULL, 3, 0, '2026-03-10 03:30:26', '2026-03-10 03:30:26', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '06JT7AF8', 0),
-(4, 'Microsil Systems', 'logos/nPJf8kmkMK1S2ZDc0Gc3lh5mhcI77Siu2xykAAPl.jpg', '0705549257', 'microsilcorp@gmail.com', 'ABC Place , Westlands', 'signatures/7NN039EuE5IYKzXX91KdoFZiaw7wwHvt1MgHSNI5.jpg', 'Thank you for choosing our services :  Website Development |  Digital Marketing | SEO | Web Hosting | IT & Security | CCTV Installation & Sales.', NULL, 4, 0, '2026-03-12 02:53:17', '2026-03-16 08:15:23', NULL, NULL, '51857388', '0705549257', NULL, NULL, NULL, '08S9WZCQ', 0);
+INSERT INTO `companies` (`id`, `name`, `logo`, `phone`, `email`, `address`, `signature`, `footer_message`, `primary_color`, `kra_pin`, `owner_id`, `is_bypass`, `created_at`, `updated_at`, `mpesa_paybill`, `mpesa_account`, `mpesa_till`, `mpesa_number`, `bank_name`, `bank_account`, `bank_branch`, `referral_code`, `referral_count`) VALUES
+(1, 'Test Company', 'logos/CtGYz75RNugNTraw9M73RTg1uKIDQjzpD9SMe3iL.png', '0705549257', 'benscilar@gmail.com', 'karatina 1090', NULL, 'Thank you for choosing our services', '#16a34a', NULL, 1, 0, '2026-02-27 10:18:41', '2026-02-27 11:27:46', '247247', '517451', '51857388', '0705549257', 'Equity Bank', NULL, NULL, NULL, 0),
+(2, 'Muambi CO', NULL, '0705549257', 'benscilar@gmail.com', '90990', NULL, 'Thank you for choosing our services', '#16a34a', NULL, 2, 0, '2026-03-02 03:22:26', '2026-03-02 03:23:11', NULL, NULL, NULL, '0705549257', NULL, NULL, NULL, NULL, 0),
+(3, 'Stephen Muambi\'s Business', NULL, '', 'stevemuambi@gmail.com', NULL, NULL, NULL, '#16a34a', NULL, 3, 0, '2026-03-10 03:30:26', '2026-03-10 03:30:26', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '06JT7AF8', 0),
+(4, 'Microsil Systems', 'logos/nPJf8kmkMK1S2ZDc0Gc3lh5mhcI77Siu2xykAAPl.jpg', '0705549257', 'microsilcorp@gmail.com', 'ABC Place , Westlands', 'signatures/7NN039EuE5IYKzXX91KdoFZiaw7wwHvt1MgHSNI5.jpg', 'Thank you for choosing our services :  Website Development |  Digital Marketing | SEO | Web Hosting | IT & Security | CCTV Installation & Sales.', '#16a34a', NULL, 4, 0, '2026-03-12 02:53:17', '2026-03-19 10:42:22', NULL, NULL, '51857388', '0705549257', NULL, NULL, NULL, '08S9WZCQ', 0);
 
 -- --------------------------------------------------------
 
@@ -240,6 +242,8 @@ CREATE TABLE `invoices` (
   `vat_amount` decimal(10,2) NOT NULL DEFAULT 0.00,
   `material_cost` decimal(10,2) NOT NULL DEFAULT 0.00,
   `labour_cost` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `discount_amount` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `discount_percentage` decimal(5,2) NOT NULL DEFAULT 0.00,
   `grand_total` decimal(10,2) NOT NULL DEFAULT 0.00,
   `total_cost` decimal(10,2) NOT NULL DEFAULT 0.00,
   `total_profit` decimal(10,2) NOT NULL DEFAULT 0.00,
@@ -265,13 +269,13 @@ CREATE TABLE `invoices` (
 -- Dumping data for table `invoices`
 --
 
-INSERT INTO `invoices` (`id`, `company_id`, `client_id`, `invoice_number`, `issue_date`, `due_date`, `status`, `etr_enabled`, `vat_amount`, `material_cost`, `labour_cost`, `grand_total`, `total_cost`, `total_profit`, `overall_margin`, `profit_from_quotation`, `notes`, `is_recurring`, `recurring_frequency`, `recurring_next_date`, `recurring_ends_at`, `recurring_active`, `recurring_parent_id`, `recurrence_interval`, `next_recurrence_date`, `mpesa_code`, `paid_at`, `created_by`, `created_at`, `updated_at`) VALUES
-(1, 1, 1, 'INV-000001', '2026-02-27', '2026-03-02', 'overdue', 0, 0.00, 3800.00, 6000.00, 9800.00, 0.00, 0.00, 0.00, 0, 'Please pay before indicated time', 0, NULL, NULL, NULL, 1, NULL, 'monthly', NULL, NULL, NULL, 1, '2026-02-27 11:00:13', '2026-03-16 07:51:30'),
-(4, 2, 2, 'INV-000002', '2026-03-02', '2026-03-16', 'draft', 0, 0.00, 3400.00, 0.00, 3400.00, 0.00, 3400.00, 100.00, 1, NULL, 0, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, 2, '2026-03-02 06:25:23', '2026-03-02 06:25:23'),
-(5, 2, 2, 'INV-000003', '2026-03-02', '2026-03-16', 'paid', 0, 0.00, 9600.00, 0.00, 9600.00, 0.00, 9600.00, 100.00, 1, NULL, 0, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, '2026-03-02 09:21:10', 2, '2026-03-02 06:26:01', '2026-03-02 09:21:10'),
-(6, 4, 3, 'INV-000004', '2026-03-12', '2026-03-31', 'draft', 0, 0.00, 798500.00, 0.00, 798500.00, 0.00, 798500.00, 100.00, 0, 'The original price in China was in USD(conversion of 130)\r\nCost per Ream $ 2.26\r\nTransport Cost $100\r\nIN Kenya(Logistics) per CBM is KSH 57000( The total cbm is 6) \r\nCBM per carton is 0.02.', 0, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, 4, '2026-03-12 05:23:03', '2026-03-16 05:52:02'),
-(7, 3, 4, 'INV-000005', '2026-03-12', '2026-03-26', 'draft', 0, 0.00, 900.00, 0.00, 900.00, 200.00, 700.00, 77.78, 1, NULL, 0, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, 3, '2026-03-12 09:45:07', '2026-03-12 09:45:07'),
-(8, 3, 4, 'INV-000006', '2026-03-12', '2026-03-12', 'overdue', 0, 0.00, 800.00, 6000.00, 6800.00, 0.00, 0.00, 0.00, 0, NULL, 0, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, 3, '2026-03-12 10:16:22', '2026-03-16 07:51:50');
+INSERT INTO `invoices` (`id`, `company_id`, `client_id`, `invoice_number`, `issue_date`, `due_date`, `status`, `etr_enabled`, `vat_amount`, `material_cost`, `labour_cost`, `discount_amount`, `discount_percentage`, `grand_total`, `total_cost`, `total_profit`, `overall_margin`, `profit_from_quotation`, `notes`, `is_recurring`, `recurring_frequency`, `recurring_next_date`, `recurring_ends_at`, `recurring_active`, `recurring_parent_id`, `recurrence_interval`, `next_recurrence_date`, `mpesa_code`, `paid_at`, `created_by`, `created_at`, `updated_at`) VALUES
+(1, 1, 1, 'INV-000001', '2026-02-27', '2026-03-02', 'overdue', 0, 0.00, 3800.00, 6000.00, 0.00, 0.00, 9800.00, 0.00, 0.00, 0.00, 0, 'Please pay before indicated time', 0, NULL, NULL, NULL, 1, NULL, 'monthly', NULL, NULL, NULL, 1, '2026-02-27 11:00:13', '2026-03-16 07:51:30'),
+(4, 2, 2, 'INV-000002', '2026-03-02', '2026-03-16', 'draft', 0, 0.00, 3400.00, 0.00, 0.00, 0.00, 3400.00, 0.00, 3400.00, 100.00, 1, NULL, 0, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, 2, '2026-03-02 06:25:23', '2026-03-02 06:25:23'),
+(5, 2, 2, 'INV-000003', '2026-03-02', '2026-03-16', 'paid', 0, 0.00, 9600.00, 0.00, 0.00, 0.00, 9600.00, 0.00, 9600.00, 100.00, 1, NULL, 0, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, '2026-03-02 09:21:10', 2, '2026-03-02 06:26:01', '2026-03-02 09:21:10'),
+(6, 4, 3, 'INV-000004', '2026-03-12', '2026-03-31', 'draft', 0, 0.00, 798500.00, 0.00, 0.00, 0.00, 796500.00, 0.00, 796500.00, 100.00, 0, 'The original price in China was in USD(conversion of 130)\r\nCost per Ream $ 2.26\r\nTransport Cost $100\r\nIN Kenya(Logistics) per CBM is KSH 57000( The total cbm is 6) \r\nCBM per carton is 0.02.', 0, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, 4, '2026-03-12 05:23:03', '2026-03-19 10:26:40'),
+(7, 3, 4, 'INV-000005', '2026-03-12', '2026-03-26', 'draft', 0, 0.00, 900.00, 0.00, 0.00, 0.00, 900.00, 200.00, 700.00, 77.78, 1, NULL, 0, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, 3, '2026-03-12 09:45:07', '2026-03-12 09:45:07'),
+(8, 3, 4, 'INV-000006', '2026-03-12', '2026-03-12', 'overdue', 0, 0.00, 800.00, 6000.00, 0.00, 0.00, 6800.00, 0.00, 0.00, 0.00, 0, NULL, 0, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, 3, '2026-03-12 10:16:22', '2026-03-16 07:51:50');
 
 -- --------------------------------------------------------
 
@@ -323,10 +327,10 @@ INSERT INTO `invoice_items` (`id`, `invoice_id`, `catalog_item_id`, `description
 (16, 8, NULL, 'Printing Papers 80 GSM (300 Cartons Each with 5 Reams)', 1.00, 500.00, 500.00, 0, NULL, '2026-03-12 10:16:22', '2026-03-12 10:16:22'),
 (17, 8, NULL, '30 Metre Cable', 1.00, 300.00, 300.00, 0, NULL, '2026-03-12 10:16:22', '2026-03-12 10:16:22'),
 (18, 8, NULL, 'Installation per camera', 4.00, 1500.00, 6000.00, 1, NULL, '2026-03-12 10:16:22', '2026-03-12 10:16:22'),
-(19, 6, NULL, 'Printing Papers 80 GSM (300 Cartons Each with 5 Reams)', 1500.00, 294.00, 441000.00, 0, 16, '2026-03-16 05:52:02', '2026-03-16 05:52:02'),
-(20, 6, NULL, 'Transport from Supplier to Warehouse in China(Guangzhou)', 1.00, 13000.00, 13000.00, 0, 16, '2026-03-16 05:52:02', '2026-03-16 05:52:02'),
-(21, 6, NULL, 'Cost from China to Kenya Warehouse(Ready for pickup)', 6.00, 57000.00, 342000.00, 0, 16, '2026-03-16 05:52:02', '2026-03-16 05:52:02'),
-(22, 6, NULL, 'Sourcing Fee(Mine)', 1.00, 2500.00, 2500.00, 0, 16, '2026-03-16 05:52:02', '2026-03-16 05:52:02');
+(26, 6, NULL, 'Printing Papers 80 GSM (300 Cartons Each with 5 Reams)', 1500.00, 294.00, 441000.00, 0, 16, '2026-03-19 10:26:40', '2026-03-19 10:26:40'),
+(27, 6, NULL, 'Transport from Supplier to Warehouse in China(Guangzhou)', 1.00, 13000.00, 13000.00, 0, 18, '2026-03-19 10:26:40', '2026-03-19 10:26:40'),
+(28, 6, NULL, 'Cost from China to Kenya Warehouse(Ready for pickup)', 6.00, 57000.00, 342000.00, 0, 18, '2026-03-19 10:26:40', '2026-03-19 10:26:40'),
+(29, 6, NULL, 'Sourcing Fee(Mine)', 1.00, 2500.00, 2500.00, 0, 21, '2026-03-19 10:26:40', '2026-03-19 10:26:40');
 
 -- --------------------------------------------------------
 
@@ -523,7 +527,9 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (36, '2026_03_04_122327_add_recurring_fields_to_invoices_table', 9),
 (37, '2026_03_12_065714_create_item_types_table', 10),
 (38, '2026_03_12_065809_add_item_type_id_to_invoice_items_table', 10),
-(39, '2026_03_16_105732_add_expired_to_quotations_status', 11);
+(39, '2026_03_16_105732_add_expired_to_quotations_status', 11),
+(40, '2026_03_16_133827_add_primary_color_to_companies', 12),
+(41, '2026_03_19_130733_add_discount_to_invoices_quotations', 13);
 
 -- --------------------------------------------------------
 
@@ -628,6 +634,8 @@ CREATE TABLE `quotations` (
   `status` enum('draft','sent','approved','rejected','converted','expired') NOT NULL DEFAULT 'draft',
   `material_cost` decimal(10,2) NOT NULL DEFAULT 0.00,
   `labour_cost` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `discount_amount` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `discount_percentage` decimal(5,2) NOT NULL DEFAULT 0.00,
   `grand_total` decimal(10,2) NOT NULL DEFAULT 0.00,
   `total_cost` decimal(10,2) NOT NULL DEFAULT 0.00,
   `total_profit` decimal(10,2) NOT NULL DEFAULT 0.00,
@@ -643,15 +651,16 @@ CREATE TABLE `quotations` (
 -- Dumping data for table `quotations`
 --
 
-INSERT INTO `quotations` (`id`, `company_id`, `client_id`, `quotation_number`, `issue_date`, `expiry_date`, `status`, `material_cost`, `labour_cost`, `grand_total`, `total_cost`, `total_profit`, `overall_margin`, `notes`, `converted_invoice_id`, `created_by`, `created_at`, `updated_at`) VALUES
-(1, 2, 2, 'QT-000001', '2026-03-02', NULL, 'converted', 3400.00, 0.00, 3400.00, 0.00, 3400.00, 100.00, NULL, 4, 2, '2026-03-02 03:27:37', '2026-03-02 06:25:23'),
-(2, 2, 2, 'QT-000002', '2026-03-02', NULL, 'converted', 9600.00, 0.00, 9600.00, 0.00, 9600.00, 100.00, NULL, 5, 2, '2026-03-02 06:02:24', '2026-03-02 06:26:01'),
-(3, 2, 2, 'QT-000003', '2026-03-02', '2026-03-13', 'expired', 1500.00, 0.00, 1500.00, 1100.00, 400.00, 26.67, 'Let us know', NULL, 2, '2026-03-02 06:08:25', '2026-03-16 07:58:07'),
-(5, 4, 3, 'QT-000004', '2026-03-12', '2026-04-01', 'draft', 798500.00, 0.00, 798500.00, 798500.00, 0.00, 0.00, 'The original price in China was in USD(conversion of 130)\r\nCost per Ream $ 2.26\r\nTransport Cost $100\r\nIN Kenya(Logistics) per CBM is KSH 57000( The total cbm is 6) \r\nCBM per carton is 0.02.S', NULL, 4, '2026-03-12 05:40:50', '2026-03-12 05:41:42'),
-(6, 3, 4, 'QT-000005', '2026-03-12', '2026-03-13', 'converted', 900.00, 0.00, 900.00, 200.00, 700.00, 77.78, NULL, 7, 3, '2026-03-12 09:44:37', '2026-03-12 09:45:07'),
-(7, 3, 4, 'QT-000006', '2026-03-12', '2026-03-12', 'expired', 19500.00, 0.00, 19500.00, 19000.00, 500.00, 2.56, NULL, NULL, 3, '2026-03-12 10:18:54', '2026-03-16 07:58:12'),
-(9, 4, 5, 'QT-000007', '2026-03-16', '2026-03-30', 'draft', 35860.00, 6000.00, 41860.00, 26540.00, 15320.00, 36.60, 'There might be an adjustment or additional  charges due to additional items like piping, trunking( We term them as miscellaneous though not added to this quotation)', NULL, 4, '2026-03-16 07:31:42', '2026-03-16 08:21:49'),
-(10, 4, 5, 'QT-000008', '2026-03-16', '2026-04-15', 'draft', 54420.00, 12000.00, 66420.00, 43680.00, 22740.00, 34.24, 'There might be an adjustment or additional  charges due to additional items like piping, trunking( We term them as miscellaneous though not added to this quotation)', NULL, 4, '2026-03-16 08:39:08', '2026-03-16 08:45:52');
+INSERT INTO `quotations` (`id`, `company_id`, `client_id`, `quotation_number`, `issue_date`, `expiry_date`, `status`, `material_cost`, `labour_cost`, `discount_amount`, `discount_percentage`, `grand_total`, `total_cost`, `total_profit`, `overall_margin`, `notes`, `converted_invoice_id`, `created_by`, `created_at`, `updated_at`) VALUES
+(1, 2, 2, 'QT-000001', '2026-03-02', NULL, 'converted', 3400.00, 0.00, 0.00, 0.00, 3400.00, 0.00, 3400.00, 100.00, NULL, 4, 2, '2026-03-02 03:27:37', '2026-03-02 06:25:23'),
+(2, 2, 2, 'QT-000002', '2026-03-02', NULL, 'converted', 9600.00, 0.00, 0.00, 0.00, 9600.00, 0.00, 9600.00, 100.00, NULL, 5, 2, '2026-03-02 06:02:24', '2026-03-02 06:26:01'),
+(3, 2, 2, 'QT-000003', '2026-03-02', '2026-03-13', 'expired', 1500.00, 0.00, 0.00, 0.00, 1500.00, 1100.00, 400.00, 26.67, 'Let us know', NULL, 2, '2026-03-02 06:08:25', '2026-03-16 07:58:07'),
+(5, 4, 3, 'QT-000004', '2026-03-12', '2026-04-01', 'draft', 798500.00, 0.00, 0.00, 0.00, 798500.00, 798500.00, 0.00, 0.00, 'The original price in China was in USD(conversion of 130)\r\nCost per Ream $ 2.26\r\nTransport Cost $100\r\nIN Kenya(Logistics) per CBM is KSH 57000( The total cbm is 6) \r\nCBM per carton is 0.02.S', NULL, 4, '2026-03-12 05:40:50', '2026-03-12 05:41:42'),
+(6, 3, 4, 'QT-000005', '2026-03-12', '2026-03-13', 'converted', 900.00, 0.00, 0.00, 0.00, 900.00, 200.00, 700.00, 77.78, NULL, 7, 3, '2026-03-12 09:44:37', '2026-03-12 09:45:07'),
+(7, 3, 4, 'QT-000006', '2026-03-12', '2026-03-12', 'expired', 19500.00, 0.00, 0.00, 0.00, 19500.00, 19000.00, 500.00, 2.56, NULL, NULL, 3, '2026-03-12 10:18:54', '2026-03-16 07:58:12'),
+(9, 4, 5, 'QT-000007', '2026-03-16', '2026-03-30', 'draft', 35860.00, 6000.00, 0.00, 0.00, 41860.00, 26540.00, 15320.00, 36.60, 'There might be an adjustment or additional  charges due to additional items like piping, trunking( We term them as miscellaneous though not added to this quotation)', NULL, 4, '2026-03-16 07:31:42', '2026-03-16 08:21:49'),
+(10, 4, 5, 'QT-000008', '2026-03-16', '2026-04-15', 'draft', 54420.00, 12000.00, 0.00, 0.00, 66420.00, 43680.00, 22740.00, 34.24, 'There might be an adjustment or additional  charges due to additional items like piping, trunking( We term them as miscellaneous though not added to this quotation)', NULL, 4, '2026-03-16 08:39:08', '2026-03-16 08:45:52'),
+(11, 4, 6, 'QT-000009', '2026-03-19', '2026-03-26', 'draft', 30125.00, 4500.00, 2625.00, 0.00, 32000.00, 18080.00, 13920.00, 43.50, 'Prices Might change due to extra requirements / materials needed after the site visit', NULL, 4, '2026-03-19 09:47:59', '2026-03-19 10:42:07');
 
 -- --------------------------------------------------------
 
@@ -718,7 +727,18 @@ INSERT INTO `quotation_items` (`id`, `quotation_id`, `catalog_item_id`, `descrip
 (87, 10, 23, 'HDMI 3M', 1.00, 1500.00, 800.00, 700.00, 46.67, 1500.00, 0, 16, '2026-03-16 08:45:52', '2026-03-16 08:45:52'),
 (88, 10, NULL, 'Camera Installation (Per Camera)', 8.00, 1500.00, 1000.00, 4000.00, 33.33, 12000.00, 1, 17, '2026-03-16 08:45:52', '2026-03-16 08:45:52'),
 (89, 10, NULL, 'Fuel', 1.00, 3000.00, 3000.00, 0.00, 0.00, 3000.00, 0, 20, '2026-03-16 08:45:52', '2026-03-16 08:45:52'),
-(90, 10, 4, 'Dahua DVR 8 Channel', 1.00, 6500.00, 4800.00, 1700.00, 26.15, 6500.00, 0, 16, '2026-03-16 08:45:52', '2026-03-16 08:45:52');
+(90, 10, 4, 'Dahua DVR 8 Channel', 1.00, 6500.00, 4800.00, 1700.00, 26.15, 6500.00, 0, 16, '2026-03-16 08:45:52', '2026-03-16 08:45:52'),
+(147, 11, 2, 'Dahua Camera 2MP (Without Audio)', 3.00, 3000.00, 1500.00, 4500.00, 50.00, 9000.00, 0, 16, '2026-03-19 10:42:07', '2026-03-19 10:42:07'),
+(148, 11, 4, 'Dahua DVR 4 Channel', 1.00, 6500.00, 3800.00, 2700.00, 41.54, 6500.00, 0, 16, '2026-03-19 10:42:07', '2026-03-19 10:42:07'),
+(149, 11, 7, '500GB Western Digital Hard disk', 1.00, 5500.00, 2500.00, 3000.00, 54.55, 5500.00, 0, 16, '2026-03-19 10:42:07', '2026-03-19 10:42:07'),
+(150, 11, 10, 'Coaxial Cable(Power & Data)  100M', 1.00, 3000.00, 2400.00, 600.00, 20.00, 3000.00, 0, 16, '2026-03-19 10:42:07', '2026-03-19 10:42:07'),
+(151, 11, 18, 'BNC Connectors', 6.00, 25.00, 20.00, 30.00, 20.00, 150.00, 0, 16, '2026-03-19 10:42:07', '2026-03-19 10:42:07'),
+(152, 11, 14, 'PSU 10 AMP', 1.00, 4500.00, 1000.00, 3500.00, 77.78, 4500.00, 0, 16, '2026-03-19 10:42:07', '2026-03-19 10:42:07'),
+(153, 11, 20, 'Adapter Box', 3.00, 200.00, 100.00, 300.00, 50.00, 600.00, 0, 16, '2026-03-19 10:42:07', '2026-03-19 10:42:07'),
+(154, 11, 19, 'Power Adapters', 3.00, 25.00, 20.00, 15.00, 20.00, 75.00, 0, 16, '2026-03-19 10:42:07', '2026-03-19 10:42:07'),
+(155, 11, NULL, 'Camera Installation (Per Camera)', 3.00, 1500.00, 1000.00, 1500.00, 33.33, 4500.00, 1, 17, '2026-03-19 10:42:07', '2026-03-19 10:42:07'),
+(156, 11, 22, 'Power Cable', 1.00, 300.00, 100.00, 200.00, 66.67, 300.00, 0, 16, '2026-03-19 10:42:07', '2026-03-19 10:42:07'),
+(157, 11, 21, 'Twin Socket', 1.00, 500.00, 300.00, 200.00, 40.00, 500.00, 0, 16, '2026-03-19 10:42:07', '2026-03-19 10:42:07');
 
 -- --------------------------------------------------------
 
@@ -788,8 +808,9 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('j5EOnPPYHuSDX0zd0BtSPxydddpkfIsSKpV3n8fY', NULL, '::1', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiSGQybXlmcXIyQlZJZkpQWnMzUHpJYk1QeHBOUmQweVRDaTJPZ3VrTSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MTY6Imh0dHA6Ly9sb2NhbGhvc3QiO3M6NToicm91dGUiO3M6NDoiaG9tZSI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1773658453),
-('Ofd9tiLtCOEzGrAGoYJzc9Smu9WqdxzyfF4n47Em', 4, '127.0.0.1', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoiSlh3S0hnSjhJU0NaQ1dmcTlNQkxlN2kwN3FldVNJanRmeUJOOTVZMSI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzU6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9xdW90YXRpb25zLzEwIjtzOjU6InJvdXRlIjtzOjE1OiJxdW90YXRpb25zLnNob3ciO31zOjEwOiJnb29nbGVfcmVmIjtOO3M6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjQ7fQ==', 1773661663);
+('0Ilx21yi1gbPRxN6ui9awSXMVO50eI8rboznYgwp', NULL, '127.0.0.1', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoiUDZvMmZ6SG02VXNvVnpaazFGVHlwdGlmTVVrQnQ4bTdkb0pNV0ZVaSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzM6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9hdXRoL2dvb2dsZSI7czo1OiJyb3V0ZSI7czoxMToiYXV0aC5nb29nbGUiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjEwOiJnb29nbGVfcmVmIjtOO3M6NToic3RhdGUiO3M6NDA6ImdxNUd4b0lLRlpQZ0NYRFdLekt0QkVSeGV4M3VKVHdMV3lYS0NwN0wiO30=', 1773923604),
+('jE1QxzCUMmeF2mMtPo0yQSAtpYLniyt5VKe6LVOh', NULL, '::1', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiMk1VVzRoZXFGeDFUcERUNWxZNU5ocU1FQXdxUDFRNTNFaWhBb0U2TCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MTY6Imh0dHA6Ly9sb2NhbGhvc3QiO3M6NToicm91dGUiO3M6NDoiaG9tZSI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1773928626),
+('w9T1Vo5hz1shHjjvKNe53gLY5CCw5qYbKG8e6hST', 4, '127.0.0.1', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoiU05zcnd4SEZQWDBuUzRLRU9oYzU5N2x2ektaT05HVDNKUkNQU0ttZCI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6NDQ6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9xdW90YXRpb25zLzExL2Rvd25sb2FkIjtzOjU6InJvdXRlIjtzOjE5OiJxdW90YXRpb25zLmRvd25sb2FkIjt9czoxMDoiZ29vZ2xlX3JlZiI7TjtzOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aTo0O30=', 1773928497);
 
 -- --------------------------------------------------------
 
@@ -1169,7 +1190,7 @@ ALTER TABLE `catalog_items`
 -- AUTO_INCREMENT for table `clients`
 --
 ALTER TABLE `clients`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `companies`
@@ -1205,7 +1226,7 @@ ALTER TABLE `invoice_downloads`
 -- AUTO_INCREMENT for table `invoice_items`
 --
 ALTER TABLE `invoice_items`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
 -- AUTO_INCREMENT for table `invoice_reminders`
@@ -1235,7 +1256,7 @@ ALTER TABLE `media`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
 
 --
 -- AUTO_INCREMENT for table `notifications`
@@ -1259,13 +1280,13 @@ ALTER TABLE `personal_access_tokens`
 -- AUTO_INCREMENT for table `quotations`
 --
 ALTER TABLE `quotations`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `quotation_items`
 --
 ALTER TABLE `quotation_items`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=91;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=158;
 
 --
 -- AUTO_INCREMENT for table `roles`

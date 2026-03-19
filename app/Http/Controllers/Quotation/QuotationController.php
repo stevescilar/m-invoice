@@ -103,25 +103,33 @@ class QuotationController extends Controller
                 }
             }
 
-            $grandTotal    = $materialCost + $labourCost;
+            $subtotal      = $materialCost + $labourCost;
+            $discountPct    = (float) ($request->discount_percentage ?? 0);
+            $discountAmount = $discountPct > 0
+                ? round($subtotal * $discountPct / 100, 2)
+                : round((float) ($request->discount_amount ?? 0), 2);
+
+            $grandTotal    = max(0, $subtotal - $discountAmount);
             $totalProfit   = $grandTotal - $totalCost;
             $overallMargin = $grandTotal > 0 ? round(($totalProfit / $grandTotal) * 100, 2) : 0;
 
             $quotation = Quotation::create([
-                'company_id'       => Auth::user()->company_id,
-                'client_id'        => $request->client_id,
-                'quotation_number' => $request->quotation_number,
-                'issue_date'       => $request->issue_date,
-                'expiry_date'      => $request->expiry_date,
-                'status'           => 'draft',
-                'material_cost'    => $materialCost,
-                'labour_cost'      => $labourCost,
-                'grand_total'      => $grandTotal,
-                'total_cost'       => $totalCost,
-                'total_profit'     => $totalProfit,
-                'overall_margin'   => $overallMargin,
-                'notes'            => $request->notes,
-                'created_by'       => Auth::id(),
+                'company_id'          => Auth::user()->company_id,
+                'client_id'           => $request->client_id,
+                'quotation_number'    => $request->quotation_number,
+                'issue_date'          => $request->issue_date,
+                'expiry_date'         => $request->expiry_date,
+                'status'              => 'draft',
+                'material_cost'       => $materialCost,
+                'labour_cost'         => $labourCost,
+                'discount_amount'     => $discountAmount,
+                'discount_percentage' => $discountPct,
+                'grand_total'         => $grandTotal,
+                'total_cost'          => $totalCost,
+                'total_profit'        => $totalProfit,
+                'overall_margin'      => $overallMargin,
+                'notes'               => $request->notes,
+                'created_by'          => Auth::id(),
             ]);
 
             foreach ($items as $item) {
@@ -205,7 +213,7 @@ class QuotationController extends Controller
                 'unit_price'      => (float)$i->unit_price,
                 'buying_price'    => (float)$i->buying_price,
                 'is_labour'       => (bool)$i->is_labour,
-                'item_type_id'    => $i->item_type_id,
+                'item_type_id'    => (string)$i->item_type_id,
             ];
         })->values()->toArray();
 
@@ -245,21 +253,29 @@ class QuotationController extends Controller
                 }
             }
 
-            $grandTotal    = $materialCost + $labourCost;
+            $subtotal      = $materialCost + $labourCost;
+            $discountPct    = (float) ($request->discount_percentage ?? 0);
+            $discountAmount = $discountPct > 0
+                ? round($subtotal * $discountPct / 100, 2)
+                : round((float) ($request->discount_amount ?? 0), 2);
+
+            $grandTotal    = max(0, $subtotal - $discountAmount);
             $totalProfit   = $grandTotal - $totalCost;
             $overallMargin = $grandTotal > 0 ? round(($totalProfit / $grandTotal) * 100, 2) : 0;
 
             $quotation->update([
-                'client_id'      => $request->client_id,
-                'issue_date'     => $request->issue_date,
-                'expiry_date'    => $request->expiry_date,
-                'material_cost'  => $materialCost,
-                'labour_cost'    => $labourCost,
-                'grand_total'    => $grandTotal,
-                'total_cost'     => $totalCost,
-                'total_profit'   => $totalProfit,
-                'overall_margin' => $overallMargin,
-                'notes'          => $request->notes,
+                'client_id'           => $request->client_id,
+                'issue_date'          => $request->issue_date,
+                'expiry_date'         => $request->expiry_date,
+                'material_cost'       => $materialCost,
+                'labour_cost'         => $labourCost,
+                'discount_amount'     => $discountAmount,
+                'discount_percentage' => $discountPct,
+                'grand_total'         => $grandTotal,
+                'total_cost'          => $totalCost,
+                'total_profit'        => $totalProfit,
+                'overall_margin'      => $overallMargin,
+                'notes'               => $request->notes,
             ]);
 
             $quotation->items()->delete();

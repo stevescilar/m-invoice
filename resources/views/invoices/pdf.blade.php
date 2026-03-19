@@ -309,7 +309,6 @@
     </style>
 </head>
 <body>
-@php $brandColor = $company->primary_color ?? '#16a34a'; @endphp
 
 @php
     /* ── Type breakdown ── */
@@ -474,19 +473,19 @@
 
                 {{-- Paybill badge --}}
                 @if($company->mpesa_paybill)
-                <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px; border-radius: 6px; overflow: hidden; border: 1.5px solid {{ $brandColor }};">
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px; border-radius: 6px; overflow: hidden; border: 1.5px solid #16a34a;">
                     <tr>
-                        <td colspan="2" style="border: none; background: {{ $brandColor }}; padding: 4px 10px; text-align: center;">
+                        <td colspan="2" style="border: none; background: #16a34a; padding: 4px 10px; text-align: center;">
                             <span style="font-size: 10px; font-weight: bold; color: #fff; letter-spacing: 1px; text-transform: uppercase;">LIPA NA M-PESA · PAYBILL</span>
                         </td>
                     </tr>
                     <tr>
                         <td style="border: none; background: #f0fdf4; padding: 6px 10px; text-align: center; width: 50%;">
-                            <div style="font-size: 9px; color: {{ $brandColor }}; text-transform: uppercase; font-weight: bold;">Paybill Number</div>
+                            <div style="font-size: 9px; color: #16a34a; text-transform: uppercase; font-weight: bold;">Paybill Number</div>
                             <div style="font-size: 18px; font-weight: bold; color: #111; letter-spacing: 3px;">{{ $company->mpesa_paybill }}</div>
                         </td>
                         <td style="border: none; background: #f0fdf4; padding: 6px 10px; text-align: center; width: 50%; border-left: 1px solid #bbf7d0;">
-                            <div style="font-size: 9px; color: {{ $brandColor }}; text-transform: uppercase; font-weight: bold;">Account Number</div>
+                            <div style="font-size: 9px; color: #16a34a; text-transform: uppercase; font-weight: bold;">Account Number</div>
                             <div style="font-size: 13px; font-weight: bold; color: #111;">{{ $company->mpesa_account ?? $company->name }}</div>
                         </td>
                     </tr>
@@ -495,15 +494,15 @@
 
                 {{-- Till badge --}}
                 @if($company->mpesa_till)
-                <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px; border: 1.5px solid {{ $brandColor }};">
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px; border: 1.5px solid #16a34a;">
                     <tr>
-                        <td style="border: none; background: {{ $brandColor }}; padding: 4px 10px; text-align: center;">
+                        <td style="border: none; background: #16a34a; padding: 4px 10px; text-align: center;">
                             <span style="font-size: 10px; font-weight: bold; color: #fff; letter-spacing: 1px; text-transform: uppercase;">LIPA NA M-PESA · BUY GOODS</span>
                         </td>
                     </tr>
                     <tr>
                         <td style="border: none; background: #f0fdf4; padding: 6px 10px; text-align: center;">
-                            <div style="font-size: 9px; color: {{ $brandColor }}; text-transform: uppercase; font-weight: bold;">Till Number</div>
+                            <div style="font-size: 9px; color: #16a34a; text-transform: uppercase; font-weight: bold;">Till Number</div>
                             <div style="font-size: 22px; font-weight: bold; color: #111; letter-spacing: 4px;">{{ $company->mpesa_till }}</div>
                         </td>
                     </tr>
@@ -512,15 +511,15 @@
 
                 {{-- Send Money badge --}}
                 @if($company->mpesa_number)
-                <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px; border: 1.5px solid {{ $brandColor }};">
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px; border: 1.5px solid #16a34a;">
                     <tr>
-                        <td style="border: none; background: {{ $brandColor }}; padding: 4px 10px; text-align: center;">
+                        <td style="border: none; background: #16a34a; padding: 4px 10px; text-align: center;">
                             <span style="font-size: 10px; font-weight: bold; color: #fff; letter-spacing: 1px; text-transform: uppercase;">M-PESA · SEND MONEY</span>
                         </td>
                     </tr>
                     <tr>
                         <td style="border: none; background: #f0fdf4; padding: 6px 10px; text-align: center;">
-                            <div style="font-size: 9px; color: {{ $brandColor }}; text-transform: uppercase; font-weight: bold;">Phone Number</div>
+                            <div style="font-size: 9px; color: #16a34a; text-transform: uppercase; font-weight: bold;">Phone Number</div>
                             <div style="font-size: 18px; font-weight: bold; color: #111; letter-spacing: 3px;">{{ $company->mpesa_number }}</div>
                         </td>
                     </tr>
@@ -580,6 +579,21 @@
                 </tr>
                 @endif
                 @endforeach
+
+                {{-- Discount --}}
+                @if($invoice->discount_amount > 0)
+                <tr>
+                    <td style="border: none; padding: 4px 8px; font-size: 11px; color: #16a34a; border-top: 1px solid #f0f0f0;">
+                        Discount
+                        @if($invoice->discount_percentage > 0)
+                            <span style="font-size: 9px; color: #999;">({{ number_format($invoice->discount_percentage, 1) }}%)</span>
+                        @endif
+                    </td>
+                    <td style="border: none; padding: 4px 8px; font-size: 11px; color: #16a34a; text-align: right; border-top: 1px solid #f0f0f0;">
+                        - Ksh {{ number_format($invoice->discount_amount, 2) }}
+                    </td>
+                </tr>
+                @endif
 
                 {{-- VAT --}}
                 @if($invoice->etr_enabled && $invoice->vat_amount > 0)

@@ -12,7 +12,8 @@ class Quotation extends Model
     protected $fillable = [
     'company_id', 'client_id', 'quotation_number', 'issue_date', 'expiry_date',
     'status', 'material_cost', 'labour_cost', 'grand_total', 'notes',
-    'converted_invoice_id', 'created_by', 'total_cost', 'total_profit', 'overall_margin'
+    'converted_invoice_id', 'created_by', 'total_cost', 'total_profit', 'overall_margin','discount_amount',
+    'discount_percentage',
 ];
 
     protected $casts = [

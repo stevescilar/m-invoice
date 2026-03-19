@@ -228,6 +228,37 @@
                 </div>
             </template>
 
+            {{-- Discount --}}
+            <div class="border border-dashed border-gray-200 rounded-lg p-3 space-y-2">
+                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M17 17h.01M7 17L17 7M3 12a9 9 0 1118 0 9 9 0 01-18 0z"/></svg>
+                    Discount <span class="font-normal text-gray-400 normal-case">(optional)</span>
+                </p>
+                <div class="flex gap-2">
+                    <div class="flex-1">
+                        <label class="block text-xs text-gray-400 mb-1">Fixed Amount (Ksh)</label>
+                        <input type="number" name="discount_amount" min="0" step="0.01"
+                            x-model.number="discountAmount"
+                            @input="discountPct = 0; $el.closest('form').querySelector('[name=discount_percentage]').value = 0; calculateTotals()"
+                            placeholder="0.00"
+                            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400">
+                    </div>
+                    <div class="flex items-end pb-0.5 text-gray-400 text-sm font-medium">or</div>
+                    <div class="flex-1">
+                        <label class="block text-xs text-gray-400 mb-1">Percentage (%)</label>
+                        <input type="number" name="discount_percentage" min="0" max="100" step="0.1"
+                            x-model.number="discountPct"
+                            @input="discountAmount = 0; $el.closest('form').querySelector('[name=discount_amount]').value = 0; calculateTotals()"
+                            placeholder="0"
+                            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400">
+                    </div>
+                </div>
+                <div x-show="discountValue > 0" class="flex justify-between text-sm text-green-600 font-medium">
+                    <span>Discount</span>
+                    <span>− Ksh <span x-text="discountValue.toLocaleString('en-KE',{minimumFractionDigits:2})"></span></span>
+                </div>
+            </div>
+
             <div class="flex justify-between font-bold text-gray-800 border-t pt-2 mt-1">
                 <span>Grand Total</span>
                 <span class="text-green-600">Ksh <span x-text="grandTotal.toLocaleString('en-KE',{minimumFractionDigits:2})"></span></span>
@@ -293,6 +324,9 @@ function quotationForm() {
         totalCost:         0,
         totalProfit:       0,
         overallMargin:     0,
+        discountAmount:    0,
+        discountPct:       0,
+        discountValue:     0,
 
         getTypeColor(id) {
             const t = itemTypes.find(t => String(t.id) === String(id));
@@ -362,6 +396,10 @@ function quotationForm() {
             }));
 
             this.grandTotal    = Object.values(breakdown).reduce((a, b) => a + b, 0);
+            this.discountValue = this.discountPct > 0
+                ? Math.round(this.grandTotal * this.discountPct / 100 * 100) / 100
+                : (this.discountAmount || 0);
+            this.grandTotal    = Math.max(0, this.grandTotal - this.discountValue);
             this.totalProfit   = this.grandTotal - this.totalCost;
             this.overallMargin = this.grandTotal > 0 ? (this.totalProfit / this.grandTotal) * 100 : 0;
         },

@@ -16,6 +16,7 @@ class Invoice extends Model
         'profit_from_quotation', 'notes', 'is_recurring', 'recurrence_interval',
         'next_recurrence_date', 'mpesa_code', 'paid_at', 'created_by','recurring_frequency',
         'recurring_next_date', 'recurring_ends_at', 'recurring_active', 'recurring_parent_id',
+        'discount_amount','discount_percentage',
     ];
 
     protected $casts = [
