@@ -213,7 +213,7 @@
         <div>
             <h2 class="font-bold text-gray-800 text-lg mb-1 flex items-center gap-2">
                 <i data-lucide="gift" class="w-5 h-5 text-green-600"></i>
-                Share M-Invoice & Earn Free Days
+                Share Invoxa & Earn Free Days
             </h2>
             <p class="text-gray-500 text-sm mb-3">
                 Share your unique QR code or link. Every business that registers using your link

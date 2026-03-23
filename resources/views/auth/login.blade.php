@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign In — M-Invoice</title>
+    <title>Sign In — Invoxa</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
@@ -98,7 +98,7 @@
                 <span style="background:linear-gradient(135deg,#22c55e,#facc15);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">fully in control.</span>
             </h2>
             <p style="color:rgba(255,255,255,0.5);font-size:0.95rem;line-height:1.7;margin-bottom:2rem;">
-                Join hundreds of Kenyan businesses managing invoices, tracking profits, and getting paid faster with M-Invoice.
+                Join hundreds of Kenyan businesses managing invoices, tracking profits, and getting paid faster with Invoxa.
             </p>
 
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:2rem;">
@@ -122,7 +122,7 @@
 
         <!-- Bottom -->
         <div style="position:relative;z-index:1;">
-            <p style="color:rgba(255,255,255,0.2);font-size:0.75rem;">© {{ date('Y') }} M-Invoice · Built for Kenya 🇰🇪</p>
+            <p style="color:rgba(255,255,255,0.2);font-size:0.75rem;">© {{ date('Y') }} Invoxa · Built for Kenya 🇰🇪</p>
         </div>
     </div>
 
@@ -137,7 +137,7 @@
 
         <div style="max-width:400px;margin:0 auto;width:100%;">
             <h1 style="font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:#111;margin-bottom:0.5rem;">Welcome back</h1>
-            <p style="color:#6b7280;font-size:0.9rem;margin-bottom:2rem;">Sign in to your M-Invoice account</p>
+            <p style="color:#6b7280;font-size:0.9rem;margin-bottom:2rem;">Sign in to your Invoxa account</p>
 
             @if(session('success'))
             <div style="background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d;padding:0.75rem 1rem;border-radius:10px;margin-bottom:1rem;font-size:0.875rem;">{{ session('success') }}</div>

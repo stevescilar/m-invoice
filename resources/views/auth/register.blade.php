@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Account — M-Invoice</title>
+    <title>Create Account — Invoxa</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
@@ -107,7 +107,7 @@
                         alt="QR" style="width:80px;height:80px;display:block;">
                 </div>
                 <div>
-                    <p style="color:#fff;font-size:0.85rem;font-weight:600;margin-bottom:0.25rem;">Scan to try M-Invoice</p>
+                    <p style="color:#fff;font-size:0.85rem;font-weight:600;margin-bottom:0.25rem;">Scan to try Invoxa</p>
                     <p style="color:rgba(255,255,255,0.4);font-size:0.75rem;line-height:1.5;">Share this QR code with other business owners. When they sign up you earn +1 free day.</p>
                 </div>
             </div>
@@ -115,7 +115,7 @@
 
         <!-- Bottom -->
         <div style="position:relative;z-index:1;">
-            <p style="color:rgba(255,255,255,0.2);font-size:0.75rem;">© {{ date('Y') }} M-Invoice · Built for Kenya 🇰🇪</p>
+            <p style="color:rgba(255,255,255,0.2);font-size:0.75rem;">© {{ date('Y') }} Invoxa · Built for Kenya 🇰🇪</p>
         </div>
     </div>
 

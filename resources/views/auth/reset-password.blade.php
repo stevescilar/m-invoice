@@ -5,7 +5,7 @@
 <div class="min-h-screen flex items-center justify-center bg-gray-50">
     <div class="w-full max-w-md">
         <div class="text-center mb-8">
-            <h1 class="text-3xl font-bold text-green-600">M-Invoice</h1>
+            <h1 class="text-3xl font-bold text-green-600">Invoxa</h1>
         </div>
         <div class="bg-white rounded-2xl shadow-lg p-8">
             <h2 class="text-xl font-bold text-gray-800 mb-6">Reset Password</h2>

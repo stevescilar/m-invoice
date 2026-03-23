@@ -3,1237 +3,791 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M-Invoice — Smart Invoicing for Kenyan Businesses</title>
+    <title>Invoxa — Smart Invoicing for Kenyan Businesses</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@400;500;700;800;900&family=Satoshi:wght@300;400;500;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
     <style>
         :root {
             --green: #16a34a;
             --green-light: #22c55e;
-            --yellow: #facc15;
-            --orange: #f97316;
-            --dark: #0a0a0a;
-            --card: #111111;
+            --dark: #0a0f0d;
+            --card: #111814;
+            --border: rgba(255,255,255,0.08);
         }
-
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Satoshi', sans-serif; background: var(--dark); color: #fff; overflow-x: hidden; }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--dark);
-            color: #fff;
-            overflow-x: hidden;
-        }
-
-        h1, h2, h3, .font-display { font-family: 'Syne', sans-serif; }
-
-        /* Noise texture overlay */
-        body::before {
+        /* Noise */
+        body::after {
             content: '';
-            position: fixed;
-            inset: 0;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
-            pointer-events: none;
-            z-index: 0;
-            opacity: 0.4;
+            position: fixed; inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+            pointer-events: none; z-index: 9999;
         }
 
-        /* Nav */
+        .font-display { font-family: 'Cabinet Grotesk', sans-serif; }
+
+        /* NAV */
         nav {
-            position: fixed;
-            top: 0; left: 0; right: 0;
-            z-index: 100;
-            padding: 1.25rem 2rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 1px solid rgba(255,255,255,0.06);
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            padding: 20px 48px;
+            display: flex; align-items: center; justify-content: space-between;
+            transition: all 0.3s;
+        }
+        nav.scrolled {
+            background: rgba(10,15,13,0.88);
             backdrop-filter: blur(20px);
-            background: rgba(10,10,10,0.8);
+            border-bottom: 1px solid var(--border);
+            padding: 14px 48px;
         }
-
-        .nav-logo {
-            font-family: 'Syne', sans-serif;
-            font-weight: 800;
-            font-size: 1.4rem;
-            color: #fff;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+        .logo {
+            font-family: 'Cabinet Grotesk', sans-serif;
+            font-weight: 900; font-size: 22px; letter-spacing: -0.5px;
+            color: #fff; text-decoration: none; display: flex; align-items: center; gap: 8px;
         }
-
-        .nav-logo span {
-            background: linear-gradient(135deg, var(--green-light), var(--yellow));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .logo-tag {
+            background: var(--green); color: #fff;
+            padding: 2px 8px; border-radius: 6px;
+            font-size: 11px; font-weight: 800; letter-spacing: 0.5px;
         }
-
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-            list-style: none;
-        }
-
-        .nav-links a {
-            color: rgba(255,255,255,0.6);
-            text-decoration: none;
-            font-size: 0.9rem;
-            transition: color 0.2s;
-        }
-
+        .nav-links { display: flex; gap: 36px; list-style: none; }
+        .nav-links a { color: rgba(255,255,255,0.55); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.2s; }
         .nav-links a:hover { color: #fff; }
+        .nav-actions { display: flex; gap: 10px; align-items: center; }
 
-        .nav-cta {
-            background: var(--green);
-            color: #fff;
-            padding: 0.6rem 1.4rem;
-            border-radius: 8px;
-            text-decoration: none;
-            font-size: 0.9rem;
-            font-weight: 600;
-            transition: background 0.2s, transform 0.2s;
+        /* BUTTONS */
+        .btn {
+            padding: 11px 22px; border-radius: 10px;
+            font-size: 14px; font-weight: 700; text-decoration: none;
+            display: inline-flex; align-items: center; gap: 7px;
+            transition: all 0.2s; cursor: pointer; border: none;
         }
-
-        .nav-cta:hover {
+        .btn-green {
+            background: var(--green); color: #fff;
+        }
+        .btn-green:hover {
             background: var(--green-light);
             transform: translateY(-1px);
+            box-shadow: 0 8px 24px rgba(22,163,74,0.3);
         }
+        .btn-glass {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid var(--border);
+            color: rgba(255,255,255,0.7);
+        }
+        .btn-glass:hover { background: rgba(255,255,255,0.1); color: #fff; }
+        .btn-lg { padding: 15px 30px; font-size: 16px; border-radius: 12px; }
 
-        /* Hero */
+        /* HERO */
         .hero {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 8rem 2rem 4rem;
-            position: relative;
-            text-align: center;
+            position: relative; min-height: 100vh;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            text-align: center; padding: 140px 24px 80px;
+            overflow: hidden;
         }
-
-        .hero-blob {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(120px);
-            opacity: 0.15;
-            pointer-events: none;
+        .blob {
+            position: absolute; border-radius: 50%;
+            filter: blur(130px); pointer-events: none;
         }
-
-        .blob-green {
-            width: 600px; height: 600px;
-            background: var(--green);
-            top: -100px; left: -100px;
-        }
-
-        .blob-yellow {
-            width: 400px; height: 400px;
-            background: var(--yellow);
-            bottom: 0; right: -100px;
-        }
-
-        .blob-orange {
-            width: 300px; height: 300px;
-            background: var(--orange);
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-        }
-
-        .hero-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: rgba(22, 163, 74, 0.15);
-            border: 1px solid rgba(22, 163, 74, 0.3);
-            color: var(--green-light);
-            padding: 0.4rem 1rem;
-            border-radius: 100px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            margin-bottom: 2rem;
+        .hero-eyebrow {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(22,163,74,0.1); border: 1px solid rgba(22,163,74,0.25);
+            color: #4ade80; padding: 6px 16px; border-radius: 100px;
+            font-size: 13px; font-weight: 600; margin-bottom: 28px;
             animation: fadeUp 0.6s ease both;
         }
-
-        .hero-badge::before {
-            content: '';
-            width: 6px; height: 6px;
-            background: var(--green-light);
-            border-radius: 50%;
-            animation: pulse 2s infinite;
+        .dot-pulse {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: #4ade80; animation: pulse 2s infinite;
         }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(1.5); }
-        }
-
-        .hero h1 {
-            font-size: clamp(3rem, 8vw, 6rem);
-            font-weight: 800;
-            line-height: 1.05;
-            margin-bottom: 1.5rem;
+        .hero-h1 {
+            font-family: 'Cabinet Grotesk', sans-serif;
+            font-size: clamp(50px, 8.5vw, 92px);
+            font-weight: 900; line-height: 1.0; letter-spacing: -3px;
+            max-width: 900px;
             animation: fadeUp 0.6s 0.1s ease both;
         }
-
-        .hero h1 .highlight {
-            background: linear-gradient(135deg, var(--green-light) 0%, var(--yellow) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .hero-h1 em {
+            font-family: 'Instrument Serif', serif;
+            font-style: italic; font-weight: 400;
+            color: var(--green-light); letter-spacing: -1px;
         }
-
-        .hero p {
-            font-size: 1.2rem;
-            color: rgba(255,255,255,0.6);
-            max-width: 560px;
-            margin: 0 auto 2.5rem;
-            line-height: 1.7;
+        .hero-p {
+            font-size: clamp(15px, 2vw, 19px);
+            color: rgba(255,255,255,0.5); max-width: 480px;
+            line-height: 1.7; margin-top: 20px;
             animation: fadeUp 0.6s 0.2s ease both;
         }
-
-        .hero-actions {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            flex-wrap: wrap;
+        .hero-btns {
+            display: flex; gap: 12px; margin-top: 36px;
+            flex-wrap: wrap; justify-content: center;
             animation: fadeUp 0.6s 0.3s ease both;
         }
-
-        .btn-primary {
-            background: var(--green);
-            color: #fff;
-            padding: 0.9rem 2rem;
-            border-radius: 10px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.2s;
-            border: none;
-            cursor: pointer;
-        }
-
-        .btn-primary:hover {
-            background: var(--green-light);
-            transform: translateY(-2px);
-            box-shadow: 0 20px 40px rgba(22, 163, 74, 0.3);
-        }
-
-        .btn-secondary {
-            background: rgba(255,255,255,0.05);
-            color: #fff;
-            padding: 0.9rem 2rem;
-            border-radius: 10px;
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 1rem;
-            border: 1px solid rgba(255,255,255,0.1);
-            transition: all 0.2s;
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255,255,255,0.1);
-            transform: translateY(-2px);
-        }
-
-        .hero-note {
-            margin-top: 1.5rem;
-            color: rgba(255,255,255,0.35);
-            font-size: 0.85rem;
+        .hero-social {
+            margin-top: 40px; display: flex; align-items: center;
+            gap: 14px; color: rgba(255,255,255,0.35); font-size: 13px;
             animation: fadeUp 0.6s 0.4s ease both;
         }
-
-        /* Stats bar */
-        .stats-bar {
-            background: rgba(255,255,255,0.03);
-            border-top: 1px solid rgba(255,255,255,0.06);
-            border-bottom: 1px solid rgba(255,255,255,0.06);
-            padding: 2rem;
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 2rem;
-            text-align: center;
+        .avatars { display: flex; }
+        .avatars div {
+            width: 28px; height: 28px; border-radius: 50%;
+            border: 2px solid var(--dark); font-size: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; color: #fff; margin-left: -8px;
         }
+        .avatars div:first-child { margin-left: 0; }
 
-        .stat-item .stat-number {
-            font-family: 'Syne', sans-serif;
-            font-size: 2rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--green-light), var(--yellow));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        /* DASHBOARD PREVIEW */
+        .preview-wrap {
+            width: 100%; max-width: 1080px; margin: 64px auto 0;
+            animation: fadeUp 0.8s 0.5s ease both;
         }
-
-        .stat-item .stat-label {
-            color: rgba(255,255,255,0.4);
-            font-size: 0.85rem;
-            margin-top: 0.25rem;
+        .preview-shell {
+            background: #0e1812;
+            border: 1px solid rgba(22,163,74,0.18);
+            border-radius: 18px; overflow: hidden;
+            box-shadow: 0 40px 120px rgba(0,0,0,0.65), 0 0 80px rgba(22,163,74,0.07);
         }
-
-        /* Section styles */
-        section {
-            padding: 6rem 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
+        .preview-titlebar {
+            background: #090d0b; padding: 11px 16px;
+            display: flex; align-items: center; gap: 7px;
+            border-bottom: 1px solid var(--border);
         }
-
-        .section-tag {
-            display: inline-block;
-            background: rgba(22, 163, 74, 0.1);
-            border: 1px solid rgba(22, 163, 74, 0.2);
-            color: var(--green-light);
-            padding: 0.3rem 0.8rem;
-            border-radius: 100px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            margin-bottom: 1rem;
+        .tbar-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .tbar-url {
+            flex: 1; background: rgba(255,255,255,0.04);
+            border-radius: 5px; padding: 3px 12px;
+            font-size: 11px; color: rgba(255,255,255,0.25);
+            text-align: center; max-width: 280px; margin: 0 auto;
         }
-
-        .section-title {
-            font-size: clamp(2rem, 5vw, 3.5rem);
-            font-weight: 800;
-            line-height: 1.1;
-            margin-bottom: 1rem;
+        .preview-body {
+            display: grid; grid-template-columns: 190px 1fr;
+            height: 320px;
         }
-
-        .section-sub {
-            color: rgba(255,255,255,0.5);
-            font-size: 1.1rem;
-            max-width: 560px;
-            line-height: 1.7;
+        .p-sidebar {
+            background: #080c0a; padding: 16px 12px;
+            border-right: 1px solid var(--border); overflow: hidden;
         }
+        .p-logo { font-family: 'Cabinet Grotesk', sans-serif; font-weight: 900; font-size: 13px; color: #4ade80; margin-bottom: 18px; }
+        .p-nav { padding: 6px 10px; border-radius: 6px; font-size: 11px; color: rgba(255,255,255,0.35); margin-bottom: 2px; display: flex; align-items: center; gap: 7px; }
+        .p-nav.on { background: rgba(22,163,74,0.14); color: #4ade80; }
+        .p-ndot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+        .p-main { background: #111814; padding: 16px; overflow: hidden; }
+        .p-topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .p-title { font-size: 12px; font-weight: 700; color: #fff; }
+        .p-newbtn { background: var(--green); color: #fff; padding: 4px 10px; border-radius: 5px; font-size: 9px; font-weight: 800; }
+        .p-cards { display: grid; grid-template-columns: repeat(4,1fr); gap: 7px; margin-bottom: 12px; }
+        .p-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 7px; padding: 9px; }
+        .p-card-l { font-size: 8px; color: rgba(255,255,255,0.35); margin-bottom: 3px; }
+        .p-card-v { font-size: 14px; font-weight: 900; font-family: 'Cabinet Grotesk', sans-serif; }
+        .p-row { display: grid; grid-template-columns: 1fr 75px 55px; gap: 6px; padding: 6px 6px; border-radius: 4px; align-items: center; }
+        .p-row.hdr { font-size: 8px; color: rgba(255,255,255,0.25); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .p-row.r { font-size: 9px; color: rgba(255,255,255,0.6); background: rgba(255,255,255,0.02); margin-bottom: 2px; }
+        .badge { padding: 2px 6px; border-radius: 20px; font-size: 7px; font-weight: 800; }
+        .b-paid { background: rgba(22,163,74,0.15); color: #4ade80; }
+        .b-sent { background: rgba(59,130,246,0.15); color: #60a5fa; }
+        .b-draft { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.4); }
 
-        /* Features */
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1.5rem;
-            margin-top: 4rem;
+        /* STATS */
+        .stats { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 48px 0; }
+        .stats-row { display: grid; grid-template-columns: repeat(4,1fr); }
+        .stat { text-align: center; padding: 12px 20px; border-right: 1px solid var(--border); }
+        .stat:last-child { border-right: none; }
+        .stat-n { font-family: 'Cabinet Grotesk', sans-serif; font-size: 46px; font-weight: 900; letter-spacing: -2px; line-height: 1; }
+        .stat-n span { color: var(--green-light); }
+        .stat-l { font-size: 13px; color: rgba(255,255,255,0.38); margin-top: 6px; }
+
+        /* SECTION COMMON */
+        .sec { padding: 100px 0; position: relative; overflow: hidden; }
+        .container { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+        .eyebrow { display: inline-flex; align-items: center; gap: 8px; color: var(--green-light); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 14px; }
+        .eyebrow::before { content: ''; width: 18px; height: 2px; background: var(--green-light); border-radius: 2px; }
+        .sec-h { font-family: 'Cabinet Grotesk', sans-serif; font-size: clamp(30px, 5vw, 50px); font-weight: 900; letter-spacing: -1.5px; line-height: 1.1; max-width: 560px; }
+        .sec-h em { font-family: 'Instrument Serif', serif; font-style: italic; font-weight: 400; color: rgba(255,255,255,0.45); }
+
+        /* FEATURES */
+        .feat-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 18px; margin-top: 56px; }
+        .feat-card {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 16px; padding: 26px;
+            transition: all 0.3s; position: relative; overflow: hidden;
         }
+        .feat-card:hover { border-color: rgba(22,163,74,0.25); transform: translateY(-3px); box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+        .feat-card:hover::before { opacity: 1; }
+        .feat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(22,163,74,0.5), transparent); opacity: 0; transition: opacity 0.3s; }
+        .feat-ico { width: 42px; height: 42px; background: rgba(22,163,74,0.1); border: 1px solid rgba(22,163,74,0.2); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 19px; margin-bottom: 16px; }
+        .feat-card h3 { font-family: 'Cabinet Grotesk', sans-serif; font-size: 16px; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.3px; }
+        .feat-card p { font-size: 13.5px; color: rgba(255,255,255,0.42); line-height: 1.7; }
 
-        .feature-card {
-            background: var(--card);
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 16px;
-            padding: 2rem;
-            transition: all 0.3s;
-            position: relative;
-            overflow: hidden;
-        }
+        /* VIDEO WALKTHROUGH */
+        .video-sec { padding: 100px 0; background: linear-gradient(180deg, transparent, rgba(22,163,74,0.025), transparent); }
+        .video-hdr { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: end; margin-bottom: 48px; }
+        .video-hdr p { font-size: 15px; color: rgba(255,255,255,0.42); line-height: 1.75; }
 
-        .feature-card::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, rgba(22,163,74,0.05), transparent);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .feature-card:hover {
-            border-color: rgba(22, 163, 74, 0.3);
-            transform: translateY(-4px);
-        }
-
-        .feature-card:hover::before { opacity: 1; }
-
-        .feature-icon {
-            width: 48px; height: 48px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.4rem;
-            margin-bottom: 1.25rem;
-        }
-
-        .feature-card h3 {
-            font-size: 1.1rem;
-            font-weight: 700;
-            margin-bottom: 0.75rem;
-        }
-
-        .feature-card p {
-            color: rgba(255,255,255,0.5);
-            font-size: 0.9rem;
-            line-height: 1.6;
-        }
-
-        /* Big feature */
-        .big-feature {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 4rem;
-            align-items: center;
-            margin-top: 4rem;
-            background: var(--card);
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 24px;
-            padding: 3rem;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .big-feature::after {
-            content: '';
-            position: absolute;
-            width: 400px; height: 400px;
-            background: radial-gradient(circle, rgba(22,163,74,0.1), transparent 70%);
-            right: -100px; top: -100px;
-            pointer-events: none;
-        }
-
-        .big-feature-mock {
-            background: #1a1a1a;
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 16px;
-            padding: 1.5rem;
-            font-size: 0.85rem;
-        }
-
-        .mock-row {
-            display: grid;
-            grid-template-columns: 1fr 80px 80px 110px;
-            gap: 0.5rem;
-            padding: 0.6rem 0;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            color: rgba(255,255,255,0.7);
-            text-align: right;
-        }
-
-        .mock-row span:first-child { text-align: left; }
-
-        .mock-profit {
-            color: var(--green-light);
-            font-weight: 600;
-        }
-
-        .mock-loss { color: #ef4444; font-weight: 600; }
-
-        .mock-header {
-            font-weight: 700;
-            color: rgba(255,255,255,0.4);
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            padding-bottom: 0.5rem;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            margin-bottom: 0.5rem;
-            display: grid;
-            grid-template-columns: 1fr 80px 80px 110px;
-            gap: 0.5rem;
-            text-align: right;
-        }
-        .mock-header span:first-child { text-align: left; }
-
-        .profit-summary {
-            margin-top: 1rem;
-            background: rgba(22,163,74,0.1);
+        .video-frame {
+            position: relative; border-radius: 20px; overflow: hidden;
+            aspect-ratio: 16/9;
             border: 1px solid rgba(22,163,74,0.2);
-            border-radius: 10px;
-            padding: 1rem;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.55), 0 0 100px rgba(22,163,74,0.05);
+            background: #090d0b; cursor: pointer;
         }
-
-        .profit-summary-row {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.85rem;
-            padding: 0.25rem 0;
+        .video-thumb {
+            position: absolute; inset: 0;
+            background: linear-gradient(145deg, #0d1a11, #0a0f0d);
+            display: flex; align-items: center; justify-content: center;
         }
-
-        /* Pricing */
-        .pricing-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1.5rem;
-            margin-top: 4rem;
+        .video-thumb-inner {
+            width: 82%; height: 78%;
+            display: grid; grid-template-columns: 170px 1fr;
+            border-radius: 8px; overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.05); opacity: 0.45;
         }
+        .vt-sidebar { background: #080c0a; padding: 12px; border-right: 1px solid rgba(255,255,255,0.05); }
+        .vt-main { background: #111814; padding: 12px; }
 
-        .pricing-card {
-            background: var(--card);
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 20px;
-            padding: 2rem;
-            position: relative;
-            transition: all 0.3s;
+        .video-overlay {
+            position: absolute; inset: 0;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            background: rgba(8,13,10,0.5);
+            backdrop-filter: blur(3px);
+            transition: all 0.3s; z-index: 10;
         }
+        .video-overlay.gone { opacity: 0; pointer-events: none; }
 
-        .pricing-card.featured {
-            border-color: var(--green);
-            background: rgba(22, 163, 74, 0.05);
+        .play-circle {
+            width: 76px; height: 76px; background: var(--green);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            transition: all 0.3s; margin-bottom: 18px;
+            animation: ripple 2.5s infinite;
         }
+        .play-circle svg { width: 28px; height: 28px; fill: #fff; margin-left: 5px; }
+        .video-overlay:hover .play-circle { transform: scale(1.08); background: var(--green-light); }
+        .video-title-label { font-family: 'Cabinet Grotesk', sans-serif; font-size: 17px; font-weight: 800; letter-spacing: -0.3px; }
+        .video-sub-label { font-size: 13px; color: rgba(255,255,255,0.4); margin-top: 4px; }
 
-        .pricing-card.featured::before {
-            content: 'BEST VALUE';
-            position: absolute;
-            top: -12px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--green);
-            color: #fff;
-            font-size: 0.7rem;
-            font-weight: 800;
-            letter-spacing: 0.1em;
-            padding: 0.25rem 1rem;
-            border-radius: 100px;
-        }
+        .vid-embed { display: none; position: absolute; inset: 0; z-index: 5; }
+        .vid-embed iframe { width: 100%; height: 100%; display: block; border: none; }
 
-        .pricing-card:hover {
-            transform: translateY(-4px);
-            border-color: rgba(22, 163, 74, 0.4);
-        }
-
-        .pricing-plan {
-            font-size: 0.85rem;
-            color: rgba(255,255,255,0.5);
-            font-weight: 500;
-            margin-bottom: 0.5rem;
-        }
-
-        .pricing-price {
-            font-family: 'Syne', sans-serif;
-            font-size: 3rem;
-            font-weight: 800;
-            line-height: 1;
-            margin-bottom: 0.25rem;
-        }
-
-        .pricing-price span {
-            font-size: 1rem;
-            font-weight: 500;
-            color: rgba(255,255,255,0.4);
-        }
-
-        .pricing-period {
-            color: rgba(255,255,255,0.4);
-            font-size: 0.85rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .pricing-features {
-            list-style: none;
-            space-y: 0.75rem;
-            margin-bottom: 2rem;
-        }
-
-        .pricing-features li {
-            display: flex;
-            align-items: center;
-            gap: 0.6rem;
-            font-size: 0.9rem;
-            color: rgba(255,255,255,0.7);
-            padding: 0.4rem 0;
-        }
-
-        .pricing-features li::before {
-            content: '✓';
-            color: var(--green-light);
-            font-weight: 700;
-            flex-shrink: 0;
-        }
-
-        .pricing-btn {
-            display: block;
-            text-align: center;
-            padding: 0.85rem;
-            border-radius: 10px;
-            font-weight: 600;
-            text-decoration: none;
-            font-size: 0.95rem;
+        /* Chapters */
+        .chapters { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-top: 14px; }
+        .ch {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 14px; cursor: pointer;
             transition: all 0.2s;
         }
+        .ch:hover, .ch.on { border-color: rgba(22,163,74,0.3); background: rgba(22,163,74,0.06); }
+        .ch.on .ch-n { color: var(--green-light); }
+        .ch-n { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.22); margin-bottom: 4px; transition: color 0.2s; }
+        .ch-t { font-size: 12px; font-weight: 600; color: #fff; line-height: 1.35; }
+        .ch-s { font-size: 11px; color: rgba(255,255,255,0.28); margin-top: 3px; }
 
-        .pricing-btn-outline {
-            border: 1px solid rgba(255,255,255,0.15);
-            color: #fff;
+        /* PRICING */
+        .price-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 18px; margin-top: 56px; }
+        .price-c {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 20px; padding: 34px 26px;
+            transition: transform 0.3s;
         }
-
-        .pricing-btn-outline:hover {
-            background: rgba(255,255,255,0.05);
+        .price-c:hover { transform: translateY(-4px); }
+        .price-c.pop {
+            background: linear-gradient(155deg, rgba(22,163,74,0.11), rgba(22,163,74,0.03));
+            border-color: rgba(22,163,74,0.28); position: relative;
         }
-
-        .pricing-btn-solid {
-            background: var(--green);
-            color: #fff;
+        .pop-tag {
+            position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+            background: var(--green); color: #fff; padding: 4px 16px;
+            border-radius: 100px; font-size: 10px; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 1px; white-space: nowrap;
         }
+        .p-name { font-family: 'Cabinet Grotesk', sans-serif; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255,255,255,0.4); margin-bottom: 10px; }
+        .p-amt { font-family: 'Cabinet Grotesk', sans-serif; font-size: 50px; font-weight: 900; letter-spacing: -3px; line-height: 1; }
+        .p-amt sup { font-size: 20px; font-weight: 700; letter-spacing: 0; vertical-align: top; margin-top: 9px; display: inline-block; color: rgba(255,255,255,0.45); }
+        .p-per { font-size: 12px; color: rgba(255,255,255,0.3); margin-top: 5px; margin-bottom: 24px; }
+        .p-div { height: 1px; background: var(--border); margin-bottom: 22px; }
+        .p-feats { list-style: none; margin-bottom: 26px; }
+        .p-feats li { display: flex; align-items: flex-start; gap: 9px; font-size: 13.5px; color: rgba(255,255,255,0.58); padding: 5px 0; }
+        .p-feats li::before { content: '✓'; width: 17px; height: 17px; min-width: 17px; background: rgba(22,163,74,0.14); color: #4ade80; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; margin-top: 1px; }
+        .btn-outline-w { display: block; width: 100%; padding: 13px; text-align: center; border-radius: 10px; border: 1px solid var(--border); color: rgba(255,255,255,0.6); font-weight: 700; font-size: 14px; text-decoration: none; transition: all 0.2s; }
+        .btn-outline-w:hover { border-color: rgba(255,255,255,0.2); color: #fff; background: rgba(255,255,255,0.04); }
+        .btn-green-full { display: block; width: 100%; padding: 13px; text-align: center; border-radius: 10px; background: var(--green); color: #fff; font-weight: 700; font-size: 14px; text-decoration: none; transition: all 0.2s; border: none; cursor: pointer; }
+        .btn-green-full:hover { background: var(--green-light); box-shadow: 0 8px 24px rgba(22,163,74,0.3); }
 
-        .pricing-btn-solid:hover {
-            background: var(--green-light);
-            box-shadow: 0 10px 30px rgba(22,163,74,0.3);
+        /* TESTIMONIALS */
+        .test-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 18px; margin-top: 56px; }
+        .test-c { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 26px; }
+        .stars { color: #fbbf24; font-size: 13px; letter-spacing: 2px; margin-bottom: 12px; }
+        .test-q { font-size: 14.5px; color: rgba(255,255,255,0.65); line-height: 1.7; font-style: italic; margin-bottom: 18px; }
+        .test-auth { display: flex; align-items: center; gap: 11px; }
+        .test-av { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; }
+        .test-name { font-size: 13px; font-weight: 700; color: #fff; }
+        .test-role { font-size: 11px; color: rgba(255,255,255,0.3); }
+
+        /* CTA */
+        .cta-wrap { padding: 100px 24px; }
+        .cta-box {
+            max-width: 680px; margin: 0 auto;
+            background: linear-gradient(140deg, rgba(22,163,74,0.1), rgba(22,163,74,0.03));
+            border: 1px solid rgba(22,163,74,0.22); border-radius: 28px;
+            padding: 64px 40px; text-align: center; position: relative; overflow: hidden;
         }
+        .cta-box::before { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 400px; height: 400px; background: radial-gradient(circle, rgba(22,163,74,0.08) 0%, transparent 70%); pointer-events: none; }
+        .cta-h { font-family: 'Cabinet Grotesk', sans-serif; font-size: clamp(30px, 5vw, 50px); font-weight: 900; letter-spacing: -1.5px; margin-bottom: 14px; position: relative; }
+        .cta-p { font-size: 15px; color: rgba(255,255,255,0.42); margin-bottom: 34px; position: relative; }
+        .cta-btns { display: flex; gap: 12px; justify-content: center; position: relative; flex-wrap: wrap; }
 
-        /* Testimonials */
-        .testimonials-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1.5rem;
-            margin-top: 4rem;
-        }
+        /* FOOTER */
+        footer { border-top: 1px solid var(--border); padding: 44px 0; }
+        .foot-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+        .foot-copy { font-size: 13px; color: rgba(255,255,255,0.28); }
+        .foot-links { display: flex; gap: 22px; }
+        .foot-links a { font-size: 13px; color: rgba(255,255,255,0.28); text-decoration: none; transition: color 0.2s; }
+        .foot-links a:hover { color: rgba(255,255,255,0.65); }
 
-        .testimonial-card {
-            background: var(--card);
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 16px;
-            padding: 1.75rem;
-            transition: all 0.3s;
-        }
+        /* ANIMATIONS */
+        @keyframes fadeUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+        @keyframes ripple { 0%{box-shadow:0 0 0 0 rgba(22,163,74,0.45)} 70%{box-shadow:0 0 0 22px rgba(22,163,74,0)} 100%{box-shadow:0 0 0 0 rgba(22,163,74,0)} }
 
-        .testimonial-card:hover {
-            border-color: rgba(22,163,74,0.2);
-            transform: translateY(-2px);
-        }
+        .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.7s ease, transform 0.7s ease; }
+        .reveal.vis { opacity: 1; transform: none; }
 
-        .testimonial-stars {
-            color: var(--yellow);
-            font-size: 0.9rem;
-            margin-bottom: 1rem;
-            letter-spacing: 2px;
-        }
-
-        .testimonial-text {
-            color: rgba(255,255,255,0.7);
-            font-size: 0.95rem;
-            line-height: 1.7;
-            margin-bottom: 1.5rem;
-        }
-
-        .testimonial-author {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .testimonial-avatar {
-            width: 40px; height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 0.9rem;
-            flex-shrink: 0;
-        }
-
-        .testimonial-name {
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-
-        .testimonial-role {
-            color: rgba(255,255,255,0.4);
-            font-size: 0.8rem;
-        }
-
-        /* FAQ */
-        .faq-list {
-            margin-top: 3rem;
-            max-width: 720px;
-        }
-
-        .faq-item {
-            border-bottom: 1px solid rgba(255,255,255,0.06);
-        }
-
-        .faq-question {
-            width: 100%;
-            background: none;
-            border: none;
-            color: #fff;
-            font-family: 'Inter', sans-serif;
-            font-size: 1rem;
-            font-weight: 600;
-            text-align: left;
-            padding: 1.5rem 0;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .faq-question:hover { color: var(--green-light); }
-
-        .faq-icon {
-            width: 24px; height: 24px;
-            border-radius: 50%;
-            border: 1px solid rgba(255,255,255,0.15);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-            flex-shrink: 0;
-            transition: all 0.3s;
-        }
-
-        .faq-answer {
-            color: rgba(255,255,255,0.5);
-            font-size: 0.95rem;
-            line-height: 1.7;
-            padding-bottom: 1.5rem;
-            display: none;
-        }
-
-        .faq-item.open .faq-answer { display: block; }
-        .faq-item.open .faq-icon {
-            background: var(--green);
-            border-color: var(--green);
-            transform: rotate(45deg);
-        }
-
-        /* CTA Banner */
-        .cta-section {
-            padding: 6rem 2rem;
-        }
-
-        .cta-inner {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: linear-gradient(135deg, #16a34a 0%, #15803d 50%, #166534 100%);
-            border-radius: 28px;
-            padding: 5rem 3rem;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .cta-inner::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-        }
-
-        .cta-inner h2 {
-            font-size: clamp(2rem, 5vw, 3.5rem);
-            font-weight: 800;
-            margin-bottom: 1rem;
-            position: relative;
-        }
-
-        .cta-inner p {
-            color: rgba(255,255,255,0.8);
-            font-size: 1.1rem;
-            margin-bottom: 2.5rem;
-            position: relative;
-        }
-
-        .cta-actions {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            flex-wrap: wrap;
-            position: relative;
-        }
-
-        .btn-white {
-            background: #fff;
-            color: var(--green);
-            padding: 0.9rem 2rem;
-            border-radius: 10px;
-            text-decoration: none;
-            font-weight: 700;
-            font-size: 1rem;
-            transition: all 0.2s;
-        }
-
-        .btn-white:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-        }
-
-        .btn-ghost {
-            background: rgba(255,255,255,0.1);
-            color: #fff;
-            padding: 0.9rem 2rem;
-            border-radius: 10px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 1rem;
-            border: 1px solid rgba(255,255,255,0.2);
-            transition: all 0.2s;
-        }
-
-        .btn-ghost:hover {
-            background: rgba(255,255,255,0.2);
-            transform: translateY(-2px);
-        }
-
-        /* Footer */
-        footer {
-            border-top: 1px solid rgba(255,255,255,0.06);
-            padding: 3rem 2rem;
-        }
-
-        .footer-inner {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-
-        .footer-links {
-            display: flex;
-            gap: 1.5rem;
-            list-style: none;
-        }
-
-        .footer-links a {
-            color: rgba(255,255,255,0.4);
-            text-decoration: none;
-            font-size: 0.85rem;
-            transition: color 0.2s;
-        }
-
-        .footer-links a:hover { color: #fff; }
-
-        .footer-copy {
-            color: rgba(255,255,255,0.3);
-            font-size: 0.85rem;
-        }
-
-        /* Animations */
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .fade-up {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: opacity 0.6s ease, transform 0.6s ease;
-        }
-
-        .fade-up.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .features-grid, .pricing-grid, .testimonials-grid {
-                grid-template-columns: 1fr;
-            }
-            .stats-bar { grid-template-columns: repeat(2, 1fr); }
-            .big-feature { grid-template-columns: 1fr; gap: 2rem; }
+        @media(max-width:768px) {
+            nav { padding: 16px 20px; }
             .nav-links { display: none; }
+            .feat-grid, .price-grid, .test-grid { grid-template-columns: 1fr; }
+            .stats-row { grid-template-columns: 1fr 1fr; }
+            .video-hdr { grid-template-columns: 1fr; gap: 20px; }
+            .chapters { grid-template-columns: 1fr 1fr; }
+            .preview-body { grid-template-columns: 1fr; }
+            .p-sidebar { display: none; }
         }
     </style>
 </head>
 <body>
 
-<!-- NAV -->
-<nav>
-    <a href="/" class="nav-logo">
-        M-<span>Invoice</span>
-    </a>
+{{-- NAV --}}
+<nav id="nav">
+    <a href="/" class="logo">Invoxa <span class="logo-tag">BETA</span></a>
     <ul class="nav-links">
         <li><a href="#features">Features</a></li>
+        <li><a href="#walkthrough">See it in action</a></li>
         <li><a href="#pricing">Pricing</a></li>
-        <li><a href="#testimonials">Testimonials</a></li>
-        <li><a href="#faq">FAQ</a></li>
     </ul>
-    <div style="display:flex;gap:0.75rem;align-items:center;">
-        <a href="/login" style="color:rgba(255,255,255,0.6);text-decoration:none;font-size:0.9rem;">Sign in</a>
-        <a href="/register" class="nav-cta">Start Free Trial →</a>
+    <div class="nav-actions">
+        <a href="{{ route('login') }}" class="btn btn-glass">Sign in</a>
+        <a href="{{ route('register') }}" class="btn btn-green">Start free trial →</a>
     </div>
 </nav>
 
-<!-- HERO -->
-<div class="hero">
-    <div class="hero-blob blob-green"></div>
-    <div class="hero-blob blob-yellow"></div>
-    <div class="hero-blob blob-orange"></div>
+{{-- HERO --}}
+<section class="hero">
+    <div class="blob" style="width:700px;height:700px;background:rgba(22,163,74,0.06);top:-250px;left:-250px;"></div>
+    <div class="blob" style="width:500px;height:500px;background:rgba(22,163,74,0.05);bottom:-200px;right:-150px;"></div>
 
-    <div style="position:relative;z-index:1;">
-        <div class="hero-badge">🇰🇪 Built for Kenyan Businesses</div>
-        <h1>
-            Invoice Smarter.<br>
-            <span class="highlight">Get Paid Faster.</span>
-        </h1>
-        <p>
-            Create professional invoices and quotations, track profits in real-time,
-            and get paid via M-Pesa — all in one place.
-        </p>
-        <div class="hero-actions">
-            <a href="/register" class="btn-primary">
-                Start Free Trial
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </a>
-            <a href="/login" class="btn-secondary">Sign in to your account</a>
-        </div>
-        <p class="hero-note">3-day free trial · No credit card required · Cancel anytime</p>
-    </div>
-</div>
-
-<!-- STATS BAR -->
-<div class="stats-bar">
-    <div class="stat-item">
-        <div class="stat-number">500+</div>
-        <div class="stat-label">Businesses onboarded</div>
-    </div>
-    <div class="stat-item">
-        <div class="stat-number">Ksh 10M+</div>
-        <div class="stat-label">Invoiced through M-Invoice</div>
-    </div>
-    <div class="stat-item">
-        <div class="stat-number">98%</div>
-        <div class="stat-label">Customer satisfaction</div>
-    </div>
-    <div class="stat-item">
-        <div class="stat-number">3 min</div>
-        <div class="stat-label">Average invoice creation time</div>
-    </div>
-</div>
-
-<!-- FEATURES -->
-<section id="features">
-    <div class="fade-up">
-        <div class="section-tag">Features</div>
-        <h2 class="section-title">Everything you need to<br><span style="color:var(--green-light)">run your business</span></h2>
-        <p class="section-sub">From quotations to payment collection — M-Invoice handles it all so you can focus on the work.</p>
+    <div class="hero-eyebrow">
+        <div class="dot-pulse"></div>
+        🇰🇪 Built for Kenyan businesses
     </div>
 
-    <div class="features-grid fade-up">
-        <div class="feature-card">
-            <div class="feature-icon" style="background:rgba(22,163,74,0.15);">📄</div>
-            <h3>Professional Invoices</h3>
-            <p>Create beautiful PDF invoices in seconds. Add your logo, payment details, and ETR tax information.</p>
-        </div>
-        <div class="feature-card">
-            <div class="feature-icon" style="background:rgba(250,204,21,0.15);">💰</div>
-            <h3>Profit Tracking</h3>
-            <p>Enter buying and selling prices per item. See real-time profit margins so you never underprice again.</p>
-        </div>
-        <div class="feature-card">
-            <div class="feature-icon" style="background:rgba(249,115,22,0.15);">📱</div>
-            <h3>M-Pesa Payments</h3>
-            <p>Accept payments via M-Pesa Paybill, Till Number, or direct M-Pesa. Payment details auto-print on invoices.</p>
-        </div>
-        <div class="feature-card">
-            <div class="feature-icon" style="background:rgba(139,92,246,0.15);">📊</div>
-            <h3>Business Dashboard</h3>
-            <p>Weekly, monthly, quarterly, and yearly revenue and profit analytics. Know your numbers at a glance.</p>
-        </div>
-        <div class="feature-card">
-            <div class="feature-icon" style="background:rgba(236,72,153,0.15);">⏰</div>
-            <h3>Automated Reminders</h3>
-            <p>Automatically email clients before due date, on due date, and after. Never chase payments manually again.</p>
-        </div>
-        <div class="feature-card">
-            <div class="feature-icon" style="background:rgba(20,184,166,0.15);">🔄</div>
-            <h3>Quotations → Invoices</h3>
-            <p>Convert approved quotations to invoices in one click. All line items and profit data carry over automatically.</p>
-        </div>
+    <h1 class="hero-h1">
+        Invoice smarter,<br>get paid <em>faster</em>
+    </h1>
+
+    <p class="hero-p">
+        Professional invoices, quotations, M-Pesa payments, profit tracking — all in one clean tool built for Kenya.
+    </p>
+
+    <div class="hero-btns">
+        <a href="{{ route('register') }}" class="btn btn-green btn-lg">
+            Start free — 3 days trial
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+        <a href="#walkthrough" class="btn btn-glass btn-lg">▶&nbsp; Watch demo</a>
     </div>
 
-    <!-- Big feature — profit calculator -->
-    <div class="big-feature fade-up">
-        <div>
-            <div class="section-tag">Profit Calculator</div>
-            <h3 style="font-size:2rem;font-weight:800;margin-bottom:1rem;line-height:1.2;">
-                Know your profit<br>before you quote
-            </h3>
-            <p style="color:rgba(255,255,255,0.5);line-height:1.7;margin-bottom:1.5rem;">
-                Enter buying price and selling price per line item. M-Invoice calculates your profit margin in real-time as you type — so you always quote confidently.
-            </p>
-            <ul style="list-style:none;space-y:0.5rem;">
-                <li style="color:rgba(255,255,255,0.7);font-size:0.9rem;padding:0.3rem 0;display:flex;gap:0.5rem;align-items:center;">
-                    <span style="color:var(--green-light)">✓</span> Per-item profit and margin %
-                </li>
-                <li style="color:rgba(255,255,255,0.7);font-size:0.9rem;padding:0.3rem 0;display:flex;gap:0.5rem;align-items:center;">
-                    <span style="color:var(--green-light)">✓</span> Overall margin summary
-                </li>
-                <li style="color:rgba(255,255,255,0.7);font-size:0.9rem;padding:0.3rem 0;display:flex;gap:0.5rem;align-items:center;">
-                    <span style="color:var(--green-light)">✓</span> Private — not shown to clients
-                </li>
-                <li style="color:rgba(255,255,255,0.7);font-size:0.9rem;padding:0.3rem 0;display:flex;gap:0.5rem;align-items:center;">
-                    <span style="color:var(--green-light)">✓</span> Saved for profit analytics on dashboard
-                </li>
-            </ul>
+    <div class="hero-social">
+        <div class="avatars">
+            <div style="background:#16a34a">JK</div>
+            <div style="background:#0891b2">AW</div>
+            <div style="background:#7c3aed">BM</div>
+            <div style="background:#ea580c">FM</div>
         </div>
-        <div class="big-feature-mock">
-            <div class="mock-header">
-                <span>Item</span>
-                <span>Buy</span>
-                <span>Sell</span>
-                <span>Profit</span>
+        <span>Trusted by 200+ Kenyan businesses</span>
+    </div>
+
+    {{-- Dashboard Preview --}}
+    <div class="preview-wrap">
+        <div class="preview-shell">
+            <div class="preview-titlebar">
+                <div class="tbar-dot" style="background:#ff5f57"></div>
+                <div class="tbar-dot" style="background:#febc2e"></div>
+                <div class="tbar-dot" style="background:#28c840"></div>
+                <div class="tbar-url">invoxa.co.ke/dashboard</div>
             </div>
-            <div class="mock-row">
-                <span>Dahua Camera</span>
-                <span>2,000</span>
-                <span>2,800</span>
-                <span class="mock-profit">+800 (29%)</span>
-            </div>
-            <div class="mock-row">
-                <span>30m Cable</span>
-                <span>350</span>
-                <span>600</span>
-                <span class="mock-profit">+250 (42%)</span>
-            </div>
-            <div class="mock-row">
-                <span>Installation</span>
-                <span>0</span>
-                <span>1,500</span>
-                <span class="mock-profit">+1,500 (100%)</span>
-            </div>
-            
-            <div class="profit-summary">
-                <div class="profit-summary-row">
-                    <span style="color:rgba(255,255,255,0.5)">Grand Total</span>
-                    <span style="font-weight:700;">Ksh 4,900</span>
+            <div class="preview-body">
+                <div class="p-sidebar">
+                    <div class="p-logo">Invoxa</div>
+                    <div class="p-nav on"><div class="p-ndot"></div>Dashboard</div>
+                    <div class="p-nav"><div class="p-ndot"></div>Invoices</div>
+                    <div class="p-nav"><div class="p-ndot"></div>Quotations</div>
+                    <div class="p-nav"><div class="p-ndot"></div>Clients</div>
+                    <div class="p-nav"><div class="p-ndot"></div>Expenses</div>
+                    <div class="p-nav"><div class="p-ndot"></div>Catalog</div>
+                    <div class="p-nav"><div class="p-ndot"></div>Reports</div>
                 </div>
-                <div class="profit-summary-row">
-                    <span style="color:rgba(255,255,255,0.5)">Total Cost</span>
-                    <span style="color:#ef4444;font-weight:600;">Ksh 2,350</span>
-                </div>
-                <div class="profit-summary-row">
-                    <span style="color:rgba(255,255,255,0.5)">Total Profit</span>
-                    <span style="color:var(--green-light);font-weight:700;">Ksh 2,550</span>
-                </div>
-                <div class="profit-summary-row">
-                    <span style="color:rgba(255,255,255,0.5)">Margin</span>
-                    <span style="color:var(--green-light);font-weight:700;">52%</span>
+                <div class="p-main">
+                    <div class="p-topbar">
+                        <div class="p-title">Overview · December 2024</div>
+                        <div class="p-newbtn">+ New Invoice</div>
+                    </div>
+                    <div class="p-cards">
+                        <div class="p-card">
+                            <div class="p-card-l">Revenue</div>
+                            <div class="p-card-v" style="color:#4ade80">485K</div>
+                        </div>
+                        <div class="p-card">
+                            <div class="p-card-l">Invoices</div>
+                            <div class="p-card-v">24</div>
+                        </div>
+                        <div class="p-card">
+                            <div class="p-card-l">Pending</div>
+                            <div class="p-card-v" style="color:#fbbf24">68K</div>
+                        </div>
+                        <div class="p-card">
+                            <div class="p-card-l">Profit</div>
+                            <div class="p-card-v" style="color:#4ade80">42%</div>
+                        </div>
+                    </div>
+                    <div class="p-row hdr"><div>Client</div><div>Amount</div><div>Status</div></div>
+                    <div class="p-row r"><div>Safaricom Ltd</div><div>Ksh 85,000</div><div><span class="badge b-paid">Paid</span></div></div>
+                    <div class="p-row r"><div>KCB Bank</div><div>Ksh 42,500</div><div><span class="badge b-sent">Sent</span></div></div>
+                    <div class="p-row r"><div>Equity Bank</div><div>Ksh 120,000</div><div><span class="badge b-paid">Paid</span></div></div>
+                    <div class="p-row r"><div>Naivas Ltd</div><div>Ksh 28,000</div><div><span class="badge b-draft">Draft</span></div></div>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- PRICING -->
-<section id="pricing" style="background:rgba(255,255,255,0.01);border-top:1px solid rgba(255,255,255,0.04);border-bottom:1px solid rgba(255,255,255,0.04);max-width:100%;padding:6rem 2rem;">
-<div style="max-width:1200px;margin:0 auto;">
-    <div class="fade-up" style="text-align:center;">
-        <div class="section-tag">Pricing</div>
-        <h2 class="section-title">Simple, transparent pricing</h2>
-        <p class="section-sub" style="margin:0 auto;">Start with a 3-day free trial. No credit card required.</p>
-    </div>
-
-    <div class="pricing-grid fade-up">
-        <!-- Per Invoice -->
-        <div class="pricing-card">
-            <div class="pricing-plan">Pay As You Go</div>
-            <div class="pricing-price">Ksh 100 <span>/ download</span></div>
-            <div class="pricing-period">Pay only when you download a PDF</div>
-            <ul class="pricing-features">
-                <li>Unlimited invoice creation</li>
-                <li>Pay per PDF download</li>
-                <li>M-Pesa payment</li>
-                <li>Email to clients</li>
-                <li>All core features</li>
-            </ul>
-            <a href="/register" class="pricing-btn pricing-btn-outline">Get Started Free</a>
-        </div>
-
-        <!-- Monthly -->
-        <div class="pricing-card featured">
-            <div class="pricing-plan">Monthly</div>
-            <div class="pricing-price" style="background:linear-gradient(135deg,var(--green-light),var(--yellow));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Ksh 700 <span style="-webkit-text-fill-color:rgba(255,255,255,0.4)">/ month</span></div>
-            <div class="pricing-period">Billed monthly · Cancel anytime</div>
-            <ul class="pricing-features">
-                <li>Unlimited PDF downloads</li>
-                <li>All features included</li>
-                <li>Automated reminders</li>
-                <li>Profit analytics</li>
-                <li>Expense tracking</li>
-                <li>Priority support</li>
-            </ul>
-            <a href="/register" class="pricing-btn pricing-btn-solid">Start Free Trial</a>
-        </div>
-
-        <!-- Yearly -->
-        <div class="pricing-card">
-            <div class="pricing-plan">Yearly</div>
-            <div class="pricing-price">Ksh 5,000 <span>/ year</span></div>
-            <div class="pricing-period">Save Ksh 3,400 vs monthly</div>
-            <ul class="pricing-features">
-                <li>Everything in Monthly</li>
-                <li>2 months free</li>
-                <li>Recurring invoices</li>
-                <li>Advanced analytics</li>
-                <li>Priority support</li>
-                <li>Early access to features</li>
-            </ul>
-            <a href="/register" class="pricing-btn pricing-btn-outline">Get Started Free</a>
+{{-- STATS --}}
+<div class="stats">
+    <div class="container">
+        <div class="stats-row">
+            <div class="stat"><div class="stat-n">200<span>+</span></div><div class="stat-l">Active businesses</div></div>
+            <div class="stat"><div class="stat-n">12<span>K+</span></div><div class="stat-l">Invoices sent</div></div>
+            <div class="stat"><div class="stat-n">3<span>min</span></div><div class="stat-l">To create & send an invoice</div></div>
+            <div class="stat"><div class="stat-n">100<span>%</span></div><div class="stat-l">Built for Kenya</div></div>
         </div>
     </div>
 </div>
-</section>
 
-<!-- TESTIMONIALS -->
-<section id="testimonials">
-    <div class="fade-up">
-        <div class="section-tag">Testimonials</div>
-        <h2 class="section-title">Trusted by Kenyan<br><span style="color:var(--green-light)">business owners</span></h2>
-    </div>
-
-    <div class="testimonials-grid fade-up">
-        <div class="testimonial-card">
-            <div class="testimonial-stars">★★★★★</div>
-            <p class="testimonial-text">"I used to spend hours making invoices in Word. Now I do it in 3 minutes and send directly to my client's email with M-Pesa details. Game changer."</p>
-            <div class="testimonial-author">
-                <div class="testimonial-avatar" style="background:rgba(22,163,74,0.2);color:var(--green-light);">JM</div>
-                <div>
-                    <div class="testimonial-name">James Mwangi</div>
-                    <div class="testimonial-role">Electrical Contractor, Nairobi</div>
-                </div>
-            </div>
+{{-- FEATURES --}}
+<section class="sec" id="features">
+    <div class="container">
+        <div class="reveal">
+            <div class="eyebrow">What's inside</div>
+            <h2 class="sec-h">Everything your business <em>actually needs</em></h2>
         </div>
-        <div class="testimonial-card">
-            <div class="testimonial-stars">★★★★★</div>
-            <p class="testimonial-text">"The profit calculator is incredible. I realized I was undercharging for labour. After using M-Invoice I increased my margins by 20% without losing clients."</p>
-            <div class="testimonial-author">
-                <div class="testimonial-avatar" style="background:rgba(250,204,21,0.2);color:var(--yellow);">SW</div>
-                <div>
-                    <div class="testimonial-name">Sarah Wanjiku</div>
-                    <div class="testimonial-role">CCTV Installer, Mombasa</div>
-                </div>
+        <div class="feat-grid reveal">
+            <div class="feat-card">
+                <div class="feat-ico">📄</div>
+                <h3>Professional Invoices & Quotes</h3>
+                <p>Beautiful branded PDFs in seconds. M-Pesa details, ETR support, custom brand colors — all included.</p>
             </div>
-        </div>
-        <div class="testimonial-card">
-            <div class="testimonial-stars">★★★★★</div>
-            <p class="testimonial-text">"The automated payment reminders alone are worth it. My clients now pay on time because the system follows up automatically. I don't have to chase anyone."</p>
-            <div class="testimonial-author">
-                <div class="testimonial-avatar" style="background:rgba(249,115,22,0.2);color:var(--orange);">PO</div>
-                <div>
-                    <div class="testimonial-name">Peter Otieno</div>
-                    <div class="testimonial-role">IT Services, Kisumu</div>
-                </div>
+            <div class="feat-card">
+                <div class="feat-ico">💰</div>
+                <h3>Profit Tracking</h3>
+                <p>Know your real margins on every job. Track buying vs selling price and see your profit automatically.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-ico">📱</div>
+                <h3>M-Pesa Payment Badges</h3>
+                <p>Paybill, till number and send money details print beautifully on every invoice. No more manual writing.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-ico">🔁</div>
+                <h3>Recurring Invoices</h3>
+                <p>Set it once. Auto-generate invoices weekly, monthly or yearly for your repeat clients without lifting a finger.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-ico">📊</div>
+                <h3>Expense Tracking</h3>
+                <p>Log business expenses, categorize them, and see your real net profit position every month.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-ico">⚡</div>
+                <h3>Smart Reminders</h3>
+                <p>Automatic email reminders before and after due dates. Stop chasing clients — let Invoxa do it.</p>
             </div>
         </div>
     </div>
 </section>
 
-<!-- FAQ -->
-<section id="faq" style="max-width:1200px;margin:0 auto;padding:6rem 2rem;">
-    <div class="fade-up" style="display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:start;">
-        <div>
-            <div class="section-tag">FAQ</div>
-            <h2 class="section-title">Questions?<br>We got answers.</h2>
-            <p class="section-sub">Can't find what you're looking for? Email us at support@minvoice.co.ke</p>
+{{-- VIDEO WALKTHROUGH --}}
+<section class="video-sec" id="walkthrough">
+    <div class="container">
+        <div class="video-hdr reveal">
+            <div>
+                <div class="eyebrow">See it in action</div>
+                <h2 class="sec-h" style="max-width:420px">Watch how it <em>all works</em></h2>
+            </div>
+            <p>A 3-minute walkthrough showing how to create your first invoice, set up M-Pesa payment details, and send it to a client — all from one screen.</p>
         </div>
-        <div class="faq-list">
-            <div class="faq-item">
-                <button class="faq-question" onclick="toggleFaq(this)">
-                    What happens after the 3-day trial?
-                    <span class="faq-icon">+</span>
-                </button>
-                <div class="faq-answer">After your trial ends, you can still create invoices and quotations but PDF downloads will be locked. Choose any plan to unlock downloads. No data is lost.</div>
+
+        <div class="reveal">
+            {{-- Video player --}}
+            <div class="video-frame" id="videoFrame" onclick="playVideo()">
+
+                {{-- Thumbnail --}}
+                <div class="video-thumb">
+                    <div class="video-thumb-inner">
+                        <div class="vt-sidebar">
+                            <div style="font-size:9px;color:#4ade80;font-weight:900;margin-bottom:12px;">Invoxa</div>
+                            <div style="background:rgba(22,163,74,0.15);padding:4px 8px;border-radius:4px;font-size:7px;color:#4ade80;margin-bottom:3px;">Dashboard</div>
+                            <div style="padding:4px 8px;font-size:7px;color:rgba(255,255,255,0.25);margin-bottom:3px;">Invoices</div>
+                            <div style="padding:4px 8px;font-size:7px;color:rgba(255,255,255,0.25);margin-bottom:3px;">Quotations</div>
+                            <div style="padding:4px 8px;font-size:7px;color:rgba(255,255,255,0.25);">Clients</div>
+                        </div>
+                        <div class="vt-main">
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                                <div style="font-size:8px;font-weight:700;color:#fff;">Invoices</div>
+                                <div style="background:#16a34a;color:#fff;padding:2px 7px;border-radius:3px;font-size:6px;font-weight:800;">+ New</div>
+                            </div>
+                            <div style="display:grid;grid-template-columns:1fr 60px 50px;gap:4px;font-size:6px;color:rgba(255,255,255,0.25);padding:0 3px;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px;">
+                                <div>Client</div><div>Amount</div><div>Status</div>
+                            </div>
+                            <div style="display:grid;grid-template-columns:1fr 60px 50px;gap:4px;padding:5px 3px;background:rgba(255,255,255,0.025);border-radius:3px;margin-bottom:2px;">
+                                <div style="font-size:7px;color:rgba(255,255,255,0.6)">Safaricom</div>
+                                <div style="font-size:7px;color:rgba(255,255,255,0.6)">85,000</div>
+                                <div style="font-size:6px;color:#4ade80;font-weight:800;">Paid</div>
+                            </div>
+                            <div style="display:grid;grid-template-columns:1fr 60px 50px;gap:4px;padding:5px 3px;background:rgba(255,255,255,0.025);border-radius:3px;margin-bottom:2px;">
+                                <div style="font-size:7px;color:rgba(255,255,255,0.6)">KCB Bank</div>
+                                <div style="font-size:7px;color:rgba(255,255,255,0.6)">42,500</div>
+                                <div style="font-size:6px;color:#60a5fa;font-weight:800;">Sent</div>
+                            </div>
+                            <div style="display:grid;grid-template-columns:1fr 60px 50px;gap:4px;padding:5px 3px;background:rgba(255,255,255,0.025);border-radius:3px;">
+                                <div style="font-size:7px;color:rgba(255,255,255,0.6)">Naivas Ltd</div>
+                                <div style="font-size:7px;color:rgba(255,255,255,0.6)">28,000</div>
+                                <div style="font-size:6px;color:rgba(255,255,255,0.35);font-weight:800;">Draft</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Play overlay --}}
+                <div class="video-overlay" id="overlay">
+                    <div class="play-circle">
+                        <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    </div>
+                    <div class="video-title-label">Watch the full walkthrough</div>
+                    <div class="video-sub-label">3 min &nbsp;·&nbsp; No signup needed</div>
+                </div>
+
+                {{-- Embed (injected on play) --}}
+                <div class="vid-embed" id="vidEmbed">
+                    {{--
+                        TO ADD YOUR VIDEO:
+                        1. Upload your screen recording to YouTube
+                        2. Get the video ID from the URL (e.g. youtube.com/watch?v=ABC123)
+                        3. Replace YOUR_VIDEO_ID below with that ID
+                    --}}
+                    <iframe id="vidIframe" src="" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+                </div>
             </div>
-            <div class="faq-item">
-                <button class="faq-question" onclick="toggleFaq(this)">
-                    Do clients see my buying prices?
-                    <span class="faq-icon">+</span>
-                </button>
-                <div class="faq-answer">Never. Buying prices and profit margins are completely private to you. Client PDFs only show descriptions, quantities, and selling prices.</div>
-            </div>
-            <div class="faq-item">
-                <button class="faq-question" onclick="toggleFaq(this)">
-                    Can I accept M-Pesa payments?
-                    <span class="faq-icon">+</span>
-                </button>
-                <div class="faq-answer">Yes! Add your M-Pesa Paybill, Till Number, or M-Pesa number in settings. It will automatically appear on all your invoices and emails sent to clients.</div>
-            </div>
-            <div class="faq-item">
-                <button class="faq-question" onclick="toggleFaq(this)">
-                    Can I add team members?
-                    <span class="faq-icon">+</span>
-                </button>
-                <div class="faq-answer">Yes. You can invite staff members to your company account. You control their access level — they can create invoices but won't see profit data unless you allow it.</div>
-            </div>
-            <div class="faq-item">
-                <button class="faq-question" onclick="toggleFaq(this)">
-                    Is my data safe?
-                    <span class="faq-icon">+</span>
-                </button>
-                <div class="faq-answer">Your data is fully isolated per company — no other business can access your invoices or client data. We use industry-standard encryption and secure backups.</div>
+
+            {{-- Chapter markers --}}
+            <div class="chapters">
+                <div class="ch on" onclick="chapter(this, 0)">
+                    <div class="ch-n">01 · 0:00</div>
+                    <div class="ch-t">Creating your first invoice</div>
+                    <div class="ch-s">0:00 – 0:55</div>
+                </div>
+                <div class="ch" onclick="chapter(this, 55)">
+                    <div class="ch-n">02 · 0:55</div>
+                    <div class="ch-t">Setting up M-Pesa payments</div>
+                    <div class="ch-s">0:55 – 1:40</div>
+                </div>
+                <div class="ch" onclick="chapter(this, 100)">
+                    <div class="ch-n">03 · 1:40</div>
+                    <div class="ch-t">Quotations & conversions</div>
+                    <div class="ch-s">1:40 – 2:20</div>
+                </div>
+                <div class="ch" onclick="chapter(this, 140)">
+                    <div class="ch-n">04 · 2:20</div>
+                    <div class="ch-t">Dashboard & profit view</div>
+                    <div class="ch-s">2:20 – 3:00</div>
+                </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- CTA BANNER -->
-<div class="cta-section">
-    <div class="cta-inner fade-up">
-        <h2>Ready to get paid faster?</h2>
-        <p>Join hundreds of Kenyan businesses already using M-Invoice. Start your free trial today.</p>
-        <div class="cta-actions">
-            <a href="/register" class="btn-white">Start Free Trial — It's Free</a>
-            <a href="/login" class="btn-ghost">Sign in →</a>
+{{-- PRICING --}}
+<section class="sec" id="pricing">
+    <div class="container">
+        <div class="reveal" style="text-align:center">
+            <div class="eyebrow" style="justify-content:center">Pricing</div>
+            <h2 class="sec-h" style="max-width:100%;text-align:center">Simple, <em>honest</em> pricing</h2>
+            <p style="color:rgba(255,255,255,0.38);margin-top:12px;font-size:15px">No hidden fees. Cancel anytime. 3-day free trial on all plans.</p>
+        </div>
+        <div class="price-grid reveal">
+            <div class="price-c">
+                <div class="p-name">Starter</div>
+                <div class="p-amt"><sup>Ksh</sup>100</div>
+                <div class="p-per">per download · pay as you go</div>
+                <div class="p-div"></div>
+                <ul class="p-feats">
+                    <li>Unlimited invoices & quotes</li>
+                    <li>PDF downloads (Ksh 100 each)</li>
+                    <li>M-Pesa payment badges</li>
+                    <li>Client management</li>
+                    <li>Email sending</li>
+                </ul>
+                <a href="{{ route('register') }}" class="btn-outline-w">Get started free</a>
+            </div>
+            <div class="price-c pop">
+                <div class="pop-tag">Most Popular</div>
+                <div class="p-name">Monthly</div>
+                <div class="p-amt"><sup>Ksh</sup>700</div>
+                <div class="p-per">per month · unlimited downloads</div>
+                <div class="p-div"></div>
+                <ul class="p-feats">
+                    <li>Everything in Starter</li>
+                    <li>Unlimited PDF downloads</li>
+                    <li>Profit & expense tracking</li>
+                    <li>Recurring invoices</li>
+                    <li>Smart payment reminders</li>
+                    <li>Custom brand colors on PDFs</li>
+                </ul>
+                <a href="{{ route('register') }}" class="btn-green-full">Start 3-day free trial</a>
+            </div>
+            <div class="price-c">
+                <div class="p-name">Yearly</div>
+                <div class="p-amt"><sup>Ksh</sup>5K</div>
+                <div class="p-per">per year · save Ksh 3,400</div>
+                <div class="p-div"></div>
+                <ul class="p-feats">
+                    <li>Everything in Monthly</li>
+                    <li>Best value — 40% off</li>
+                    <li>Priority support</li>
+                    <li>Staff accounts</li>
+                    <li>Early access to new features</li>
+                    <li>Referral bonuses</li>
+                </ul>
+                <a href="{{ route('register') }}" class="btn-outline-w">Get started free</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+{{-- TESTIMONIALS --}}
+<section class="sec">
+    <div class="container">
+        <div class="reveal" style="text-align:center">
+            <div class="eyebrow" style="justify-content:center">From our users</div>
+            <h2 class="sec-h" style="max-width:100%;text-align:center">Loved by Kenyan <em>businesses</em></h2>
+        </div>
+        <div class="test-grid reveal">
+            <div class="test-c">
+                <div class="stars">★★★★★</div>
+                <p class="test-q">"Before Invoxa I was writing invoices in Word. Now I send a professional PDF with M-Pesa details in under 2 minutes. My clients actually pay faster."</p>
+                <div class="test-auth">
+                    <div class="test-av" style="background:#16a34a">JK</div>
+                    <div><div class="test-name">James Kamau</div><div class="test-role">IT Consultant, Nairobi</div></div>
+                </div>
+            </div>
+            <div class="test-c">
+                <div class="stars">★★★★★</div>
+                <p class="test-q">"The profit tracking is everything. I finally know which clients are actually making me money and which ones I need to reprice."</p>
+                <div class="test-auth">
+                    <div class="test-av" style="background:#0891b2">AW</div>
+                    <div><div class="test-name">Aisha Wanjiru</div><div class="test-role">Events Planner, Westlands</div></div>
+                </div>
+            </div>
+            <div class="test-c">
+                <div class="stars">★★★★★</div>
+                <p class="test-q">"Recurring invoices alone saved me 2 hours a week. I have 12 monthly retainer clients and Invoxa handles all of them automatically."</p>
+                <div class="test-auth">
+                    <div class="test-av" style="background:#7c3aed">BM</div>
+                    <div><div class="test-name">Brian Mutua</div><div class="test-role">CCTV & Security, Mombasa</div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{{-- CTA --}}
+<div class="cta-wrap">
+    <div class="cta-box reveal">
+        <h2 class="cta-h">Ready to get paid faster?</h2>
+        <p class="cta-p">Join 200+ Kenyan businesses on Invoxa. Start your free 3-day trial — no card required.</p>
+        <div class="cta-btns">
+            <a href="{{ route('register') }}" class="btn btn-green btn-lg">Create free account →</a>
+            <a href="{{ route('login') }}" class="btn btn-glass btn-lg">Sign in</a>
         </div>
     </div>
 </div>
-<!-- Referral Section -->
-<div style="max-width:1200px;margin:0 auto;padding:2rem 2rem 6rem;">
-    <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:3rem;display:flex;align-items:center;gap:3rem;flex-wrap:wrap;">
-        <div style="flex:1;min-width:280px;">
-            <div class="section-tag">Referral Program</div>
-            <h2 style="font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;margin-bottom:1rem;">
-                Share & earn<br><span style="color:var(--green-light)">free days</span>
-            </h2>
-            <p style="color:rgba(255,255,255,0.5);line-height:1.7;margin-bottom:1.5rem;">
-                Every business that signs up using your unique referral link gives you <strong style="color:#fff;">+1 free day</strong> on your subscription. Share the QR code or your link anywhere.
-            </p>
-            <a href="/register" class="btn-primary" style="display:inline-flex;">
-                Get Your Referral Link →
-            </a>
-        </div>
-        <div style="flex-shrink:0;background:white;padding:1.5rem;border-radius:16px;text-align:center;">
-            <p style="color:#111;font-size:0.75rem;font-weight:600;margin-bottom:0.75rem;text-transform:uppercase;letter-spacing:0.1em;">Try M-Invoice Free</p>
-            <!-- Static QR pointing to register page -->
-            <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&color=16a34a&data={{ urlencode(url('/register')) }}"
-                alt="QR Code" style="width:140px;height:140px;display:block;">
-            <p style="color:#666;font-size:0.7rem;margin-top:0.75rem;">Scan to sign up free</p>
-        </div>
-    </div>
-</div>
-<!-- FOOTER -->
+
+{{-- FOOTER --}}
 <footer>
-    <div class="footer-inner">
-        <a href="/" class="nav-logo" style="font-size:1.1rem;">M-<span>Invoice</span></a>
-        <ul class="footer-links">
-            <li><a href="#features">Features</a></li>
-            <li><a href="#pricing">Pricing</a></li>
-            <li><a href="#faq">FAQ</a></li>
-            <li><a href="/login">Login</a></li>
-            <li><a href="/register">Register</a></li>
-        </ul>
-        <p class="footer-copy">© {{ date('Y') }} M-Invoice. Built for Kenya 🇰🇪</p>
+    <div class="container">
+        <div class="foot-row">
+            <div>
+                <div class="logo" style="margin-bottom:5px">Invoxa <span class="logo-tag">BETA</span></div>
+                <div class="foot-copy">© {{ date('Y') }} Invoxa. Built with ❤️ in Kenya.</div>
+            </div>
+            <div class="foot-links">
+                <a href="{{ route('login') }}">Login</a>
+                <a href="{{ route('register') }}">Register</a>
+                <a href="#pricing">Pricing</a>
+                <a href="mailto:support@invoxa.co.ke">Support</a>
+            </div>
+        </div>
     </div>
 </footer>
 
 <script>
-// Scroll animations
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry, i) => {
-        if (entry.isIntersecting) {
-            setTimeout(() => entry.target.classList.add('visible'), i * 100);
+    // Nav scroll
+    window.addEventListener('scroll', () => {
+        document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 40);
+    });
+
+    // Scroll reveal
+    const obs = new IntersectionObserver((entries) => {
+        entries.forEach((e, i) => {
+            if (e.isIntersecting) {
+                setTimeout(() => e.target.classList.add('vis'), i * 100);
+                obs.unobserve(e.target);
+            }
+        });
+    }, { threshold: 0.08 });
+    document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+    // ── VIDEO ──────────────────────────────────────────────────
+    // Replace with your YouTube video ID once you record the walkthrough
+    // Example: if URL is youtube.com/watch?v=dQw4w9WgXcQ  → VIDEO_ID = 'dQw4w9WgXcQ'
+    const VIDEO_ID = 'YOUR_VIDEO_ID';
+
+    function playVideo(startAt = 0) {
+        if (VIDEO_ID === 'YOUR_VIDEO_ID') {
+            alert('📹 Video coming soon!\n\nTo add your walkthrough:\n1. Record a screen capture of Invoxa\n2. Upload to YouTube\n3. In welcome.blade.php set VIDEO_ID to your YouTube video ID');
+            return;
         }
-    });
-}, { threshold: 0.1 });
+        const iframe = document.getElementById('vidIframe');
+        iframe.src = `https://www.youtube.com/embed/${VIDEO_ID}?autoplay=1&start=${startAt}&rel=0&modestbranding=1&color=white`;
+        document.getElementById('overlay').classList.add('gone');
+        document.getElementById('vidEmbed').style.display = 'block';
+    }
 
-document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
-
-// FAQ toggle
-function toggleFaq(btn) {
-    const item = btn.closest('.faq-item');
-    const isOpen = item.classList.contains('open');
-    document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
-    if (!isOpen) item.classList.add('open');
-}
-
-// Smooth scroll
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-        e.preventDefault();
-        document.querySelector(this.getAttribute('href'))?.scrollIntoView({ behavior: 'smooth' });
-    });
-});
+    function chapter(el, seconds) {
+        document.querySelectorAll('.ch').forEach(c => c.classList.remove('on'));
+        el.classList.add('on');
+        playVideo(seconds);
+    }
 </script>
-
 </body>
 </html>

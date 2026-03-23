@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin — @yield('title', 'M-Invoice')</title>
+    <title>Admin — @yield('title', 'Invoxa')</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
@@ -12,7 +12,7 @@
 <!-- Navbar -->
 <nav class="bg-gray-900 text-white px-6 py-4 flex justify-between items-center">
     <div class="flex items-center gap-8">
-        <span class="font-bold text-lg text-green-400">M-Invoice Admin</span>
+        <span class="font-bold text-lg text-green-400">Invoxa Admin</span>
         <div class="flex gap-6 text-sm">
             <a href="{{ route('admin.dashboard') }}" class="hover:text-green-400 {{ request()->routeIs('admin.dashboard') ? 'text-green-400' : '' }}">Dashboard</a>
             <a href="{{ route('admin.companies.index') }}" class="hover:text-green-400 {{ request()->routeIs('admin.companies*') ? 'text-green-400' : '' }}">Companies</a>

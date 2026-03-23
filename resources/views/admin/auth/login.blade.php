@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login — M-Invoice</title>
+    <title>Admin Login — Invoxa</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-900 min-h-screen flex items-center justify-center">
 
 <div class="w-full max-w-md">
     <div class="text-center mb-8">
-        <h1 class="text-3xl font-bold text-green-400">M-Invoice</h1>
+        <h1 class="text-3xl font-bold text-green-400">Invoxa</h1>
         <p class="text-gray-400 text-sm mt-1">Admin Panel</p>
     </div>
 
