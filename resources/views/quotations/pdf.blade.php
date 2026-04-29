@@ -190,18 +190,22 @@
         <td style="width:50%; vertical-align:middle; padding: 0 0 16px 0; border:none;">
             @if($company->logo)
                 <img src="{{ public_path('storage/' . $company->logo) }}"
-                     style="max-height:64px; max-width:180px;" alt="Logo">
+                     style="max-height:70px; max-width:200px;" alt="Logo">
             @else
                 <div class="company-name">{{ $company->name }}</div>
+                <div class="company-sub">{{ $company->phone }}</div>
+                <div class="company-sub">{{ $company->email }}</div>
             @endif
-            <div class="company-sub">{{ $company->phone }}</div>
-            <div class="company-sub">{{ $company->email }}</div>
         </td>
         <td style="width:50%; vertical-align:middle; text-align:right; padding: 0 0 16px 0; border:none;">
             @if($company->logo)
                 <div class="company-name">{{ $company->name }}</div>
             @endif
             <div class="company-sub" style="margin-top:4px;">{{ $company->address }}</div>
+            @if($company->logo)
+                <div class="company-sub">{{ $company->phone }}</div>
+                <div class="company-sub">{{ $company->email }}</div>
+            @endif
         </td>
     </tr>
 </table>

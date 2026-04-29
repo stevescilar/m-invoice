@@ -335,14 +335,14 @@
         <td class="w50 vmid nopad noborder" style="padding-bottom: 16px;">
             @if($company->logo)
                 <img src="{{ public_path('storage/' . $company->logo) }}"
-                     style="max-height: 64px; max-width: 180px;" alt="Logo">
+                     style="max-height: 70px; max-width: 200px;" alt="Logo">
             @else
                 <div class="company-name">{{ $company->name }}</div>
-            @endif
-            <div class="company-sub">{{ $company->phone }}</div>
-            <div class="company-sub">{{ $company->email }}</div>
-            @if($invoice->etr_enabled && $company->kra_pin)
-                <div class="company-sub">KRA PIN: {{ $company->kra_pin }}</div>
+                <div class="company-sub">{{ $company->phone }}</div>
+                <div class="company-sub">{{ $company->email }}</div>
+                @if($invoice->etr_enabled && $company->kra_pin)
+                    <div class="company-sub">KRA PIN: {{ $company->kra_pin }}</div>
+                @endif
             @endif
         </td>
         <td class="w50 vmid tright nopad noborder" style="padding-bottom: 16px;">
@@ -350,6 +350,13 @@
                 <div class="company-name">{{ $company->name }}</div>
             @endif
             <div class="company-sub" style="margin-top: 4px;">{{ $company->address }}</div>
+            @if($company->logo)
+                <div class="company-sub">{{ $company->phone }}</div>
+                <div class="company-sub">{{ $company->email }}</div>
+                @if($invoice->etr_enabled && $company->kra_pin)
+                    <div class="company-sub">KRA PIN: {{ $company->kra_pin }}</div>
+                @endif
+            @endif
         </td>
     </tr>
 </table>

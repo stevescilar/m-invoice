@@ -188,55 +188,40 @@
                             class="w-full border border-gray-200 rounded-lg px-4 py-2 text-sm text-gray-500 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-medium file:bg-green-50 file:text-green-700 hover:file:bg-green-100">
                         <p class="text-xs text-gray-400 mt-2">PNG with transparent background recommended.</p>
                     </div>
-                    <button type="submit" class="w-full bg-green-600 text-white py-2.5 rounded-lg hover:bg-green-700 font-medium text-sm flex items-center justify-center gap-2">
-                        <i data-lucide="save" class="w-4 h-4"></i> Save Branding
-                    </button>
-                </div>
-
-                <!-- Brand Color Tab content injected inside Branding -->
-                <div class="p-4 border border-gray-200 rounded-xl mt-0 -mt-5"
-                    x-data="{ color: '{{ old('primary_color', $company->primary_color ?? '#16a34a') }}' }">
-                    <p class="text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
-                        <i data-lucide="palette" class="w-4 h-4 text-gray-400"></i> PDF Brand Color
-                    </p>
-                    <p class="text-xs text-gray-400 mb-3">Used for the header, totals accent, and table headers on all invoices and quotations.</p>
-
-                    <div class="flex items-center gap-4">
-                        <input type="color" name="primary_color" x-model="color"
-                            :value="color"
-                            class="w-14 h-14 rounded-xl cursor-pointer border-2 border-gray-200 p-1 flex-shrink-0">
-
-                        <div class="flex-1 space-y-1">
-                            <div class="flex items-center gap-2 flex-wrap">
-                                @foreach(['#16a34a','#2563eb','#dc2626','#7c3aed','#ea580c','#0891b2','#be185d','#111827'] as $preset)
-                                <button type="button"
-                                    @click="color = '{{ $preset }}'; document.querySelector('[name=primary_color]').value = '{{ $preset }}'"
-                                    class="w-7 h-7 rounded-full border-2 transition hover:scale-110"
-                                    :class="color === '{{ $preset }}' ? 'border-gray-800 scale-110' : 'border-transparent'"
-                                    style="background: {{ $preset }}"
-                                    title="{{ $preset }}">
-                                </button>
-                                @endforeach
+                    <!-- Brand Color — inside branding tab -->
+                    <div class="p-4 border border-gray-200 rounded-xl"
+                        x-data="{ color: '{{ old('primary_color', $company->primary_color ?? '#16a34a') }}' }">
+                        <p class="text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                            <i data-lucide="palette" class="w-4 h-4 text-gray-400"></i> PDF Brand Color
+                        </p>
+                        <p class="text-xs text-gray-400 mb-3">Used for the header, totals accent, and table headers on all invoices and quotations.</p>
+                        <div class="flex items-center gap-4">
+                            <input type="color" name="primary_color" x-model="color"
+                                :value="color"
+                                class="w-14 h-14 rounded-xl cursor-pointer border-2 border-gray-200 p-1 flex-shrink-0">
+                            <div class="flex-1 space-y-1">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    @foreach(['#16a34a','#2563eb','#dc2626','#7c3aed','#ea580c','#0891b2','#be185d','#111827'] as $preset)
+                                    <button type="button"
+                                        @click="color = '{{ $preset }}'; document.querySelector('[name=primary_color]').value = '{{ $preset }}'"
+                                        class="w-7 h-7 rounded-full border-2 transition hover:scale-110"
+                                        :class="color === '{{ $preset }}' ? 'border-gray-800 scale-110' : 'border-transparent'"
+                                        style="background: {{ $preset }}"
+                                        title="{{ $preset }}">
+                                    </button>
+                                    @endforeach
+                                </div>
+                                <p class="text-xs text-gray-400">Pick a preset or use the colour picker</p>
                             </div>
-                            <p class="text-xs text-gray-400">Pick a preset or use the colour picker</p>
-                        </div>
-
-                        <!-- Live preview badge -->
-                        <div class="flex-shrink-0 rounded-lg overflow-hidden border border-gray-200 text-xs w-32">
-                            <div class="px-3 py-1.5 text-white font-bold text-center" :style="'background:' + color">
-                                INVOICE
-                            </div>
-                            <div class="px-3 py-1.5 bg-white text-gray-600 text-center">
-                                Grand Total
-                            </div>
-                            <div class="px-3 py-1 text-white font-bold text-center text-sm" :style="'background:' + color + '22; color:' + color">
-                                Ksh 50,000
+                            <div class="flex-shrink-0 rounded-lg overflow-hidden border border-gray-200 text-xs w-32">
+                                <div class="px-3 py-1.5 text-white font-bold text-center" :style="'background:' + color">INVOICE</div>
+                                <div class="px-3 py-1.5 bg-white text-gray-600 text-center">Grand Total</div>
+                                <div class="px-3 py-1 font-bold text-center text-sm" :style="'background:' + color + '22; color:' + color">Ksh 50,000</div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                    <button type="submit" class="w-full bg-green-600 text-white py-2.5 rounded-lg hover:bg-green-700 font-medium text-sm flex items-center justify-center gap-2 mt-4">
+                    <button type="submit" class="w-full bg-green-600 text-white py-2.5 rounded-lg hover:bg-green-700 font-medium text-sm flex items-center justify-center gap-2">
                         <i data-lucide="save" class="w-4 h-4"></i> Save Branding & Color
                     </button>
                 </div>

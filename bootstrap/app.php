@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
+            'admin.gate' => \App\Http\Middleware\AdminGateMiddleware::class,
             'admin' => \App\Http\Middleware\EnsureIsAdmin::class,
             'active.company' => \App\Http\Middleware\EnsureHasActiveCompany::class,
             'valid.subscription' => \App\Http\Middleware\EnsureSubscriptionValid::class,

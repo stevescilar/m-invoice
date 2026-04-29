@@ -18,6 +18,7 @@
             <a href="{{ route('admin.companies.index') }}" class="hover:text-green-400 {{ request()->routeIs('admin.companies*') ? 'text-green-400' : '' }}">Companies</a>
             <a href="{{ route('admin.users.index') }}" class="hover:text-green-400 {{ request()->routeIs('admin.users*') ? 'text-green-400' : '' }}">Users</a>
             <a href="{{ route('admin.transactions.index') }}" class="hover:text-green-400 {{ request()->routeIs('admin.transactions*') ? 'text-green-400' : '' }}">Transactions</a>
+
         </div>
     </div>
     <div class="flex items-center gap-4 text-sm">
@@ -26,6 +27,8 @@
             @csrf
             <button class="text-red-400 hover:text-red-300">Logout</button>
         </form>
+        {{-- <a href="{{ route('admin.pofile') }}" class="hover:text-green-400 {{ request()->routeIs('admin.transactions*') ? 'text-green-400' : '' }}">Transactions</a> --}}
+
     </div>
 </nav>
 
