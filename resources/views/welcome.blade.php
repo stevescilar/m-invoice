@@ -798,5 +798,6 @@
         playVideo(seconds);
     }
 </script>
+@include('partials.chatbot')
 </body>
 </html>

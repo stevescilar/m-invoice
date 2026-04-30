@@ -320,5 +320,7 @@
             }, 1000);
         })();
     </script>
+
+@include('partials.chatbot')
 </body>
 </html>

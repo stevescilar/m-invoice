@@ -19,6 +19,7 @@ use App\Http\Controllers\Subscription\SubscriptionController;
 use App\Http\Controllers\Staff\StaffController;
 use App\Http\Controllers\Payment\PaymentController;
 
+
 // Root
 Route::get('/', function () {
     return view('welcome');
@@ -27,6 +28,7 @@ Route::get('/', function () {
 // Google OAuth
 Route::get('/auth/google', [GoogleAuthController::class, 'redirect'])->name('auth.google');
 Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])->name('auth.google.callback');
+Route::post('/chatbot', [App\Http\Controllers\ChatbotController::class, 'chat'])->name('chatbot.chat');
 
 // Guest only routes
 Route::middleware('guest')->group(function () {
@@ -73,6 +75,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/settings/item-types/{itemType}',    [ItemTypeController::class, 'update'])->name('item-types.update');
     Route::post('/settings/item-types/{itemType}/toggle', [ItemTypeController::class, 'toggle'])->name('item-types.toggle');
     Route::delete('/settings/item-types/{itemType}', [ItemTypeController::class, 'destroy'])->name('item-types.destroy');
+    Route::post('/chatbot', [App\Http\Controllers\ChatbotController::class, 'chat'])->name('chatbot.chat');
 });
 
 // Protected routes
