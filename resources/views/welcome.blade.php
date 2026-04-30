@@ -365,6 +365,15 @@
             .p-sidebar { display: none; }
         }
     </style>
+    <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-35ZRVY4HXP"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-35ZRVY4HXP');
+</script>
 </head>
 <body>
 
@@ -770,10 +779,10 @@
     // ── VIDEO ──────────────────────────────────────────────────
     // Replace with your YouTube video ID once you record the walkthrough
     // Example: if URL is youtube.com/watch?v=dQw4w9WgXcQ  → VIDEO_ID = 'dQw4w9WgXcQ'
-    const VIDEO_ID = 'YOUR_VIDEO_ID';
+    const VIDEO_ID = '268uS_uCpFE';
 
     function playVideo(startAt = 0) {
-        if (VIDEO_ID === 'YOUR_VIDEO_ID') {
+        if (VIDEO_ID === 'VIDEO_ID') {
             alert('📹 Video coming soon!\n\nTo add your walkthrough:\n1. Record a screen capture of Invoxa\n2. Upload to YouTube\n3. In welcome.blade.php set VIDEO_ID to your YouTube video ID');
             return;
         }

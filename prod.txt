@@ -5,3 +5,6 @@ Add:
 ```
 * * * * * cd /path/to/m-invoice && php artisan schedule:run >> /dev/null 2>&1
 * * * * * cd /path-to-your-project && php artisan schedule:run >> /dev/null 2>&1
+
+
+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
