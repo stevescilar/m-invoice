@@ -75,7 +75,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/settings/item-types/{itemType}',    [ItemTypeController::class, 'update'])->name('item-types.update');
     Route::post('/settings/item-types/{itemType}/toggle', [ItemTypeController::class, 'toggle'])->name('item-types.toggle');
     Route::delete('/settings/item-types/{itemType}', [ItemTypeController::class, 'destroy'])->name('item-types.destroy');
-    Route::post('/chatbot', [App\Http\Controllers\ChatbotController::class, 'chat'])->name('chatbot.chat');
+    // Route::post('/chatbot', [App\Http\Controllers\ChatbotController::class, 'chat'])->name('chatbot.chat');
 });
 
 // Protected routes

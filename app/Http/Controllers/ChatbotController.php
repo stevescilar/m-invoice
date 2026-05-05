@@ -30,14 +30,15 @@ class ChatbotController extends Controller
         $messages[] = ['role' => 'user', 'content' => $userMessage];
 
         $response = Http::withHeaders([
-            'x-api-key'         => config('services.anthropic.key'),
-            'anthropic-version' => '2023-06-01',
-            'Content-Type'      => 'application/json',
-        ])->post('https://api.anthropic.com/v1/messages', [
-            'model'      => 'claude-haiku-4-5-20251001',
+        'Authorization' => 'Bearer ' . config('services.groq.key'),
+        'Content-Type'  => 'application/json',
+        ])->post('https://api.groq.com/openai/v1/chat/completions', [
+            'model'      => 'llama-3.1-8b-instant',
             'max_tokens' => 600,
-            'system'     => $systemPrompt,
-            'messages'   => $messages,
+            'messages'   => array_merge(
+                [['role' => 'system', 'content' => $systemPrompt]],
+                $messages
+            ),
         ]);
 
         if ($response->failed()) {
@@ -45,7 +46,7 @@ class ChatbotController extends Controller
         }
 
         $data  = $response->json();
-        $reply = $data['content'][0]['text'] ?? 'Sorry, I could not process that.';
+        $reply = $data['choices'][0]['message']['content'] ?? 'Sorry, I could not process that.';
 
         return response()->json(['reply' => $reply]);
     }
