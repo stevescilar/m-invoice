@@ -75,18 +75,22 @@ Route::middleware('auth')->group(function () {
     Route::put('/settings/item-types/{itemType}',    [ItemTypeController::class, 'update'])->name('item-types.update');
     Route::post('/settings/item-types/{itemType}/toggle', [ItemTypeController::class, 'toggle'])->name('item-types.toggle');
     Route::delete('/settings/item-types/{itemType}', [ItemTypeController::class, 'destroy'])->name('item-types.destroy');
-    // Route::post('/chatbot', [App\Http\Controllers\ChatbotController::class, 'chat'])->name('chatbot.chat');
 });
 
 // Protected routes
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/company/setup', [CompanyController::class, 'setup'])->name('company.setup');
+    Route::post('/company/setup', [CompanyController::class, 'storeSetup']);
+});
 Route::middleware(['auth', 'active.company'])->group(function () {
 
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Company
-    Route::get('/company/setup', [CompanyController::class, 'setup'])->name('company.setup');
-    Route::post('/company/setup', [CompanyController::class, 'storeSetup']);
+    // Route::get('/company/setup', [CompanyController::class, 'setup'])->name('company.setup');
+    // Route::post('/company/setup', [CompanyController::class, 'storeSetup']);
     Route::get('/company/settings', [CompanyController::class, 'settings'])->name('company.settings');
     Route::put('/company/settings', [CompanyController::class, 'updateSettings']);
 
