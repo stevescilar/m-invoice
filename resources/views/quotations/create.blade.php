@@ -146,8 +146,18 @@
                                 placeholder="Item description" required
                                 class="flex-1 border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-400 bg-white">
                             <button type="button" @click="removeItem(index)"
-                                class="text-red-400 hover:text-red-600 hover:bg-red-50 p-1.5 rounded-lg flex-shrink-0">
-                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                class="text-red-400 hover:text-red-600 hover:bg-red-50 p-1.5 rounded-lg flex-shrink-0"
+                                title="Remove item">
+                                {{-- Inline SVG avoids Lucide re-init issues inside x-for --}}
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24"
+                                     fill="none" stroke="currentColor" stroke-width="2"
+                                     stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="3 6 5 6 21 6"/>
+                                    <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+                                    <path d="M10 11v6"/>
+                                    <path d="M14 11v6"/>
+                                    <path d="M9 6V4h6v2"/>
+                                </svg>
                             </button>
                         </div>
 
@@ -347,27 +357,51 @@ function quotationForm() {
         addItem() {
             this.items.forEach(i => i.expanded = false);
             this.items.push({
-                catalog_item_id: null, description: '', quantity: 1,
-                unit_price: 0, buying_price: 0,
-                item_type_id: String(defaultTypeId), is_labour: false, expanded: true,
+                catalog_item_id: null,
+                description:     '',
+                quantity:        1,
+                unit_price:      0,
+                buying_price:    0,
+                item_type_id:    String(defaultTypeId),
+                is_labour:       false,
+                expanded:        true,
             });
         },
 
         addCatalogItem(id, name, price, buyingPrice) {
             this.items.forEach(i => i.expanded = false);
             this.items.push({
-                catalog_item_id: id, description: name, quantity: 1,
-                unit_price: price, buying_price: buyingPrice || 0,
-                item_type_id: String(defaultTypeId), is_labour: false, expanded: true,
+                catalog_item_id: id,
+                description:     name,
+                quantity:        1,
+                unit_price:      price,
+                buying_price:    buyingPrice || 0,
+                item_type_id:    String(defaultTypeId),
+                is_labour:       false,
+                expanded:        true,
             });
             this.calculateTotals();
         },
 
         removeItem(index) {
             if (this.items.length > 1) {
+                // Remove the item entirely
                 this.items.splice(index, 1);
-                this.calculateTotals();
+            } else {
+                // Only one item left — reset it to a blank state rather than leaving
+                // an empty list (the form requires at least one item)
+                this.items[0] = {
+                    catalog_item_id: null,
+                    description:     '',
+                    quantity:        1,
+                    unit_price:      0,
+                    buying_price:    0,
+                    item_type_id:    String(defaultTypeId),
+                    is_labour:       false,
+                    expanded:        true,
+                };
             }
+            this.calculateTotals();
         },
 
         calculateTotals() {
@@ -390,7 +424,7 @@ function quotationForm() {
             this.typeBreakdownList = Object.keys(breakdown).map(name => ({
                 name,
                 amount: breakdown[name],
-                color: this.getTypeColor(
+                color:  this.getTypeColor(
                     this.items.find(i => this.getTypeName(i.item_type_id) === name)?.item_type_id
                 ),
             }));

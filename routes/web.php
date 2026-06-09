@@ -132,6 +132,14 @@ Route::middleware(['auth', 'active.company'])->group(function () {
     Route::post('/staff/{user}/deactivate', [StaffController::class, 'deactivate'])->name('staff.deactivate');
     Route::delete('/staff/{user}', [StaffController::class, 'destroy'])->name('staff.destroy');
 
+    // Invoice reminders
+    Route::post('invoices/{invoice}/remind', [InvoiceController::class, 'sendReminder'])->name('invoices.remind');
+    Route::get('invoices/{invoice}/whatsapp', [InvoiceController::class, 'whatsappReminder'])->name('invoices.whatsapp');
+    
+    // Quotation reminders
+    Route::post('quotations/{quotation}/remind', [QuotationController::class, 'sendReminder'])->name('quotations.remind');
+    Route::get('quotations/{quotation}/whatsapp', [QuotationController::class, 'whatsappReminder'])->name('quotations.whatsapp');
+
 });
 
 // M-Pesa Callback (no auth — called by Safaricom)
