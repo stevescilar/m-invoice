@@ -68,6 +68,7 @@ class CompanyController extends Controller
             'name' => 'required|string|max:255',
             'phone' => 'nullable|string|max:20',
             'email' => 'nullable|email',
+            'notification_email' => 'nullable|email',
             'address' => 'nullable|string',
             'footer_message' => 'nullable|string|max:255',
             'kra_pin' => 'nullable|string|max:20',
@@ -81,6 +82,7 @@ class CompanyController extends Controller
             'name',
             'phone',
             'email',
+            'notification_email',
             'address',
             'footer_message',
             'kra_pin',
@@ -92,8 +94,11 @@ class CompanyController extends Controller
             'bank_account',
             'bank_branch',
             'primary_color',
-
         ]);
+
+        $data['cc_owner_on_emails'] = $request->boolean('cc_owner_on_emails');
+        $data['auto_invoice_reminders'] = $request->boolean('auto_invoice_reminders');
+        $data['auto_quotation_reminders'] = $request->boolean('auto_quotation_reminders');
 
         if ($request->hasFile('logo')) {
             $data['logo'] = $request->file('logo')->store('logos', 'public');

@@ -157,11 +157,11 @@
                 <div class="bg-white rounded-xl shadow p-5">
                     <h3 class="font-semibold text-gray-700 mb-3">Actions</h3>
 
-                    @if ($invoice->status === 'draft')
+                    @if ($invoice->client->email)
                         <form action="{{ route('invoices.send', $invoice) }}" method="POST" class="mb-2">
                             @csrf
-                            <button class="w-full bg-blue-500 text-white py-2 rounded-lg text-sm hover:bg-blue-600">
-                                Send Invoice via Email
+                            <button class="w-full bg-blue-500 text-white py-2 rounded-lg text-sm hover:bg-blue-600 font-medium">
+                                ✉️ {{ $invoice->status === 'draft' ? 'Send Invoice via Email' : 'Resend Invoice via Email' }}
                             </button>
                         </form>
                     @endif
@@ -169,8 +169,8 @@
                     <form action="{{ route('invoices.mark-paid', $invoice) }}" method="POST" x-data="{ open: false }">
                         @csrf
                         <button type="button" @click="open = !open"
-                            class="w-full bg-green-600 text-white py-2 rounded-lg text-sm hover:bg-green-700 mb-2">
-                            Mark as Paid
+                            class="w-full bg-green-600 text-white py-2 rounded-lg text-sm hover:bg-green-700 mb-2 font-medium">
+                            ✅ Mark as Paid
                         </button>
                         <div x-show="open" x-cloak class="mt-2 space-y-2 mb-2">
                             <input type="text" name="mpesa_code" placeholder="M-Pesa code (optional)"
@@ -186,9 +186,13 @@
                         <form action="{{ route('invoices.remind', $invoice) }}" method="POST" class="mb-2">
                             @csrf
                             <button class="w-full bg-indigo-50 text-indigo-600 py-2 rounded-lg text-sm hover:bg-indigo-100 font-medium">
-                                📧 Send Email Reminder
+                                🔔 Send Payment Reminder (Email)
                             </button>
                         </form>
+                    @else
+                        <p class="text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2 mb-2">
+                            Add an email address to <strong>{{ $invoice->client->name }}</strong> to send email invoices & reminders.
+                        </p>
                     @endif
 
                     @if ($invoice->client->phone)

@@ -37,9 +37,21 @@ class SendInvoiceReminders implements ShouldQueue
 
             $company = $invoice->company;
 
+            if ($company && !($company->auto_invoice_reminders ?? true)) {
+                $reminder->delete();
+                continue;
+            }
+
             try {
-                Mail::to($invoice->client->email)
-                    ->send(new InvoiceReminderMail($invoice, $company->name ?? 'Invoxa'));
+                if ($company) {
+                    $company->sendMail(
+                        $invoice->client->email,
+                        new InvoiceReminderMail($invoice, $company->name ?? 'Invoxa')
+                    );
+                } else {
+                    Mail::to($invoice->client->email)
+                        ->send(new InvoiceReminderMail($invoice, 'Invoxa'));
+                }
 
                 $reminder->update([
                     'status'  => 'sent',

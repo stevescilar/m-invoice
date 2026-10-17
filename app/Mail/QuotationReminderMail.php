@@ -22,8 +22,11 @@ class QuotationReminderMail extends Mailable
 
     public function envelope(): Envelope
     {
+        $company = $this->quotation->company;
+        $replyTo = array_filter([$company?->email, $company?->owner?->email]);
         return new Envelope(
-            subject: 'Following Up: Quotation ' . $this->quotation->quotation_number . ' from ' . $this->senderName,
+            replyTo: !empty($replyTo) ? [reset($replyTo)] : [],
+            subject: 'Following Up: Quotation ' . $this->quotation->quotation_number . ' from ' . ($company?->name ?? $this->senderName),
         );
     }
 
@@ -34,6 +37,7 @@ class QuotationReminderMail extends Mailable
 
     public function attachments(): array
     {
+        $this->quotation->loadMissing('client', 'items', 'items.itemType', 'company');
         $company = $this->quotation->company;
         $pdf = Pdf::loadView('quotations.pdf', [
             'quotation' => $this->quotation,

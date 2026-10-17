@@ -44,6 +44,11 @@
                 class="w-full flex items-center gap-2.5 px-4 py-2.5 rounded-lg text-sm text-left transition">
                 <i data-lucide="credit-card" class="w-4 h-4"></i> Payment Details
             </button>
+            <button @click="tab = 'notifications'"
+                :class="tab === 'notifications' ? 'bg-green-50 text-green-700 font-semibold' : 'text-gray-500 hover:bg-gray-100'"
+                class="w-full flex items-center gap-2.5 px-4 py-2.5 rounded-lg text-sm text-left transition">
+                <i data-lucide="bell" class="w-4 h-4"></i> Email & Reminders
+            </button>
             <button @click="tab = 'password'"
                 :class="tab === 'password' ? 'bg-green-50 text-green-700 font-semibold' : 'text-gray-500 hover:bg-gray-100'"
                 class="w-full flex items-center gap-2.5 px-4 py-2.5 rounded-lg text-sm text-left transition">
@@ -291,6 +296,94 @@
                     </div>
                     <button type="submit" class="w-full bg-green-600 text-white py-2.5 rounded-lg hover:bg-green-700 font-medium text-sm flex items-center justify-center gap-2">
                         <i data-lucide="save" class="w-4 h-4"></i> Save Payment Details
+                    </button>
+                </div>
+
+                <!-- Email & Reminders Tab -->
+                <div x-show="tab === 'notifications'" class="bg-white rounded-xl shadow p-6 space-y-5">
+                    <div class="flex items-center gap-2 pb-3 border-b">
+                        <i data-lucide="bell" class="w-5 h-5 text-green-600"></i>
+                        <h2 class="font-semibold text-gray-800">Email Copies & Automated Reminders</h2>
+                    </div>
+
+                    <!-- Owner / Tenant Email Copy -->
+                    <div class="p-4 bg-green-50 border border-green-100 rounded-xl space-y-4">
+                        <div class="flex items-start justify-between gap-4">
+                            <div>
+                                <p class="text-sm font-semibold text-gray-800 flex items-center gap-2">
+                                    <i data-lucide="mail-check" class="w-4 h-4 text-green-600"></i>
+                                    Receive a Copy of Sent Invoices, Quotations & Reminders
+                                </p>
+                                <p class="text-xs text-gray-500 mt-1">
+                                    When enabled, whenever you or your staff email an invoice, quotation, or reminder to a client, a copy (BCC) is automatically sent to your logged-in email ({{ auth()->user()->email }}){{ $company->email ? ' and company email (' . $company->email . ')' : '' }}.
+                                </p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer flex-shrink-0 mt-1">
+                                <input type="hidden" name="cc_owner_on_emails" value="0">
+                                <input type="checkbox" name="cc_owner_on_emails" value="1"
+                                    {{ old('cc_owner_on_emails', $company->cc_owner_on_emails ?? true) ? 'checked' : '' }}
+                                    class="sr-only peer">
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                            </label>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">
+                                Additional / Custom Copy Email Address <span class="text-gray-400 font-normal">(optional)</span>
+                            </label>
+                            <div class="relative">
+                                <i data-lucide="at-sign" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+                                <input type="email" name="notification_email"
+                                    value="{{ old('notification_email', $company->notification_email) }}"
+                                    placeholder="e.g. {{ $company->email ?: auth()->user()->email }}"
+                                    class="w-full border border-green-200 bg-white rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400">
+                            </div>
+                            <p class="text-xs text-gray-400 mt-1">Leave blank to use your Company Email ({{ $company->email ?: 'not set' }}) and logged-in account ({{ auth()->user()->email }}).</p>
+                        </div>
+                    </div>
+
+                    <!-- Automated Invoice Reminders -->
+                    <div class="p-4 bg-gray-50 border border-gray-200 rounded-xl flex items-start justify-between gap-4">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800 flex items-center gap-2">
+                                <i data-lucide="file-text" class="w-4 h-4 text-blue-600"></i>
+                                Automated Invoice Payment Reminders
+                            </p>
+                            <p class="text-xs text-gray-500 mt-1">
+                                Automatically email payment reminders to clients 3 days before the due date, on the due date, and 3 days after an invoice becomes overdue.
+                            </p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer flex-shrink-0 mt-1">
+                            <input type="hidden" name="auto_invoice_reminders" value="0">
+                            <input type="checkbox" name="auto_invoice_reminders" value="1"
+                                {{ old('auto_invoice_reminders', $company->auto_invoice_reminders ?? true) ? 'checked' : '' }}
+                                class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                        </label>
+                    </div>
+
+                    <!-- Automated Quotation Reminders -->
+                    <div class="p-4 bg-gray-50 border border-gray-200 rounded-xl flex items-start justify-between gap-4">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800 flex items-center gap-2">
+                                <i data-lucide="clipboard-list" class="w-4 h-4 text-purple-600"></i>
+                                Automated Quotation Follow-up Reminders
+                            </p>
+                            <p class="text-xs text-gray-500 mt-1">
+                                Automatically email follow-up reminders to clients 2 days before a sent quotation expires and on the expiry date.
+                            </p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer flex-shrink-0 mt-1">
+                            <input type="hidden" name="auto_quotation_reminders" value="0">
+                            <input type="checkbox" name="auto_quotation_reminders" value="1"
+                                {{ old('auto_quotation_reminders', $company->auto_quotation_reminders ?? true) ? 'checked' : '' }}
+                                class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="w-full bg-green-600 text-white py-2.5 rounded-lg hover:bg-green-700 font-medium text-sm flex items-center justify-center gap-2">
+                        <i data-lucide="save" class="w-4 h-4"></i> Save Email & Reminder Settings
                     </button>
                 </div>
             </form>

@@ -163,11 +163,28 @@
                             <i data-lucide="download" class="w-4 h-4"></i>
                         </a>
                         @if($invoice->status !== 'paid')
-                        <a href="{{ route('invoices.edit', $invoice) }}"
-                            title="Edit"
-                            class="p-1.5 rounded-lg hover:bg-yellow-50 text-yellow-500 hover:text-yellow-700 transition">
-                            <i data-lucide="pencil" class="w-4 h-4"></i>
-                        </a>
+                            @if($invoice->client->email)
+                            <form method="POST" action="{{ route('invoices.remind', $invoice) }}">
+                                @csrf
+                                <button type="submit"
+                                    title="Send Email Reminder"
+                                    class="p-1.5 rounded-lg hover:bg-indigo-50 text-indigo-500 hover:text-indigo-700 transition">
+                                    <i data-lucide="bell" class="w-4 h-4"></i>
+                                </button>
+                            </form>
+                            @endif
+                            @if($invoice->client->phone)
+                            <a href="{{ route('invoices.whatsapp', $invoice) }}" target="_blank"
+                                title="Remind via WhatsApp"
+                                class="p-1.5 rounded-lg hover:bg-emerald-50 text-emerald-600 hover:text-emerald-700 transition">
+                                <i data-lucide="message-circle" class="w-4 h-4"></i>
+                            </a>
+                            @endif
+                            <a href="{{ route('invoices.edit', $invoice) }}"
+                                title="Edit"
+                                class="p-1.5 rounded-lg hover:bg-yellow-50 text-yellow-500 hover:text-yellow-700 transition">
+                                <i data-lucide="pencil" class="w-4 h-4"></i>
+                            </a>
                         @endif
                     </div>
                 </td>

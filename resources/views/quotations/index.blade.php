@@ -155,6 +155,25 @@
                             class="p-1.5 rounded-lg hover:bg-green-50 text-green-600 hover:text-green-700 transition">
                             <i data-lucide="download" class="w-4 h-4"></i>
                         </a>
+                        @if(!in_array($quotation->status, ['converted', 'rejected']))
+                            @if($quotation->client->email)
+                            <form method="POST" action="{{ route('quotations.remind', $quotation) }}">
+                                @csrf
+                                <button type="submit"
+                                    title="Send Quotation Reminder (Email)"
+                                    class="p-1.5 rounded-lg hover:bg-indigo-50 text-indigo-500 hover:text-indigo-700 transition">
+                                    <i data-lucide="bell" class="w-4 h-4"></i>
+                                </button>
+                            </form>
+                            @endif
+                            @if($quotation->client->phone)
+                            <a href="{{ route('quotations.whatsapp', $quotation) }}" target="_blank"
+                                title="Remind via WhatsApp"
+                                class="p-1.5 rounded-lg hover:bg-emerald-50 text-emerald-600 hover:text-emerald-700 transition">
+                                <i data-lucide="message-circle" class="w-4 h-4"></i>
+                            </a>
+                            @endif
+                        @endif
                         @if(!in_array($quotation->status, ['converted']))
                         <a href="{{ route('quotations.edit', $quotation) }}"
                             title="Edit"

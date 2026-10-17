@@ -306,14 +306,19 @@ class InvoiceController extends Controller
             return back()->with('error', 'This client has no email address.');
         }
 
-        $invoice->load('client', 'items');
+        $invoice->load('client', 'items', 'items.itemType', 'company');
         $company = Auth::user()->company;
 
         try {
-            Mail::to($invoice->client->email)->send(new InvoiceMail($invoice, $company));
-            $invoice->update(['status' => 'sent']);
+            $company->sendMail($invoice->client->email, new InvoiceMail($invoice, $company), Auth::user());
+            if ($invoice->status === 'draft') {
+                $invoice->update(['status' => 'sent']);
+            }
 
-            return back()->with('success', 'Invoice sent to ' . $invoice->client->email);
+            $copies = $company->getCopyRecipients($invoice->client->email, Auth::user());
+            $copyNote = !empty($copies) ? ' (Copy sent to ' . implode(', ', $copies) . ')' : '';
+
+            return back()->with('success', 'Invoice sent to ' . $invoice->client->email . $copyNote);
         } catch (\Exception $e) {
             return back()->with('error', 'Failed to send email: ' . $e->getMessage());
         }
@@ -331,11 +336,20 @@ class InvoiceController extends Controller
             return back()->with('error', 'This invoice is already marked as paid.');
         }
 
-        try {
-            Mail::to($invoice->client->email)
-                ->send(new InvoiceReminderMail($invoice, Auth::user()->name));
+        $invoice->load('client', 'items', 'items.itemType', 'company');
+        $company = Auth::user()->company;
 
-            return back()->with('success', 'Payment reminder sent to ' . $invoice->client->email);
+        try {
+            $company->sendMail(
+                $invoice->client->email,
+                new InvoiceReminderMail($invoice, $company->name ?? Auth::user()->name),
+                Auth::user()
+            );
+
+            $copies = $company->getCopyRecipients($invoice->client->email, Auth::user());
+            $copyNote = !empty($copies) ? ' (Copy sent to ' . implode(', ', $copies) . ')' : '';
+
+            return back()->with('success', 'Payment reminder sent to ' . $invoice->client->email . $copyNote);
         } catch (\Exception $e) {
             return back()->with('error', 'Failed to send reminder: ' . $e->getMessage());
         }

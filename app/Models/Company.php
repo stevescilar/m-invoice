@@ -31,11 +31,76 @@ class Company extends Model
         'referral_count',
         'primary_color',
         'is_bypass',
+        'cc_owner_on_emails',
+        'notification_email',
+        'auto_invoice_reminders',
+        'auto_quotation_reminders',
     ];
 
     protected $casts = [
-        'is_bypass' => 'boolean',
+        'is_bypass'                => 'boolean',
+        'cc_owner_on_emails'       => 'boolean',
+        'auto_invoice_reminders'   => 'boolean',
+        'auto_quotation_reminders' => 'boolean',
     ];
+
+    /**
+     * Return deduplicated list of owner/tenant copy email addresses when cc_owner_on_emails is enabled.
+     */
+    public function getCopyRecipients(?string $excludeToEmail = null, ?User $actingUser = null): array
+    {
+        if (!($this->cc_owner_on_emails ?? true)) {
+            return [];
+        }
+
+        $candidates = array_filter([
+            $this->notification_email,
+            $actingUser?->email,
+            $this->owner?->email,
+            $this->email,
+        ], fn ($email) => !empty($email) && filter_var($email, FILTER_VALIDATE_EMAIL));
+
+        $normalizedExclude = $excludeToEmail ? strtolower(trim($excludeToEmail)) : null;
+        $unique = [];
+
+        foreach ($candidates as $email) {
+            $lower = strtolower(trim($email));
+            if ($lower !== $normalizedExclude && !isset($unique[$lower])) {
+                $unique[$lower] = trim($email);
+            }
+        }
+
+        return array_values($unique);
+    }
+
+    /**
+     * Send a Mailable to a client, automatically BCC-ing the owner/tenant if enabled,
+     * with automatic fallback to cPanel's local sendmail transport if SMTP auth is unconfigured/fails.
+     */
+    public function sendMail(string $toEmail, \Illuminate\Mail\Mailable $mailable, ?User $actingUser = null, bool $includeOwnerCopy = true): void
+    {
+        $bcc = $includeOwnerCopy ? $this->getCopyRecipients($toEmail, $actingUser) : [];
+
+        try {
+            $pending = \Illuminate\Support\Facades\Mail::to($toEmail);
+            if (!empty($bcc)) {
+                $pending->bcc($bcc);
+            }
+            $pending->send($mailable);
+        } catch (\Throwable $smtpException) {
+            \Illuminate\Support\Facades\Log::warning('Primary mailer failed, attempting sendmail fallback: ' . $smtpException->getMessage());
+            try {
+                $fallback = \Illuminate\Support\Facades\Mail::mailer('sendmail')->to($toEmail);
+                if (!empty($bcc)) {
+                    $fallback->bcc($bcc);
+                }
+                $fallback->send($mailable);
+            } catch (\Throwable $fallbackException) {
+                // Throw original SMTP error so user sees the actionable reason
+                throw $smtpException;
+            }
+        }
+    }
 
     public function owner()
     {

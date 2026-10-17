@@ -268,14 +268,19 @@ class QuotationController extends Controller
             return back()->with('error', 'This client has no email address.');
         }
 
-        $quotation->load('client', 'items');
+        $quotation->load('client', 'items', 'items.itemType', 'company');
         $company = Auth::user()->company;
 
         try {
-            Mail::to($quotation->client->email)->send(new QuotationMail($quotation, $company));
-            $quotation->update(['status' => 'sent']);
+            $company->sendMail($quotation->client->email, new QuotationMail($quotation, $company), Auth::user());
+            if ($quotation->status === 'draft') {
+                $quotation->update(['status' => 'sent']);
+            }
 
-            return back()->with('success', 'Quotation sent to ' . $quotation->client->email);
+            $copies = $company->getCopyRecipients($quotation->client->email, Auth::user());
+            $copyNote = !empty($copies) ? ' (Copy sent to ' . implode(', ', $copies) . ')' : '';
+
+            return back()->with('success', 'Quotation sent to ' . $quotation->client->email . $copyNote);
         } catch (\Exception $e) {
             return back()->with('error', 'Failed to send email: ' . $e->getMessage());
         }
@@ -289,11 +294,20 @@ class QuotationController extends Controller
             return back()->with('error', 'This client has no email address on record.');
         }
 
-        try {
-            Mail::to($quotation->client->email)
-                ->send(new QuotationReminderMail($quotation, Auth::user()->name));
+        $quotation->load('client', 'items', 'items.itemType', 'company');
+        $company = Auth::user()->company;
 
-            return back()->with('success', 'Reminder sent to ' . $quotation->client->email);
+        try {
+            $company->sendMail(
+                $quotation->client->email,
+                new QuotationReminderMail($quotation, $company->name ?? Auth::user()->name),
+                Auth::user()
+            );
+
+            $copies = $company->getCopyRecipients($quotation->client->email, Auth::user());
+            $copyNote = !empty($copies) ? ' (Copy sent to ' . implode(', ', $copies) . ')' : '';
+
+            return back()->with('success', 'Quotation reminder sent to ' . $quotation->client->email . $copyNote);
         } catch (\Exception $e) {
             return back()->with('error', 'Failed to send reminder: ' . $e->getMessage());
         }

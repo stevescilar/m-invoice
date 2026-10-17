@@ -22,11 +22,16 @@ class InvoiceReminderMail extends Mailable
 
     public function envelope(): Envelope
     {
+        $company = $this->invoice->company;
+        $replyTo = array_filter([$company?->email, $company?->owner?->email]);
         $subject = $this->invoice->status === 'overdue'
-            ? 'Overdue Payment: Invoice ' . $this->invoice->invoice_number . ' from ' . $this->senderName
-            : 'Payment Reminder: Invoice ' . $this->invoice->invoice_number . ' from ' . $this->senderName;
+            ? 'Overdue Payment: Invoice ' . $this->invoice->invoice_number . ' from ' . ($company?->name ?? $this->senderName)
+            : 'Payment Reminder: Invoice ' . $this->invoice->invoice_number . ' from ' . ($company?->name ?? $this->senderName);
 
-        return new Envelope(subject: $subject);
+        return new Envelope(
+            replyTo: !empty($replyTo) ? [reset($replyTo)] : [],
+            subject: $subject,
+        );
     }
 
     public function content(): Content
@@ -36,6 +41,7 @@ class InvoiceReminderMail extends Mailable
 
     public function attachments(): array
     {
+        $this->invoice->loadMissing('client', 'items', 'items.itemType', 'company');
         $company = $this->invoice->company;
         $pdf = Pdf::loadView('invoices.pdf', [
             'invoice' => $this->invoice,

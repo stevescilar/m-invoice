@@ -27,7 +27,9 @@ class QuotationMail extends Mailable
 
     public function envelope(): Envelope
     {
+        $replyTo = array_filter([$this->company->email, $this->company->owner?->email]);
         return new Envelope(
+            replyTo: !empty($replyTo) ? [reset($replyTo)] : [],
             subject: 'Quotation ' . $this->quotation->quotation_number . ' from ' . $this->company->name,
         );
     }
@@ -41,6 +43,7 @@ class QuotationMail extends Mailable
 
     public function attachments(): array
     {
+        $this->quotation->loadMissing('client', 'items', 'items.itemType');
         $pdf = Pdf::loadView('quotations.pdf', [
             'quotation' => $this->quotation,
             'company'   => $this->company,

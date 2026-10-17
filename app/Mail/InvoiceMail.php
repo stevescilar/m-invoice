@@ -27,7 +27,9 @@ class InvoiceMail extends Mailable
 
     public function envelope(): Envelope
     {
+        $replyTo = array_filter([$this->company->email, $this->company->owner?->email]);
         return new Envelope(
+            replyTo: !empty($replyTo) ? [reset($replyTo)] : [],
             subject: 'Invoice ' . $this->invoice->invoice_number . ' from ' . $this->company->name,
         );
     }
@@ -41,6 +43,7 @@ class InvoiceMail extends Mailable
 
     public function attachments(): array
     {
+        $this->invoice->loadMissing('client', 'items', 'items.itemType');
         $pdf = Pdf::loadView('invoices.pdf', [
             'invoice' => $this->invoice,
             'company' => $this->company,

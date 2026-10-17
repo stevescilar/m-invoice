@@ -136,32 +136,32 @@
         <div class="bg-white rounded-xl shadow p-5">
             <h3 class="font-semibold text-gray-700 mb-3">Actions</h3>
             
-            @if($quotation->status === 'draft')
+            @if($quotation->client->email)
             <form action="{{ route('quotations.send', $quotation) }}" method="POST" class="mb-2">
                 @csrf
-                <button class="w-full bg-blue-500 text-white py-2 rounded-lg text-sm hover:bg-blue-600">
-                    Send Quotation via Email
+                <button class="w-full bg-blue-500 text-white py-2 rounded-lg text-sm hover:bg-blue-600 font-medium">
+                    ✉️ {{ $quotation->status === 'draft' ? 'Send Quotation via Email' : 'Resend Quotation via Email' }}
                 </button>
             </form>
             @endif
 
-            @if(in_array($quotation->status, ['sent', 'draft']))
+            @if(in_array($quotation->status, ['sent', 'draft', 'expired']))
             <form action="{{ route('quotations.update', $quotation) }}" method="POST" class="mb-2">
                 @csrf @method('PUT')
                 <input type="hidden" name="status_change" value="1">
                 <input type="hidden" name="status" value="approved">
-                <button class="w-full bg-green-600 text-white py-2 rounded-lg text-sm hover:bg-green-700">
-                    Mark as Approved
+                <button class="w-full bg-green-600 text-white py-2 rounded-lg text-sm hover:bg-green-700 font-medium">
+                    ✅ Mark as Approved
                 </button>
             </form>
             @endif
 
-            @if(in_array($quotation->status, ['sent', 'draft', 'approved']))
+            @if(in_array($quotation->status, ['sent', 'draft', 'approved', 'expired']))
             <form action="{{ route('quotations.convert', $quotation) }}" method="POST" class="mb-2"
                 onsubmit="return confirm('Convert this quotation to an invoice?')">
                 @csrf
-                <button class="w-full bg-purple-600 text-white py-2 rounded-lg text-sm hover:bg-purple-700">
-                    Convert to Invoice
+                <button class="w-full bg-purple-600 text-white py-2 rounded-lg text-sm hover:bg-purple-700 font-medium">
+                    🔄 Convert to Invoice
                 </button>
             </form>
             @endif
@@ -170,15 +170,19 @@
             <form action="{{ route('quotations.remind', $quotation) }}" method="POST" class="mb-2">
                 @csrf
                 <button class="w-full bg-indigo-50 text-indigo-600 py-2 rounded-lg text-sm hover:bg-indigo-100 font-medium">
-                    📧 Send Email Follow-up
+                    🔔 Send Quotation Reminder (Email)
                 </button>
             </form>
+            @else
+            <p class="text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2 mb-2">
+                Add an email address to <strong>{{ $quotation->client->name }}</strong> to send email quotations & reminders.
+            </p>
             @endif
 
             @if($quotation->client->phone)
             <a href="{{ route('quotations.whatsapp', $quotation) }}" target="_blank"
                 class="block w-full text-center bg-emerald-50 text-emerald-700 py-2 rounded-lg text-sm hover:bg-emerald-100 font-medium">
-                💬 Follow up via WhatsApp
+                💬 Remind via WhatsApp
             </a>
             @endif
         </div>

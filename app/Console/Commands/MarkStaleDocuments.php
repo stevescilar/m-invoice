@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Mail\InvoiceOverdueMail;
 use App\Mail\QuotationExpiredMail;
+use App\Mail\QuotationReminderMail;
 use App\Models\Invoice;
 use App\Models\Quotation;
 use Illuminate\Console\Command;
@@ -12,11 +13,12 @@ use Illuminate\Support\Facades\Mail;
 class MarkStaleDocuments extends Command
 {
     protected $signature   = 'documents:mark-stale';
-    protected $description = 'Mark overdue invoices and expired quotations, then notify owners';
+    protected $description = 'Mark overdue invoices and expired quotations, send quotation reminders, and notify owners';
 
     public function handle(): void
     {
         $this->markOverdueInvoices();
+        $this->sendUpcomingQuotationReminders();
         $this->markExpiredQuotations();
         $this->info('Done.');
     }
@@ -40,10 +42,9 @@ class MarkStaleDocuments extends Command
                 $count++;
 
                 // Notify the company owner
-                $owner = $invoice->company->owner;
+                $owner = $invoice->company?->owner;
                 if ($owner && $owner->email) {
-                    Mail::to($owner->email)
-                        ->send(new InvoiceOverdueMail($invoice));
+                    $invoice->company->sendMail($owner->email, new InvoiceOverdueMail($invoice), null, false);
                 }
 
                 $this->info("✓ Invoice {$invoice->invoice_number} marked overdue");
@@ -56,6 +57,40 @@ class MarkStaleDocuments extends Command
     }
 
     // ─── Quotations ──────────────────────────────────────────────────────────
+
+    private function sendUpcomingQuotationReminders(): void
+    {
+        // Sent quotations expiring in 2 days or today
+        $targetDates = [today()->toDateString(), today()->addDays(2)->toDateString()];
+
+        $quotations = Quotation::where('status', 'sent')
+            ->whereNotNull('expiry_date')
+            ->whereIn('expiry_date', $targetDates)
+            ->with('company.owner', 'client', 'items', 'items.itemType')
+            ->get();
+
+        $count = 0;
+
+        foreach ($quotations as $quotation) {
+            $company = $quotation->company;
+            if (!$company || !($company->auto_quotation_reminders ?? true) || !$quotation->client?->email) {
+                continue;
+            }
+
+            try {
+                $company->sendMail(
+                    $quotation->client->email,
+                    new QuotationReminderMail($quotation, $company->name ?? 'Invoxa')
+                );
+                $count++;
+                $this->info("✓ Quotation reminder sent for {$quotation->quotation_number}");
+            } catch (\Exception $e) {
+                $this->error("✗ Quotation reminder {$quotation->quotation_number}: " . $e->getMessage());
+            }
+        }
+
+        $this->info("Quotation reminders: {$count} sent.");
+    }
 
     private function markExpiredQuotations(): void
     {
@@ -74,10 +109,9 @@ class MarkStaleDocuments extends Command
                 $count++;
 
                 // Notify the company owner
-                $owner = $quotation->company->owner;
+                $owner = $quotation->company?->owner;
                 if ($owner && $owner->email) {
-                    Mail::to($owner->email)
-                        ->send(new QuotationExpiredMail($quotation));
+                    $quotation->company->sendMail($owner->email, new QuotationExpiredMail($quotation), null, false);
                 }
 
                 $this->info("✓ Quotation {$quotation->quotation_number} marked expired");
