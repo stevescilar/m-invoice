@@ -65,7 +65,8 @@
 
 <!-- Table -->
 <div class="bg-white rounded-xl shadow overflow-hidden">
-    <table class="w-full text-sm">
+    <div class="overflow-x-auto">
+    <table class="w-full text-sm min-w-[720px]">
         <thead class="bg-gray-50 border-b border-gray-100">
             <tr>
                 <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Quote #</th>
@@ -81,10 +82,15 @@
             @forelse($quotations as $quotation)
             <tr class="hover:bg-green-50/30 transition">
                 <td class="px-5 py-3.5">
-                    <a href="{{ route('quotations.show', $quotation) }}"
-                        class="font-semibold text-gray-800 hover:text-green-600 transition">
-                        {{ $quotation->quotation_number }}
-                    </a>
+                    <div class="flex items-center gap-1.5">
+                        <a href="{{ route('quotations.show', $quotation) }}"
+                            class="font-semibold text-gray-800 hover:text-green-600 transition">
+                            {{ $quotation->quotation_number }}
+                        </a>
+                        @if($quotation->client_response_note)
+                            <span title="{{ $quotation->client_response_note }}" class="text-[11px] bg-amber-50 text-amber-700 border border-amber-200 px-1.5 py-0.5 rounded-full">💬 Note</span>
+                        @endif
+                    </div>
                 </td>
                 <td class="px-5 py-3.5">
                     <div class="flex items-center gap-2">
@@ -212,6 +218,7 @@
             @endforelse
         </tbody>
     </table>
+    </div>
 
     <!-- Pagination -->
     @if($quotations->hasPages())

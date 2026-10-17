@@ -20,37 +20,53 @@
                 <span class="text-xs bg-purple-100 text-purple-600 px-2 py-0.5 rounded-full">ETR</span>
             @endif
         </div>
-        <div class="flex flex-wrap gap-2">
+        <div class="flex flex-wrap items-center gap-2" x-data="{ moreOpen: false }">
             <button type="button"
                 @click="navigator.clipboard.writeText('{{ $invoice->public_url }}'); copied = true; setTimeout(() => copied = false, 2500)"
-                class="bg-white border border-gray-300 text-gray-700 px-3.5 py-2 rounded-lg text-sm hover:bg-gray-50 font-medium transition">
+                class="bg-white border border-gray-300 text-gray-700 px-3.5 py-2 rounded-lg text-sm hover:bg-gray-50 font-medium transition flex items-center gap-1.5">
                 <span x-show="!copied">🔗 Copy Client Link</span>
                 <span x-show="copied" class="text-green-600 font-semibold">✅ Link Copied!</span>
             </button>
-            <a href="{{ $invoice->public_url }}" target="_blank"
-                class="bg-gray-100 text-gray-700 px-3.5 py-2 rounded-lg text-sm hover:bg-gray-200 font-medium">
-                🌐 Public View
-            </a>
-            <a href="{{ route('invoices.delivery-note', $invoice) }}"
-                class="bg-amber-50 border border-amber-200 text-amber-800 px-3.5 py-2 rounded-lg text-sm hover:bg-amber-100 font-medium">
-                📦 Delivery Note PDF
-            </a>
+
             <a href="{{ route('invoices.download', $invoice) }}"
-                class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700 font-medium">
-                ⬇ Invoice PDF
+                class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700 font-medium flex items-center gap-1.5 shadow-xs">
+                <i data-lucide="download" class="w-4 h-4"></i> Invoice PDF
             </a>
+
             @if ($invoice->status !== 'paid')
                 <a href="{{ route('invoices.edit', $invoice) }}"
-                    class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-200">
-                    Edit
+                    class="bg-white border border-gray-200 text-gray-700 px-3.5 py-2 rounded-lg text-sm hover:bg-gray-50 font-medium flex items-center gap-1.5">
+                    <i data-lucide="pencil" class="w-3.5 h-3.5"></i> Edit
                 </a>
             @endif
-            <form action="{{ route('invoices.duplicate', $invoice) }}" method="POST">
-                @csrf
-                <button class="bg-blue-50 text-blue-600 px-4 py-2 rounded-lg text-sm hover:bg-blue-100">
-                    Duplicate
+
+            {{-- More Actions Dropdown --}}
+            <div class="relative" @click.outside="moreOpen = false">
+                <button type="button" @click="moreOpen = !moreOpen"
+                    class="bg-gray-100 text-gray-700 px-3 py-2 rounded-lg text-sm hover:bg-gray-200 font-medium flex items-center gap-1 transition">
+                    <span>More</span>
+                    <i data-lucide="chevron-down" class="w-4 h-4"></i>
                 </button>
-            </form>
+                <div x-show="moreOpen" x-cloak x-transition
+                    class="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-xl border border-gray-100 py-1.5 z-40 text-sm">
+                    <a href="{{ $invoice->public_url }}" target="_blank"
+                        class="flex items-center gap-2.5 px-4 py-2 text-gray-700 hover:bg-gray-50 font-medium">
+                        <i data-lucide="external-link" class="w-4 h-4 text-blue-500"></i> Open Public Portal
+                    </a>
+                    <a href="{{ route('invoices.delivery-note', $invoice) }}"
+                        class="flex items-center gap-2.5 px-4 py-2 text-gray-700 hover:bg-gray-50 font-medium">
+                        <i data-lucide="package-check" class="w-4 h-4 text-amber-600"></i> Delivery Note PDF
+                    </a>
+                    <div class="my-1 border-t border-gray-100"></div>
+                    <form action="{{ route('invoices.duplicate', $invoice) }}" method="POST">
+                        @csrf
+                        <button type="submit"
+                            class="w-full text-left flex items-center gap-2.5 px-4 py-2 text-gray-700 hover:bg-gray-50 font-medium">
+                            <i data-lucide="copy" class="w-4 h-4 text-gray-500"></i> Duplicate Invoice
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 

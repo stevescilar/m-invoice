@@ -37,7 +37,10 @@ class DashboardController extends Controller
             'profit_this_year'          => Invoice::where('company_id', $company_id)->where('status', 'paid')->whereYear('paid_at', now()->year)->sum('total_profit'),
 
             // Expenses
+            'expenses_today'            => Expense::where('company_id', $company_id)->whereDate('expense_date', today())->sum('amount'),
+            'expenses_this_week'        => Expense::where('company_id', $company_id)->whereBetween('expense_date', [now()->startOfWeek(), now()->endOfWeek()])->sum('amount'),
             'expenses_this_month'       => Expense::where('company_id', $company_id)->whereMonth('expense_date', now()->month)->whereYear('expense_date', now()->year)->sum('amount'),
+            'expenses_this_quarter'     => Expense::where('company_id', $company_id)->whereBetween('expense_date', [now()->startOfQuarter(), now()->endOfQuarter()])->sum('amount'),
             'expenses_this_year'        => Expense::where('company_id', $company_id)->whereYear('expense_date', now()->year)->sum('amount'),
         ];
 

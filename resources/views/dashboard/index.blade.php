@@ -2,105 +2,126 @@
 @section('title', 'Dashboard')
 @section('content')
 
-<div class="mb-6 flex justify-between items-center">
+<div class="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
     <div>
         <h1 class="text-2xl font-bold text-gray-800">Welcome back, {{ auth()->user()->name }}</h1>
         <p class="text-gray-500 text-sm">{{ $company->name }} &mdash; {{ now()->format('l, F j Y') }}</p>
+    </div>
+    <div class="flex flex-wrap items-center gap-2">
+        <a href="{{ route('invoices.create') }}"
+            class="bg-green-600 hover:bg-green-700 text-white px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold shadow-xs flex items-center gap-1.5 transition">
+            <i data-lucide="file-plus" class="w-4 h-4"></i> New Invoice
+        </a>
+        <a href="{{ route('quotations.create') }}"
+            class="bg-white border border-gray-200 hover:border-green-400 text-gray-700 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 transition">
+            <i data-lucide="clipboard-plus" class="w-4 h-4 text-blue-600"></i> New Quote
+        </a>
+        <a href="{{ route('clients.create') }}"
+            class="bg-white border border-gray-200 hover:border-green-400 text-gray-700 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 transition">
+            <i data-lucide="user-plus" class="w-4 h-4 text-purple-600"></i> Add Client
+        </a>
+        <a href="{{ route('reports.index') }}"
+            class="bg-white border border-gray-200 hover:border-green-400 text-gray-700 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 transition">
+            <i data-lucide="bar-chart-3" class="w-4 h-4 text-amber-600"></i> Reports
+        </a>
     </div>
 </div>
 
 <!-- Period Tabs -->
 <div x-data="{ period: 'month' }" class="space-y-6">
-    <div class="flex gap-2">
+    <div class="flex flex-wrap gap-2">
         @foreach(['today' => 'Today', 'week' => 'This Week', 'month' => 'This Month', 'quarter' => 'This Quarter', 'year' => 'This Year'] as $key => $label)
         <button @click="period = '{{ $key }}'"
-            :class="period === '{{ $key }}' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-600 border-gray-300 hover:border-green-400'"
-            class="px-4 py-1.5 rounded-full text-sm border">
+            :class="period === '{{ $key }}' ? 'bg-green-600 text-white border-green-600 shadow-xs' : 'bg-white text-gray-600 border-gray-200 hover:border-green-400'"
+            class="px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium border transition">
             {{ $label }}
         </button>
         @endforeach
     </div>
 
     <!-- Revenue & Profit Cards -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
         <!-- Revenue -->
-        <div class="bg-white rounded-xl shadow p-5">
+        <div class="bg-white rounded-xl shadow-xs border border-gray-100 p-5">
             <div class="flex items-center justify-between mb-3">
-                <p class="text-xs text-gray-500 uppercase font-medium">Revenue</p>
+                <p class="text-xs text-gray-500 uppercase font-semibold tracking-wide">Revenue</p>
                 <div class="w-9 h-9 bg-green-50 rounded-lg flex items-center justify-center">
                     <i data-lucide="trending-up" class="w-4 h-4 text-green-600"></i>
                 </div>
             </div>
-            <div x-show="period === 'today'" class="text-2xl font-bold text-green-600">Ksh {{ number_format($stats['revenue_today'], 2) }}</div>
-            <div x-show="period === 'week'" class="text-2xl font-bold text-green-600">Ksh {{ number_format($stats['revenue_this_week'], 2) }}</div>
-            <div x-show="period === 'month'" class="text-2xl font-bold text-green-600">Ksh {{ number_format($stats['revenue_this_month'], 2) }}</div>
-            <div x-show="period === 'quarter'" class="text-2xl font-bold text-green-600">Ksh {{ number_format($stats['revenue_this_quarter'], 2) }}</div>
-            <div x-show="period === 'year'" class="text-2xl font-bold text-green-600">Ksh {{ number_format($stats['revenue_this_year'], 2) }}</div>
+            <div x-show="period === 'today'" class="text-xl sm:text-2xl font-bold text-green-600">Ksh {{ number_format($stats['revenue_today'], 2) }}</div>
+            <div x-show="period === 'week'" class="text-xl sm:text-2xl font-bold text-green-600">Ksh {{ number_format($stats['revenue_this_week'], 2) }}</div>
+            <div x-show="period === 'month'" class="text-xl sm:text-2xl font-bold text-green-600">Ksh {{ number_format($stats['revenue_this_month'], 2) }}</div>
+            <div x-show="period === 'quarter'" class="text-xl sm:text-2xl font-bold text-green-600">Ksh {{ number_format($stats['revenue_this_quarter'], 2) }}</div>
+            <div x-show="period === 'year'" class="text-xl sm:text-2xl font-bold text-green-600">Ksh {{ number_format($stats['revenue_this_year'], 2) }}</div>
         </div>
 
         <!-- Profit -->
-        <div class="bg-white rounded-xl shadow p-5">
+        <div class="bg-white rounded-xl shadow-xs border border-gray-100 p-5">
             <div class="flex items-center justify-between mb-3">
-                <p class="text-xs text-gray-500 uppercase font-medium">Profit</p>
+                <p class="text-xs text-gray-500 uppercase font-semibold tracking-wide">Gross Profit</p>
                 <div class="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center">
                     <i data-lucide="circle-dollar-sign" class="w-4 h-4 text-blue-600"></i>
                 </div>
             </div>
-            <div x-show="period === 'today'" class="text-2xl font-bold text-blue-600">Ksh {{ number_format($stats['profit_today'], 2) }}</div>
-            <div x-show="period === 'week'" class="text-2xl font-bold text-blue-600">Ksh {{ number_format($stats['profit_this_week'], 2) }}</div>
-            <div x-show="period === 'month'" class="text-2xl font-bold text-blue-600">Ksh {{ number_format($stats['profit_this_month'], 2) }}</div>
-            <div x-show="period === 'quarter'" class="text-2xl font-bold text-blue-600">Ksh {{ number_format($stats['profit_this_quarter'], 2) }}</div>
-            <div x-show="period === 'year'" class="text-2xl font-bold text-blue-600">Ksh {{ number_format($stats['profit_this_year'], 2) }}</div>
+            <div x-show="period === 'today'" class="text-xl sm:text-2xl font-bold text-blue-600">Ksh {{ number_format($stats['profit_today'], 2) }}</div>
+            <div x-show="period === 'week'" class="text-xl sm:text-2xl font-bold text-blue-600">Ksh {{ number_format($stats['profit_this_week'], 2) }}</div>
+            <div x-show="period === 'month'" class="text-xl sm:text-2xl font-bold text-blue-600">Ksh {{ number_format($stats['profit_this_month'], 2) }}</div>
+            <div x-show="period === 'quarter'" class="text-xl sm:text-2xl font-bold text-blue-600">Ksh {{ number_format($stats['profit_this_quarter'], 2) }}</div>
+            <div x-show="period === 'year'" class="text-xl sm:text-2xl font-bold text-blue-600">Ksh {{ number_format($stats['profit_this_year'], 2) }}</div>
         </div>
 
         <!-- Expenses -->
-        <div class="bg-white rounded-xl shadow p-5">
+        <div class="bg-white rounded-xl shadow-xs border border-gray-100 p-5">
             <div class="flex items-center justify-between mb-3">
-                <p class="text-xs text-gray-500 uppercase font-medium">Expenses</p>
+                <p class="text-xs text-gray-500 uppercase font-semibold tracking-wide">Expenses</p>
                 <div class="w-9 h-9 bg-red-50 rounded-lg flex items-center justify-center">
                     <i data-lucide="receipt" class="w-4 h-4 text-red-500"></i>
                 </div>
             </div>
-            <div x-show="period === 'today'" class="text-2xl font-bold text-red-500">—</div>
-            <div x-show="period === 'week'" class="text-2xl font-bold text-red-500">—</div>
-            <div x-show="period === 'month'" class="text-2xl font-bold text-red-500">Ksh {{ number_format($stats['expenses_this_month'], 2) }}</div>
-            <div x-show="period === 'quarter'" class="text-2xl font-bold text-red-500">—</div>
-            <div x-show="period === 'year'" class="text-2xl font-bold text-red-500">Ksh {{ number_format($stats['expenses_this_year'], 2) }}</div>
+            <div x-show="period === 'today'" class="text-xl sm:text-2xl font-bold text-red-500">Ksh {{ number_format($stats['expenses_today'] ?? 0, 2) }}</div>
+            <div x-show="period === 'week'" class="text-xl sm:text-2xl font-bold text-red-500">Ksh {{ number_format($stats['expenses_this_week'] ?? 0, 2) }}</div>
+            <div x-show="period === 'month'" class="text-xl sm:text-2xl font-bold text-red-500">Ksh {{ number_format($stats['expenses_this_month'], 2) }}</div>
+            <div x-show="period === 'quarter'" class="text-xl sm:text-2xl font-bold text-red-500">Ksh {{ number_format($stats['expenses_this_quarter'] ?? 0, 2) }}</div>
+            <div x-show="period === 'year'" class="text-xl sm:text-2xl font-bold text-red-500">Ksh {{ number_format($stats['expenses_this_year'], 2) }}</div>
         </div>
 
         <!-- Net -->
-        <div class="bg-white rounded-xl shadow p-5">
+        <div class="bg-white rounded-xl shadow-xs border border-gray-100 p-5">
             <div class="flex items-center justify-between mb-3">
-                <p class="text-xs text-gray-500 uppercase font-medium">Net</p>
+                <p class="text-xs text-gray-500 uppercase font-semibold tracking-wide">Net Profit</p>
                 <div class="w-9 h-9 bg-purple-50 rounded-lg flex items-center justify-center">
                     <i data-lucide="scale" class="w-4 h-4 text-purple-600"></i>
                 </div>
             </div>
             @php
-                $netMonth = $stats['profit_this_month'] - $stats['expenses_this_month'];
-                $netYear  = $stats['profit_this_year'] - $stats['expenses_this_year'];
+                $netToday   = $stats['profit_today'] - ($stats['expenses_today'] ?? 0);
+                $netWeek    = $stats['profit_this_week'] - ($stats['expenses_this_week'] ?? 0);
+                $netMonth   = $stats['profit_this_month'] - $stats['expenses_this_month'];
+                $netQuarter = $stats['profit_this_quarter'] - ($stats['expenses_this_quarter'] ?? 0);
+                $netYear    = $stats['profit_this_year'] - $stats['expenses_this_year'];
             @endphp
-            <div x-show="period === 'today'" class="text-2xl font-bold {{ $stats['profit_today'] >= 0 ? 'text-green-600' : 'text-red-500' }}">Ksh {{ number_format($stats['profit_today'], 2) }}</div>
-            <div x-show="period === 'week'" class="text-2xl font-bold {{ $stats['profit_this_week'] >= 0 ? 'text-green-600' : 'text-red-500' }}">Ksh {{ number_format($stats['profit_this_week'], 2) }}</div>
-            <div x-show="period === 'month'" class="text-2xl font-bold {{ $netMonth >= 0 ? 'text-green-600' : 'text-red-500' }}">Ksh {{ number_format($netMonth, 2) }}</div>
-            <div x-show="period === 'quarter'" class="text-2xl font-bold {{ $stats['profit_this_quarter'] >= 0 ? 'text-green-600' : 'text-red-500' }}">Ksh {{ number_format($stats['profit_this_quarter'], 2) }}</div>
-            <div x-show="period === 'year'" class="text-2xl font-bold {{ $netYear >= 0 ? 'text-green-600' : 'text-red-500' }}">Ksh {{ number_format($netYear, 2) }}</div>
+            <div x-show="period === 'today'" class="text-xl sm:text-2xl font-bold {{ $netToday >= 0 ? 'text-green-600' : 'text-red-500' }}">Ksh {{ number_format($netToday, 2) }}</div>
+            <div x-show="period === 'week'" class="text-xl sm:text-2xl font-bold {{ $netWeek >= 0 ? 'text-green-600' : 'text-red-500' }}">Ksh {{ number_format($netWeek, 2) }}</div>
+            <div x-show="period === 'month'" class="text-xl sm:text-2xl font-bold {{ $netMonth >= 0 ? 'text-green-600' : 'text-red-500' }}">Ksh {{ number_format($netMonth, 2) }}</div>
+            <div x-show="period === 'quarter'" class="text-xl sm:text-2xl font-bold {{ $netQuarter >= 0 ? 'text-green-600' : 'text-red-500' }}">Ksh {{ number_format($netQuarter, 2) }}</div>
+            <div x-show="period === 'year'" class="text-xl sm:text-2xl font-bold {{ $netYear >= 0 ? 'text-green-600' : 'text-red-500' }}">Ksh {{ number_format($netYear, 2) }}</div>
         </div>
     </div>
 
     <!-- Invoice Status -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div class="bg-white rounded-xl shadow p-5 flex items-center gap-4">
+        <a href="{{ route('invoices.index') }}" class="bg-white rounded-xl shadow-xs border border-gray-100 hover:border-green-300 transition p-5 flex items-center gap-4">
             <div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
                 <i data-lucide="file-text" class="w-5 h-5 text-gray-600"></i>
             </div>
             <div>
-                <p class="text-2xl font-bold text-gray-700">{{ $stats['total_invoices'] }}</p>
+                <p class="text-2xl font-bold text-gray-800">{{ $stats['total_invoices'] }}</p>
                 <p class="text-xs text-gray-500">Total Invoices</p>
             </div>
-        </div>
-        <div class="bg-white rounded-xl shadow p-5 flex items-center gap-4">
+        </a>
+        <a href="{{ route('invoices.index', ['status' => 'paid']) }}" class="bg-white rounded-xl shadow-xs border border-gray-100 hover:border-green-300 transition p-5 flex items-center gap-4">
             <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center flex-shrink-0">
                 <i data-lucide="check-circle" class="w-5 h-5 text-green-600"></i>
             </div>
@@ -108,17 +129,17 @@
                 <p class="text-2xl font-bold text-green-600">{{ $stats['paid_invoices'] }}</p>
                 <p class="text-xs text-gray-500">Paid</p>
             </div>
-        </div>
-        <div class="bg-white rounded-xl shadow p-5 flex items-center gap-4">
+        </a>
+        <a href="{{ route('invoices.index', ['status' => 'sent']) }}" class="bg-white rounded-xl shadow-xs border border-gray-100 hover:border-yellow-300 transition p-5 flex items-center gap-4">
             <div class="w-12 h-12 bg-yellow-50 rounded-xl flex items-center justify-center flex-shrink-0">
                 <i data-lucide="clock" class="w-5 h-5 text-yellow-500"></i>
             </div>
             <div>
                 <p class="text-2xl font-bold text-yellow-500">{{ $stats['unpaid_invoices'] }}</p>
-                <p class="text-xs text-gray-500">Unpaid</p>
+                <p class="text-xs text-gray-500">Unpaid / Sent</p>
             </div>
-        </div>
-        <div class="bg-white rounded-xl shadow p-5 flex items-center gap-4">
+        </a>
+        <a href="{{ route('invoices.index', ['status' => 'overdue']) }}" class="bg-white rounded-xl shadow-xs border border-gray-100 hover:border-red-300 transition p-5 flex items-center gap-4">
             <div class="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center flex-shrink-0">
                 <i data-lucide="alert-circle" class="w-5 h-5 text-red-500"></i>
             </div>
@@ -126,13 +147,13 @@
                 <p class="text-2xl font-bold text-red-500">{{ $stats['overdue_invoices'] }}</p>
                 <p class="text-xs text-gray-500">Overdue</p>
             </div>
-        </div>
+        </a>
     </div>
 
 </div>
 
 <!-- Chart -->
-<div class="bg-white rounded-xl shadow p-5 mt-6">
+<div class="bg-white rounded-xl shadow-xs border border-gray-100 p-5 mt-6">
     <h2 class="font-semibold text-gray-700 mb-4 flex items-center gap-2">
         <i data-lucide="bar-chart-2" class="w-4 h-4 text-green-600"></i>
         Revenue vs Profit (Last 6 Months)
@@ -144,58 +165,60 @@
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
 
     <!-- Recent Invoices -->
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white rounded-xl shadow-xs border border-gray-100 p-5">
         <div class="flex justify-between items-center mb-4">
             <h2 class="font-semibold text-gray-700 flex items-center gap-2">
                 <i data-lucide="file-text" class="w-4 h-4 text-green-600"></i>
                 Recent Invoices
             </h2>
-            <a href="{{ route('invoices.index') }}" class="text-sm text-green-600 hover:underline">View all</a>
+            <a href="{{ route('invoices.index') }}" class="text-xs font-semibold text-green-600 hover:underline">View all →</a>
         </div>
         @forelse($recent_invoices as $invoice)
-        <div class="flex justify-between items-center py-2 border-b last:border-0">
+        <a href="{{ route('invoices.show', $invoice) }}" class="flex justify-between items-center py-2.5 px-2 -mx-2 rounded-lg hover:bg-gray-50 border-b border-gray-50 last:border-0 transition">
             <div>
-                <p class="text-sm font-medium text-gray-700">{{ $invoice->client->name }}</p>
+                <p class="text-sm font-semibold text-gray-800">{{ $invoice->client->name }}</p>
                 <p class="text-xs text-gray-400">{{ $invoice->invoice_number }}</p>
             </div>
             <div class="text-right">
-                <p class="text-sm font-semibold">Ksh {{ number_format($invoice->grand_total, 2) }}</p>
-                <span class="text-xs px-2 py-0.5 rounded-full
-                    {{ $invoice->status === 'paid' ? 'bg-green-100 text-green-600' : '' }}
-                    {{ $invoice->status === 'overdue' ? 'bg-red-100 text-red-600' : '' }}
-                    {{ $invoice->status === 'sent' ? 'bg-blue-100 text-blue-600' : '' }}
-                    {{ $invoice->status === 'draft' ? 'bg-yellow-100 text-yellow-600' : '' }}
-                    {{ $invoice->status === 'stalled' ? 'bg-orange-100 text-orange-600' : '' }}">
-                    {{ ucfirst($invoice->status) }}
+                <p class="text-sm font-bold text-gray-800">Ksh {{ number_format($invoice->grand_total, 2) }}</p>
+                <span class="text-[11px] font-medium px-2 py-0.5 rounded-full
+                    {{ $invoice->status === 'paid' ? 'bg-green-100 text-green-700' : '' }}
+                    {{ $invoice->isPartiallyPaid() ? 'bg-amber-100 text-amber-700' : '' }}
+                    {{ !$invoice->isPartiallyPaid() && $invoice->status === 'overdue' ? 'bg-red-100 text-red-600' : '' }}
+                    {{ !$invoice->isPartiallyPaid() && $invoice->status === 'sent' ? 'bg-blue-100 text-blue-600' : '' }}
+                    {{ !$invoice->isPartiallyPaid() && $invoice->status === 'draft' ? 'bg-gray-100 text-gray-600' : '' }}
+                    {{ !$invoice->isPartiallyPaid() && $invoice->status === 'stalled' ? 'bg-orange-100 text-orange-600' : '' }}">
+                    {{ $invoice->isPartiallyPaid() ? 'Partial' : ucfirst($invoice->status) }}
                 </span>
             </div>
-        </div>
+        </a>
         @empty
-        <p class="text-sm text-gray-400">No invoices yet.</p>
+        <p class="text-sm text-gray-400 py-4 text-center">No invoices yet.</p>
         @endforelse
     </div>
 
     <!-- Overdue Invoices -->
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white rounded-xl shadow-xs border border-gray-100 p-5">
         <div class="flex justify-between items-center mb-4">
             <h2 class="font-semibold text-gray-700 flex items-center gap-2">
                 <i data-lucide="alert-triangle" class="w-4 h-4 text-red-500"></i>
                 Overdue Invoices
             </h2>
-            <a href="{{ route('invoices.index') }}" class="text-sm text-red-500 hover:underline">View all</a>
+            <a href="{{ route('invoices.index', ['status' => 'overdue']) }}" class="text-xs font-semibold text-red-500 hover:underline">View all →</a>
         </div>
         @forelse($overdue_invoices as $invoice)
-        <div class="flex justify-between items-center py-2 border-b last:border-0">
+        <a href="{{ route('invoices.show', $invoice) }}" class="flex justify-between items-center py-2.5 px-2 -mx-2 rounded-lg hover:bg-red-50/40 border-b border-gray-50 last:border-0 transition">
             <div>
-                <p class="text-sm font-medium text-gray-700">{{ $invoice->client->name }}</p>
-                <p class="text-xs text-gray-400">Due: {{ $invoice->due_date->format('M j, Y') }}</p>
+                <p class="text-sm font-semibold text-gray-800">{{ $invoice->client->name }}</p>
+                <p class="text-xs text-red-500">{{ $invoice->invoice_number }} • Due {{ $invoice->due_date->format('M j, Y') }}</p>
             </div>
             <div class="text-right">
-                <p class="text-sm font-semibold text-red-500">Ksh {{ number_format($invoice->grand_total, 2) }}</p>
+                <p class="text-sm font-bold text-red-600">Ksh {{ number_format($invoice->balance_due, 2) }}</p>
+                <span class="text-[11px] text-gray-400">Balance due</span>
             </div>
-        </div>
+        </a>
         @empty
-        <p class="text-sm text-gray-400 flex items-center gap-1">
+        <p class="text-sm text-gray-400 py-4 flex items-center justify-center gap-1.5">
             <i data-lucide="check-circle" class="w-4 h-4 text-green-500"></i>
             No overdue invoices!
         </p>

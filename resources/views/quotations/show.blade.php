@@ -16,38 +16,53 @@
             {{ ucfirst($quotation->status) }}
         </span>
     </div>
-    <div class="flex flex-wrap gap-2">
+    <div class="flex flex-wrap items-center gap-2" x-data="{ moreOpen: false }">
         <button type="button"
             @click="navigator.clipboard.writeText('{{ $quotation->public_url }}'); copied = true; setTimeout(() => copied = false, 2500)"
-            class="bg-white border border-gray-300 text-gray-700 px-3.5 py-2 rounded-lg text-sm hover:bg-gray-50 font-medium transition">
+            class="bg-white border border-gray-300 text-gray-700 px-3.5 py-2 rounded-lg text-sm hover:bg-gray-50 font-medium transition flex items-center gap-1.5">
             <span x-show="!copied">🔗 Copy Client Link</span>
             <span x-show="copied" class="text-green-600 font-semibold">✅ Link Copied!</span>
         </button>
-        <a href="{{ $quotation->public_url }}" target="_blank"
-            class="bg-gray-100 text-gray-700 px-3.5 py-2 rounded-lg text-sm hover:bg-gray-200 font-medium">
-            🌐 Public View
-        </a>
-        <a href="{{ route('quotations.delivery-note', $quotation) }}"
-            class="bg-amber-50 border border-amber-200 text-amber-800 px-3.5 py-2 rounded-lg text-sm hover:bg-amber-100 font-medium">
-            📦 Delivery Note PDF
-        </a>
+
         <a href="{{ route('quotations.download', $quotation) }}"
-            class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 font-medium">
-            ⬇ Quotation PDF
+            class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 font-medium flex items-center gap-1.5 shadow-xs">
+            <i data-lucide="download" class="w-4 h-4"></i> Quotation PDF
         </a>
+
         @if(!in_array($quotation->status, ['converted', 'approved']))
         <a href="{{ route('quotations.edit', $quotation) }}"
-            class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-200">
-            Edit
+            class="bg-white border border-gray-200 text-gray-700 px-3.5 py-2 rounded-lg text-sm hover:bg-gray-50 font-medium flex items-center gap-1.5">
+            <i data-lucide="pencil" class="w-3.5 h-3.5"></i> Edit
         </a>
         @endif
-        <form method="POST" action="{{ route('quotations.duplicate', $quotation) }}">
-            @csrf
-            <button type="submit"
-                class="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 font-medium transition">
-                <i data-lucide="copy" class="w-4 h-4"></i> Duplicate
+
+        {{-- More Actions Dropdown --}}
+        <div class="relative" @click.outside="moreOpen = false">
+            <button type="button" @click="moreOpen = !moreOpen"
+                class="bg-gray-100 text-gray-700 px-3 py-2 rounded-lg text-sm hover:bg-gray-200 font-medium flex items-center gap-1 transition">
+                <span>More</span>
+                <i data-lucide="chevron-down" class="w-4 h-4"></i>
             </button>
-        </form>
+            <div x-show="moreOpen" x-cloak x-transition
+                class="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-xl border border-gray-100 py-1.5 z-40 text-sm">
+                <a href="{{ $quotation->public_url }}" target="_blank"
+                    class="flex items-center gap-2.5 px-4 py-2 text-gray-700 hover:bg-gray-50 font-medium">
+                    <i data-lucide="external-link" class="w-4 h-4 text-blue-500"></i> Open Public Portal
+                </a>
+                <a href="{{ route('quotations.delivery-note', $quotation) }}"
+                    class="flex items-center gap-2.5 px-4 py-2 text-gray-700 hover:bg-gray-50 font-medium">
+                    <i data-lucide="package-check" class="w-4 h-4 text-amber-600"></i> Delivery Note PDF
+                </a>
+                <div class="my-1 border-t border-gray-100"></div>
+                <form method="POST" action="{{ route('quotations.duplicate', $quotation) }}">
+                    @csrf
+                    <button type="submit"
+                        class="w-full text-left flex items-center gap-2.5 px-4 py-2 text-gray-700 hover:bg-gray-50 font-medium">
+                        <i data-lucide="copy" class="w-4 h-4 text-gray-500"></i> Duplicate Quotation
+                    </button>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 

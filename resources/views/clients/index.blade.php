@@ -78,7 +78,8 @@
 
 <!-- Table -->
 <div class="bg-white rounded-xl shadow overflow-hidden">
-    <table class="w-full text-sm">
+    <div class="overflow-x-auto">
+    <table class="w-full text-sm min-w-[680px]">
         <thead class="bg-gray-50 border-b border-gray-100">
             <tr>
                 <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Client</th>
@@ -155,9 +156,13 @@
                 </td>
                 <td class="px-5 py-3.5">
                     <div class="flex items-center justify-center gap-1">
-                        <a href="{{ route('clients.show', $client) }}" title="View"
+                        <a href="{{ route('clients.show', $client) }}" title="View Client"
                             class="p-1.5 rounded-lg hover:bg-blue-50 text-blue-500 hover:text-blue-700 transition">
                             <i data-lucide="eye" class="w-4 h-4"></i>
+                        </a>
+                        <a href="{{ route('clients.statement.download', $client) }}" title="Download Statement PDF"
+                            class="p-1.5 rounded-lg hover:bg-green-50 text-green-600 hover:text-green-700 transition">
+                            <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
                         </a>
                         <a href="{{ route('clients.edit', $client) }}" title="Edit"
                             class="p-1.5 rounded-lg hover:bg-yellow-50 text-yellow-500 hover:text-yellow-700 transition">
@@ -192,6 +197,7 @@
             @endforelse
         </tbody>
     </table>
+    </div>
 
     @if($clients->hasPages())
     <div class="px-5 py-4 border-t border-gray-100 flex items-center justify-between">

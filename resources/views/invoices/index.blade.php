@@ -64,7 +64,8 @@
 
 <!-- Table -->
 <div class="bg-white rounded-xl shadow overflow-hidden">
-    <table class="w-full text-sm">
+    <div class="overflow-x-auto">
+    <table class="w-full text-sm min-w-[720px]">
         <thead class="bg-gray-50 border-b border-gray-100">
             <tr>
                 <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Invoice #</th>
@@ -92,6 +93,9 @@
                         @endif
                         @if($invoice->etr_enabled)
                         <span class="text-xs bg-purple-50 text-purple-500 px-1.5 py-0.5 rounded-full font-medium">ETR</span>
+                        @endif
+                        @if($invoice->client_payment_note && $invoice->status !== 'paid')
+                        <span title="Client submitted payment confirmation" class="text-[11px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 rounded-full font-medium">💸 Client Paid?</span>
                         @endif
                     </div>
                 </td>
@@ -133,6 +137,9 @@
                 </td>
                 <td class="px-5 py-3.5 text-right">
                     <span class="font-bold text-gray-800">Ksh {{ number_format($invoice->grand_total, 2) }}</span>
+                    @if($invoice->isPartiallyPaid())
+                        <p class="text-[11px] text-amber-600 font-medium">Bal: Ksh {{ number_format($invoice->balance_due, 0) }}</p>
+                    @endif
                 </td>
                 <td class="px-5 py-3.5 text-center">
                     @php
@@ -143,11 +150,13 @@
                             'draft'   => ['bg-gray-100 text-gray-600', 'file'],
                             'stalled' => ['bg-yellow-100 text-yellow-600', 'pause-circle'],
                         ];
-                        $config = $statusConfig[$invoice->status] ?? ['bg-gray-100 text-gray-600', 'file'];
+                        $config = $invoice->isPartiallyPaid()
+                            ? ['bg-amber-100 text-amber-700', 'pie-chart']
+                            : ($statusConfig[$invoice->status] ?? ['bg-gray-100 text-gray-600', 'file']);
                     @endphp
                     <span class="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium {{ $config[0] }}">
                         <i data-lucide="{{ $config[1] }}" class="w-3 h-3"></i>
-                        {{ ucfirst($invoice->status) }}
+                        {{ $invoice->isPartiallyPaid() ? 'Partial' : ucfirst($invoice->status) }}
                     </span>
                 </td>
                 <td class="px-5 py-3.5">
@@ -207,6 +216,7 @@
             @endforelse
         </tbody>
     </table>
+    </div>
 
     <!-- Pagination -->
     @if($invoices->hasPages())
