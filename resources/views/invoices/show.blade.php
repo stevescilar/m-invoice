@@ -118,6 +118,12 @@
                     <span>Labour Cost</span>
                     <span>Ksh {{ number_format($invoice->labour_cost, 2) }}</span>
                 </div>
+                @if ($invoice->discount_amount > 0)
+                    <div class="flex justify-between text-green-600">
+                        <span>Discount{{ $invoice->discount_percentage > 0 ? ' (' . number_format($invoice->discount_percentage, 1) . '%)' : '' }}</span>
+                        <span>- Ksh {{ number_format($invoice->discount_amount, 2) }}</span>
+                    </div>
+                @endif
                 @if ($invoice->etr_enabled)
                     <div class="flex justify-between text-purple-600">
                         <span>VAT (16%)</span>
@@ -155,7 +161,7 @@
                         <form action="{{ route('invoices.send', $invoice) }}" method="POST" class="mb-2">
                             @csrf
                             <button class="w-full bg-blue-500 text-white py-2 rounded-lg text-sm hover:bg-blue-600">
-                                Mark as Sent
+                                Send Invoice via Email
                             </button>
                         </form>
                     @endif
@@ -166,7 +172,7 @@
                             class="w-full bg-green-600 text-white py-2 rounded-lg text-sm hover:bg-green-700 mb-2">
                             Mark as Paid
                         </button>
-                        <div x-show="open" x-cloak class="mt-2 space-y-2">
+                        <div x-show="open" x-cloak class="mt-2 space-y-2 mb-2">
                             <input type="text" name="mpesa_code" placeholder="M-Pesa code (optional)"
                                 class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400">
                             <button type="submit"
@@ -176,23 +182,33 @@
                         </div>
                     </form>
 
+                    @if ($invoice->client->email)
+                        <form action="{{ route('invoices.remind', $invoice) }}" method="POST" class="mb-2">
+                            @csrf
+                            <button class="w-full bg-indigo-50 text-indigo-600 py-2 rounded-lg text-sm hover:bg-indigo-100 font-medium">
+                                📧 Send Email Reminder
+                            </button>
+                        </form>
+                    @endif
+
+                    @if ($invoice->client->phone)
+                        <a href="{{ route('invoices.whatsapp', $invoice) }}" target="_blank"
+                            class="block w-full text-center bg-emerald-50 text-emerald-700 py-2 rounded-lg text-sm hover:bg-emerald-100 font-medium mb-2">
+                            💬 Remind via WhatsApp
+                        </a>
+                    @endif
+
                     <!-- Change to Stalled -->
-                    <form action="{{ route('invoices.update', $invoice) }}" method="POST" class="mt-2">
-                        @csrf @method('PUT')
-                        <input type="hidden" name="status_only" value="stalled">
-                        <input type="hidden" name="client_id" value="{{ $invoice->client_id }}">
-                        <input type="hidden" name="issue_date" value="{{ $invoice->issue_date->format('Y-m-d') }}">
-                        @foreach ($invoice->items as $i => $item)
-                            <input type="hidden" name="items[{{ $i }}][description]"
-                                value="{{ $item->description }}">
-                            <input type="hidden" name="items[{{ $i }}][quantity]"
-                                value="{{ $item->quantity }}">
-                            <input type="hidden" name="items[{{ $i }}][unit_price]"
-                                value="{{ $item->unit_price }}">
-                            <input type="hidden" name="items[{{ $i }}][is_labour]"
-                                value="{{ $item->is_labour ? 1 : 0 }}">
-                        @endforeach
-                    </form>
+                    @if ($invoice->status !== 'stalled')
+                        <form action="{{ route('invoices.update', $invoice) }}" method="POST" class="mt-2">
+                            @csrf @method('PUT')
+                            <input type="hidden" name="status_only" value="1">
+                            <input type="hidden" name="status" value="stalled">
+                            <button type="submit" class="w-full bg-yellow-50 text-yellow-700 py-2 rounded-lg text-sm hover:bg-yellow-100 font-medium">
+                                Mark as Stalled
+                            </button>
+                        </form>
+                    @endif
                 </div>
             @endif
 
@@ -258,7 +274,7 @@
                 @if ($invoice->is_recurring)
                     <div class="flex justify-between text-gray-500">
                         <span>Recurrence</span>
-                        <span>{{ ucfirst($invoice->recurrence_interval) }}</span>
+                        <span>{{ ucfirst($invoice->recurring_frequency) }}</span>
                     </div>
                 @endif
             </div>

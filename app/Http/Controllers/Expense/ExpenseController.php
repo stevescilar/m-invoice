@@ -108,7 +108,7 @@ class ExpenseController extends Controller
     public function show(Expense $expense)
     {
         $this->authorizeExpense($expense);
-        return view('expenses.show', compact('expense'));
+        return redirect()->route('expenses.edit', $expense);
     }
 
     public function edit(Expense $expense)

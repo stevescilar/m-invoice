@@ -17,7 +17,6 @@ use App\Http\Controllers\Quotation\QuotationController;
 use App\Http\Controllers\Expense\ExpenseController;
 use App\Http\Controllers\Subscription\SubscriptionController;
 use App\Http\Controllers\Staff\StaffController;
-use App\Http\Controllers\Payment\PaymentController;
 
 
 // Root

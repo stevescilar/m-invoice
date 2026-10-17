@@ -139,11 +139,13 @@
                         <span class="text-sm font-semibold text-gray-700 whitespace-nowrap">
                             Ksh&nbsp;<span x-text="((item.quantity||0)*(item.unit_price||0)).toLocaleString('en-KE',{minimumFractionDigits:0})"></span>
                         </span>
+                        @if(auth()->user()->isOwner())
                         <span class="text-xs font-bold whitespace-nowrap"
                               :class="((item.quantity||0)*((item.unit_price||0)-(item.buying_price||0))) >= 0 ? 'text-green-600' : 'text-red-500'"
                               x-show="item.unit_price > 0"
                               x-text="item.unit_price > 0 ? '+' + (((item.unit_price-item.buying_price)/item.unit_price)*100).toFixed(0)+'%' : ''">
                         </span>
+                        @endif
                         <i data-lucide="chevron-down"
                            class="w-4 h-4 text-gray-400 flex-shrink-0 transition-transform duration-150"
                            :class="item.expanded ? 'rotate-180':''"></i>
@@ -190,7 +192,8 @@
                         </div>
 
                         {{-- Prices --}}
-                        <div class="grid grid-cols-3 gap-2">
+                        <div class="grid grid-cols-{{ auth()->user()->isOwner() ? '3' : '2' }} gap-2">
+                            @if(auth()->user()->isOwner())
                             <div>
                                 <label class="text-xs text-blue-500 mb-0.5 block font-medium">Buying (Ksh)</label>
                                 <input type="number" :name="`items[${index}][buying_price]`"
@@ -198,6 +201,9 @@
                                     min="0" step="0.01" placeholder="0"
                                     class="w-full border border-blue-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400 bg-blue-50">
                             </div>
+                            @else
+                            <input type="hidden" :name="`items[${index}][buying_price]`" :value="item.buying_price || 0">
+                            @endif
                             <div>
                                 <label class="text-xs text-green-600 mb-0.5 block font-medium">Selling (Ksh)</label>
                                 <input type="number" :name="`items[${index}][unit_price]`"
@@ -205,6 +211,7 @@
                                     min="0" step="0.01" required
                                     class="w-full border border-green-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-400 bg-white">
                             </div>
+                            @if(auth()->user()->isOwner())
                             <div>
                                 <label class="text-xs mb-0.5 block font-medium"
                                     :class="((item.unit_price||0)-(item.buying_price||0)) >= 0 ? 'text-green-600' : 'text-red-500'">
@@ -216,6 +223,14 @@
                                     Ksh&nbsp;<span x-text="((item.quantity||0)*((item.unit_price||0)-(item.buying_price||0))).toLocaleString('en-KE',{minimumFractionDigits:0})"></span>
                                 </p>
                             </div>
+                            @else
+                            <div>
+                                <label class="text-xs text-gray-500 mb-0.5 block">Line Total</label>
+                                <p class="px-2 py-1.5 text-sm font-semibold text-gray-700 bg-white border rounded-lg">
+                                    Ksh&nbsp;<span x-text="((item.quantity||0)*(item.unit_price||0)).toLocaleString('en-KE',{minimumFractionDigits:0})"></span>
+                                </p>
+                            </div>
+                            @endif
                         </div>
 
                     </div>{{-- /expanded --}}

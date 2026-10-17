@@ -113,6 +113,7 @@ class AdminAuthController extends Controller
         Auth::guard('admin')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+        session(['admin_gate_passed' => true]);
         return redirect()->route('admin.login');
     }
 

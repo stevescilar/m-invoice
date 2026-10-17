@@ -14,8 +14,17 @@ use Illuminate\Support\Str;
 
 class StaffController extends Controller
 {
+    private function ensureOwner(): void
+    {
+        if (!Auth::user()->isOwner()) {
+            abort(403, 'Only the company owner can manage staff.');
+        }
+    }
+
     public function index()
     {
+        $this->ensureOwner();
+
         $staff = User::where('company_id', Auth::user()->company_id)
             ->where('role', 'staff')
             ->latest()
@@ -32,14 +41,16 @@ class StaffController extends Controller
 
     public function invite(Request $request)
     {
+        $this->ensureOwner();
+
         $request->validate([
             'name'  => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email|unique:staff_invitations,email',
+            'email' => 'required|email|unique:users,email',
         ]);
 
         $company = Auth::user()->company;
 
-        // Check if already invited
+        // Check if already invited with an active pending invitation
         $existing = StaffInvitation::where('company_id', $company->id)
             ->where('email', $request->email)
             ->where('status', 'pending')
@@ -49,6 +60,9 @@ class StaffController extends Controller
         if ($existing) {
             return back()->with('error', 'An invitation has already been sent to this email.');
         }
+
+        // Remove any old/expired invitations for this email before creating a fresh one
+        StaffInvitation::where('email', $request->email)->delete();
 
         $invitation = StaffInvitation::create([
             'company_id'  => $company->id,
@@ -88,6 +102,11 @@ class StaffController extends Controller
             return redirect()->route('login')->with('error', 'This invitation has expired.');
         }
 
+        if (User::where('email', $invitation->email)->exists()) {
+            $invitation->update(['status' => 'accepted']);
+            return redirect()->route('login')->with('error', 'An account with this email already exists. Please log in.');
+        }
+
         $request->validate([
             'password' => 'required|min:8|confirmed',
         ]);
@@ -112,6 +131,8 @@ class StaffController extends Controller
 
     public function resendInvitation(StaffInvitation $invitation)
     {
+        $this->ensureOwner();
+
         if ($invitation->company_id !== Auth::user()->company_id) {
             abort(403);
         }
@@ -132,6 +153,7 @@ class StaffController extends Controller
 
     public function revokeInvitation(StaffInvitation $invitation)
     {
+        $this->ensureOwner();
         if ($invitation->company_id !== Auth::user()->company_id) abort(403);
         $invitation->delete();
         return back()->with('success', 'Invitation revoked.');
@@ -139,6 +161,7 @@ class StaffController extends Controller
 
     public function deactivate(User $user)
     {
+        $this->ensureOwner();
         if ($user->company_id !== Auth::user()->company_id) abort(403);
         if ($user->role === 'owner') return back()->with('error', 'Cannot deactivate owner.');
         $user->update(['is_active' => !$user->is_active]);
@@ -147,6 +170,7 @@ class StaffController extends Controller
 
     public function destroy(User $user)
     {
+        $this->ensureOwner();
         if ($user->company_id !== Auth::user()->company_id) abort(403);
         if ($user->role === 'owner') return back()->with('error', 'Cannot delete owner.');
         $user->delete();

@@ -209,9 +209,6 @@
     </div>
 </div>
 
-@media (max-width: 768px) {
-    /* handled below */
-}
 <style>
 @media (max-width: 768px) {
     body > div { grid-template-columns: 1fr !important; }

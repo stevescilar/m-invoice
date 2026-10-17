@@ -25,8 +25,8 @@ class MarkStaleDocuments extends Command
 
     private function markOverdueInvoices(): void
     {
-        // Invoices past due date that are still sent/draft (not paid, cancelled, already overdue)
-        $invoices = Invoice::whereIn('status', ['sent', 'draft'])
+        // Invoices past due date that are still sent/draft/stalled (not paid, already overdue)
+        $invoices = Invoice::whereIn('status', ['sent', 'draft', 'stalled'])
             ->whereNotNull('due_date')
             ->whereDate('due_date', '<', today())
             ->with('company.owner', 'client')

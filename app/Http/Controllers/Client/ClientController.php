@@ -100,7 +100,16 @@ class ClientController extends Controller
             'flag_reason' => 'nullable|string|max:255',
         ]);
 
-        $client->update($request->only(['name', 'phone', 'email', 'address', 'is_flagged', 'flag_reason']));
+        $isFlagged = $request->boolean('is_flagged');
+
+        $client->update([
+            'name'        => $request->name,
+            'phone'       => $request->phone,
+            'email'       => $request->email,
+            'address'     => $request->address,
+            'is_flagged'  => $isFlagged,
+            'flag_reason' => $isFlagged ? $request->flag_reason : null,
+        ]);
 
         return redirect()->route('clients.index')->with('success', 'Client updated successfully.');
     }

@@ -16,19 +16,20 @@
 </div>
 
 <!-- Stats Strip -->
-<div class="grid grid-cols-3 md:grid-cols-6 gap-3 mb-6">
+<div class="grid grid-cols-3 md:grid-cols-7 gap-3 mb-6">
     @foreach([
         'all'       => ['label' => 'All',       'color' => 'bg-gray-100 text-gray-700'],
         'draft'     => ['label' => 'Draft',     'color' => 'bg-gray-100 text-gray-600'],
         'sent'      => ['label' => 'Sent',      'color' => 'bg-blue-100 text-blue-600'],
         'approved'  => ['label' => 'Approved',  'color' => 'bg-green-100 text-green-600'],
         'rejected'  => ['label' => 'Rejected',  'color' => 'bg-red-100 text-red-600'],
+        'expired'   => ['label' => 'Expired',   'color' => 'bg-orange-100 text-orange-600'],
         'converted' => ['label' => 'Converted', 'color' => 'bg-purple-100 text-purple-600'],
     ] as $key => $meta)
     <a href="{{ route('quotations.index') }}?status={{ $key }}&search={{ request('search') }}"
         class="rounded-xl p-3 text-center border-2 transition
         {{ request('status', 'all') === $key ? 'border-green-500 bg-white shadow' : 'border-transparent bg-white hover:border-green-200' }}">
-        <p class="text-xl font-bold text-gray-800">{{ $stats[$key] }}</p>
+        <p class="text-xl font-bold text-gray-800">{{ $stats[$key] ?? 0 }}</p>
         <span class="text-xs px-2 py-0.5 rounded-full {{ $meta['color'] }} font-medium">{{ $meta['label'] }}</span>
     </a>
     @endforeach
@@ -130,6 +131,7 @@
                         $statusConfig = [
                             'approved'  => ['bg-green-100 text-green-700', 'check-circle'],
                             'rejected'  => ['bg-red-100 text-red-600', 'x-circle'],
+                            'expired'   => ['bg-orange-100 text-orange-600', 'alert-circle'],
                             'sent'      => ['bg-blue-100 text-blue-600', 'send'],
                             'draft'     => ['bg-gray-100 text-gray-600', 'file'],
                             'converted' => ['bg-purple-100 text-purple-600', 'refresh-cw'],

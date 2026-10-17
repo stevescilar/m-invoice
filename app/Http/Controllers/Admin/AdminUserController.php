@@ -19,4 +19,10 @@ class AdminUserController extends Controller
         $user->update(['is_active' => !$user->is_active]);
         return back()->with('success', 'User ' . ($user->is_active ? 'activated' : 'deactivated') . '.');
     }
+
+    public function destroy(User $user)
+    {
+        $user->delete();
+        return back()->with('success', 'User deleted successfully.');
+    }
 }

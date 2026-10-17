@@ -90,9 +90,11 @@ class InvoiceController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $companyId = Auth::user()->company_id;
+
         $request->validate([
-            'client_id'            => 'required|exists:clients,id',
-            'invoice_number'       => 'required|string|unique:invoices,invoice_number',
+            'client_id'            => ['required', \Illuminate\Validation\Rule::exists('clients', 'id')->where('company_id', $companyId)],
+            'invoice_number'       => ['required', 'string', \Illuminate\Validation\Rule::unique('invoices', 'invoice_number')->where('company_id', $companyId)],
             'issue_date'           => 'required|date',
             'due_date'             => 'nullable|date|after_or_equal:issue_date',
             'notes'                => 'nullable|string',
@@ -207,8 +209,29 @@ class InvoiceController extends Controller
     {
         $this->authorizeInvoice($invoice);
 
+        // Quick status-only update (e.g. "Change to Stalled" from show page)
+        if ($request->boolean('status_only') || ($request->has('status') && !$request->has('items'))) {
+            $request->validate([
+                'status' => 'required|in:draft,sent,paid,overdue,stalled',
+            ]);
+
+            $updateData = ['status' => $request->status];
+            if ($request->status === 'paid' && !$invoice->paid_at) {
+                $updateData['paid_at'] = now();
+            }
+
+            $invoice->update($updateData);
+
+            return redirect()->route('invoices.show', $invoice)
+                ->with('success', 'Invoice status updated to ' . ucfirst($request->status) . '.');
+        }
+
+        $companyId = Auth::user()->company_id;
+
         $request->validate([
-            'client_id'            => 'required|exists:clients,id',
+            'client_id'            => ['required', \Illuminate\Validation\Rule::exists('clients', 'id')->where('company_id', $companyId)],
+            'invoice_number'       => ['sometimes', 'required', 'string', \Illuminate\Validation\Rule::unique('invoices', 'invoice_number')->where('company_id', $companyId)->ignore($invoice->id)],
+            'status'               => 'nullable|in:draft,sent,paid,overdue,stalled',
             'issue_date'           => 'required|date',
             'due_date'             => 'nullable|date|after_or_equal:issue_date',
             'notes'                => 'nullable|string',
@@ -224,8 +247,13 @@ class InvoiceController extends Controller
             $totals = $this->calculateTotals($request->input('items'), $request->boolean('etr_enabled'));
             $totals = $this->applyDiscount($totals, $request);
 
+            $newStatus = $request->input('status', $invoice->status);
+
             $invoice->update([
                 'client_id'           => $request->client_id,
+                'invoice_number'      => $request->input('invoice_number', $invoice->invoice_number),
+                'status'              => $newStatus,
+                'paid_at'             => $newStatus === 'paid' ? ($invoice->paid_at ?? now()) : $invoice->paid_at,
                 'issue_date'          => $request->issue_date,
                 'due_date'            => $request->due_date,
                 'etr_enabled'         => $totals['etr_enabled'],
@@ -373,7 +401,7 @@ class InvoiceController extends Controller
     // PDF Download
     // -------------------------------------------------------------------------
 
-    public function downloadPdf(Invoice $invoice)
+    public function download(Invoice $invoice)
     {
         $this->authorizeInvoice($invoice);
         $this->requireActiveSubscription('download invoices');
@@ -384,6 +412,11 @@ class InvoiceController extends Controller
         $pdf = Pdf::loadView('invoices.pdf', compact('invoice', 'company'));
 
         return $pdf->download('invoice-' . $invoice->invoice_number . '.pdf');
+    }
+
+    public function downloadPdf(Invoice $invoice)
+    {
+        return $this->download($invoice);
     }
 
     // -------------------------------------------------------------------------
@@ -515,17 +548,25 @@ class InvoiceController extends Controller
     private function saveItems(Invoice $invoice, array $items): void
     {
         foreach ($items as $item) {
+            $buyingPrice = $item['buying_price'] ?? 0;
+
             InvoiceItem::create([
                 'invoice_id'      => $invoice->id,
                 'catalog_item_id' => $item['catalog_item_id'] ?? null,
                 'description'     => $item['description'],
                 'quantity'        => $item['quantity'],
                 'unit_price'      => $item['unit_price'],
-                'buying_price'    => $item['buying_price'] ?? 0,
+                'buying_price'    => $buyingPrice,
                 'total_price'     => $item['quantity'] * $item['unit_price'],
                 'is_labour'       => !empty($item['is_labour']),
                 'item_type_id'    => $item['item_type_id'] ?? null,
             ]);
+
+            if (!empty($item['catalog_item_id']) && $buyingPrice > 0) {
+                \App\Models\CatalogItem::where('id', $item['catalog_item_id'])
+                    ->where('company_id', $invoice->company_id)
+                    ->update(['default_buying_price' => $buyingPrice]);
+            }
         }
     }
 

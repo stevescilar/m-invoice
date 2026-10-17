@@ -30,6 +30,11 @@ class Company extends Model
         'referral_code',
         'referral_count',
         'primary_color',
+        'is_bypass',
+    ];
+
+    protected $casts = [
+        'is_bypass' => 'boolean',
     ];
 
     public function owner()

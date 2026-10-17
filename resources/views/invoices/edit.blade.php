@@ -74,7 +74,7 @@
                         <label class="block text-sm text-gray-600 mb-1">Status</label>
                         <select name="status"
                             class="w-full border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400">
-                            @foreach(['draft','sent','paid','overdue','cancelled'] as $s)
+                            @foreach(['draft','sent','paid','overdue','stalled'] as $s)
                                 <option value="{{ $s }}" {{ old('status', $invoice->status) === $s ? 'selected' : '' }}>
                                     {{ ucfirst($s) }}
                                 </option>
@@ -211,6 +211,8 @@
                                         min="0" step="0.01" placeholder="0"
                                         class="w-full border border-blue-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400 bg-blue-50">
                                 </div>
+                                @else
+                                <input type="hidden" :name="`items[${index}][buying_price]`" :value="item.buying_price || 0">
                                 @endif
                                 <div>
                                     <label class="text-xs text-gray-500 mb-0.5 block">Line Total</label>

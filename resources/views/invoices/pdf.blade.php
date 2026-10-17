@@ -321,6 +321,20 @@
         ]);
 
     $multiType = $typeBreakdown->count() > 1;
+
+    $logoPath = null;
+    if ($company->logo) {
+        $cand1 = storage_path('app/public/' . $company->logo);
+        $cand2 = public_path('storage/' . $company->logo);
+        $logoPath = file_exists($cand1) ? $cand1 : (file_exists($cand2) ? $cand2 : null);
+    }
+
+    $signaturePath = null;
+    if ($company->signature) {
+        $sig1 = storage_path('app/public/' . $company->signature);
+        $sig2 = public_path('storage/' . $company->signature);
+        $signaturePath = file_exists($sig1) ? $sig1 : (file_exists($sig2) ? $sig2 : null);
+    }
 @endphp
 
 <div class="watermark">{{ strtoupper($company->name) }}</div>
@@ -333,8 +347,8 @@
 <table class="header-table">
     <tr>
         <td class="w50 vmid nopad noborder" style="padding-bottom: 16px;">
-            @if($company->logo)
-                <img src="{{ public_path('storage/' . $company->logo) }}"
+            @if($logoPath)
+                <img src="{{ $logoPath }}"
                      style="max-height: 70px; max-width: 200px;" alt="Logo">
             @else
                 <div class="company-name">{{ $company->name }}</div>
@@ -346,11 +360,11 @@
             @endif
         </td>
         <td class="w50 vmid tright nopad noborder" style="padding-bottom: 16px;">
-            @if($company->logo)
+            @if($logoPath)
                 <div class="company-name">{{ $company->name }}</div>
             @endif
             <div class="company-sub" style="margin-top: 4px;">{{ $company->address }}</div>
-            @if($company->logo)
+            @if($logoPath)
                 <div class="company-sub">{{ $company->phone }}</div>
                 <div class="company-sub">{{ $company->email }}</div>
                 @if($invoice->etr_enabled && $company->kra_pin)
@@ -639,9 +653,9 @@
 @endif
 
 {{-- ══ SIGNATURE ══ --}}
-@if($company->signature)
+@if($signaturePath)
 <div class="signature-block">
-    <img src="{{ public_path('storage/' . $company->signature) }}"
+    <img src="{{ $signaturePath }}"
          style="max-height: 54px;" alt="Signature">
     <div style="border-top: 1px solid #ccc; width: 160px; margin-top: 6px;"></div>
     <div style="font-size: 10px; color: #999; margin-top: 3px;">Authorized Signature</div>

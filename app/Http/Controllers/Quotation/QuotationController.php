@@ -67,6 +67,7 @@ class QuotationController extends Controller
             'sent'      => $statusCounts->get('sent', 0),
             'approved'  => $statusCounts->get('approved', 0),
             'rejected'  => $statusCounts->get('rejected', 0),
+            'expired'   => $statusCounts->get('expired', 0),
             'converted' => $statusCounts->get('converted', 0),
         ];
 
@@ -90,9 +91,11 @@ class QuotationController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $companyId = Auth::user()->company_id;
+
         $request->validate([
-            'client_id'            => 'required|exists:clients,id',
-            'quotation_number'     => 'required|string|unique:quotations,quotation_number',
+            'client_id'            => ['required', \Illuminate\Validation\Rule::exists('clients', 'id')->where('company_id', $companyId)],
+            'quotation_number'     => ['required', 'string', \Illuminate\Validation\Rule::unique('quotations', 'quotation_number')->where('company_id', $companyId)],
             'issue_date'           => 'required|date',
             'expiry_date'          => 'nullable|date|after_or_equal:issue_date',
             'notes'                => 'nullable|string',
@@ -185,8 +188,24 @@ class QuotationController extends Controller
     {
         $this->authorizeQuotation($quotation);
 
+        // Quick status-only update (e.g. "Mark as Approved" from show page)
+        if ($request->boolean('status_change') || ($request->has('status') && !$request->has('items'))) {
+            $request->validate([
+                'status' => 'required|in:draft,sent,approved,rejected,expired,converted',
+            ]);
+
+            $quotation->update(['status' => $request->status]);
+
+            return redirect()->route('quotations.show', $quotation)
+                ->with('success', 'Quotation marked as ' . ucfirst($request->status) . '.');
+        }
+
+        $companyId = Auth::user()->company_id;
+
         $request->validate([
-            'client_id'            => 'required|exists:clients,id',
+            'client_id'            => ['required', \Illuminate\Validation\Rule::exists('clients', 'id')->where('company_id', $companyId)],
+            'quotation_number'     => ['sometimes', 'required', 'string', \Illuminate\Validation\Rule::unique('quotations', 'quotation_number')->where('company_id', $companyId)->ignore($quotation->id)],
+            'status'               => 'nullable|in:draft,sent,approved,rejected,expired,converted',
             'issue_date'           => 'required|date',
             'expiry_date'          => 'nullable|date|after_or_equal:issue_date',
             'notes'                => 'nullable|string',
@@ -203,6 +222,8 @@ class QuotationController extends Controller
 
             $quotation->update([
                 'client_id'           => $request->client_id,
+                'quotation_number'    => $request->input('quotation_number', $quotation->quotation_number),
+                'status'              => $request->input('status', $quotation->status),
                 'issue_date'          => $request->issue_date,
                 'expiry_date'         => $request->expiry_date,
                 'material_cost'       => $totals['material_cost'],
@@ -504,8 +525,9 @@ class QuotationController extends Controller
                 'item_type_id'      => $item['item_type_id'] ?? null,
             ]);
 
-            if (!empty($item['catalog_item_id'])) {
+            if (!empty($item['catalog_item_id']) && $buyingPrice > 0) {
                 \App\Models\CatalogItem::where('id', $item['catalog_item_id'])
+                    ->where('company_id', $quotation->company_id)
                     ->update(['default_buying_price' => $buyingPrice]);
             }
         }

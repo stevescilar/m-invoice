@@ -9,6 +9,7 @@
         <span class="text-xs px-3 py-1 rounded-full font-medium
             {{ $quotation->status === 'approved' ? 'bg-green-100 text-green-600' : '' }}
             {{ $quotation->status === 'rejected' ? 'bg-red-100 text-red-600' : '' }}
+            {{ $quotation->status === 'expired' ? 'bg-orange-100 text-orange-600' : '' }}
             {{ $quotation->status === 'sent' ? 'bg-blue-100 text-blue-600' : '' }}
             {{ $quotation->status === 'draft' ? 'bg-yellow-100 text-yellow-600' : '' }}
             {{ $quotation->status === 'converted' ? 'bg-purple-100 text-purple-600' : '' }}">
@@ -20,7 +21,7 @@
             class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">
             Download PDF
         </a>
-        @if(!in_array($quotation->status, ['converted']))
+        @if(!in_array($quotation->status, ['converted', 'approved']))
         <a href="{{ route('quotations.edit', $quotation) }}"
             class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-200">
             Edit
@@ -108,6 +109,12 @@
                 <span>Labour Cost</span>
                 <span>Ksh {{ number_format($quotation->labour_cost, 2) }}</span>
             </div>
+            @if($quotation->discount_amount > 0)
+            <div class="flex justify-between text-green-600">
+                <span>Discount{{ $quotation->discount_percentage > 0 ? ' (' . number_format($quotation->discount_percentage, 1) . '%)' : '' }}</span>
+                <span>- Ksh {{ number_format($quotation->discount_amount, 2) }}</span>
+            </div>
+            @endif
             <div class="flex justify-between font-bold text-gray-800 border-t pt-2 text-base">
                 <span>Grand Total</span>
                 <span class="text-green-600">Ksh {{ number_format($quotation->grand_total, 2) }}</span>
@@ -133,7 +140,7 @@
             <form action="{{ route('quotations.send', $quotation) }}" method="POST" class="mb-2">
                 @csrf
                 <button class="w-full bg-blue-500 text-white py-2 rounded-lg text-sm hover:bg-blue-600">
-                    Send Quotation
+                    Send Quotation via Email
                 </button>
             </form>
             @endif
@@ -141,27 +148,38 @@
             @if(in_array($quotation->status, ['sent', 'draft']))
             <form action="{{ route('quotations.update', $quotation) }}" method="POST" class="mb-2">
                 @csrf @method('PUT')
-                <input type="hidden" name="client_id" value="{{ $quotation->client_id }}">
-                <input type="hidden" name="issue_date" value="{{ $quotation->issue_date->format('Y-m-d') }}">
-                <input type="hidden" name="status_change" value="approved">
-                @foreach($quotation->items as $i => $item)
-                    <input type="hidden" name="items[{{ $i }}][description]" value="{{ $item->description }}">
-                    <input type="hidden" name="items[{{ $i }}][quantity]" value="{{ $item->quantity }}">
-                    <input type="hidden" name="items[{{ $i }}][unit_price]" value="{{ $item->unit_price }}">
-                    <input type="hidden" name="items[{{ $i }}][is_labour]" value="{{ $item->is_labour ? 1 : 0 }}">
-                @endforeach
-                <button class="w-full bg-green-600 text-white py-2 rounded-lg text-sm hover:bg-green-700 mb-2">
+                <input type="hidden" name="status_change" value="1">
+                <input type="hidden" name="status" value="approved">
+                <button class="w-full bg-green-600 text-white py-2 rounded-lg text-sm hover:bg-green-700">
                     Mark as Approved
                 </button>
             </form>
+            @endif
 
-            <form action="{{ route('quotations.convert', $quotation) }}" method="POST"
+            @if(in_array($quotation->status, ['sent', 'draft', 'approved']))
+            <form action="{{ route('quotations.convert', $quotation) }}" method="POST" class="mb-2"
                 onsubmit="return confirm('Convert this quotation to an invoice?')">
                 @csrf
                 <button class="w-full bg-purple-600 text-white py-2 rounded-lg text-sm hover:bg-purple-700">
                     Convert to Invoice
                 </button>
             </form>
+            @endif
+
+            @if($quotation->client->email)
+            <form action="{{ route('quotations.remind', $quotation) }}" method="POST" class="mb-2">
+                @csrf
+                <button class="w-full bg-indigo-50 text-indigo-600 py-2 rounded-lg text-sm hover:bg-indigo-100 font-medium">
+                    📧 Send Email Follow-up
+                </button>
+            </form>
+            @endif
+
+            @if($quotation->client->phone)
+            <a href="{{ route('quotations.whatsapp', $quotation) }}" target="_blank"
+                class="block w-full text-center bg-emerald-50 text-emerald-700 py-2 rounded-lg text-sm hover:bg-emerald-100 font-medium">
+                💬 Follow up via WhatsApp
+            </a>
             @endif
         </div>
         @endif

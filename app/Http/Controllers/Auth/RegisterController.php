@@ -46,7 +46,6 @@ class RegisterController extends Controller
             'name'          => $request->company_name,
             'email'         => $request->email,
             'phone'         => '',
-            'slug'          => Str::slug($request->company_name . '-' . Str::random(6)),
             'referral_code' => strtoupper(Str::random(8)),
         ]);
         

@@ -308,6 +308,7 @@ CREATE TABLE `invoice_items` (
   `description` varchar(255) NOT NULL,
   `quantity` decimal(10,2) NOT NULL DEFAULT 1.00,
   `unit_price` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `buying_price` decimal(10,2) NOT NULL DEFAULT 0.00,
   `total_price` decimal(10,2) NOT NULL DEFAULT 0.00,
   `is_labour` tinyint(1) NOT NULL DEFAULT 0,
   `item_type_id` bigint(20) UNSIGNED DEFAULT NULL,
@@ -344,7 +345,7 @@ CREATE TABLE `invoice_reminders` (
   `reminder_type` enum('before_due','on_due','after_due') NOT NULL,
   `scheduled_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `sent_at` timestamp NULL DEFAULT NULL,
-  `status` enum('pending','sent','failed') NOT NULL DEFAULT 'pending',
+  `status` enum('pending','sent','failed','skipped') NOT NULL DEFAULT 'pending',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -870,12 +871,12 @@ INSERT INTO `subscriptions` (`id`, `company_id`, `plan`, `status`, `trial_ends_a
 CREATE TABLE `subscription_transactions` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `company_id` bigint(20) UNSIGNED NOT NULL,
-  `plan` enum('monthly','yearly') NOT NULL,
+  `plan` enum('per_invoice','monthly','yearly') NOT NULL,
   `amount` decimal(10,2) NOT NULL,
   `mpesa_code` varchar(255) DEFAULT NULL,
   `checkout_request_id` varchar(255) DEFAULT NULL,
   `reference` varchar(255) DEFAULT NULL,
-  `status` enum('success','failed','pending') NOT NULL DEFAULT 'pending',
+  `status` enum('completed','success','failed','pending') NOT NULL DEFAULT 'pending',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -980,7 +981,7 @@ ALTER TABLE `failed_jobs`
 --
 ALTER TABLE `invoices`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `invoices_invoice_number_unique` (`invoice_number`),
+  ADD UNIQUE KEY `invoices_company_invoice_number_unique` (`company_id`,`invoice_number`),
   ADD KEY `invoices_company_id_foreign` (`company_id`),
   ADD KEY `invoices_client_id_foreign` (`client_id`),
   ADD KEY `invoices_created_by_foreign` (`created_by`),
@@ -1095,7 +1096,7 @@ ALTER TABLE `personal_access_tokens`
 --
 ALTER TABLE `quotations`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `quotations_quotation_number_unique` (`quotation_number`),
+  ADD UNIQUE KEY `quotations_company_quotation_number_unique` (`company_id`,`quotation_number`),
   ADD KEY `quotations_company_id_foreign` (`company_id`),
   ADD KEY `quotations_client_id_foreign` (`client_id`),
   ADD KEY `quotations_converted_invoice_id_foreign` (`converted_invoice_id`),

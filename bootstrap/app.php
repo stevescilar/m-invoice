@@ -17,12 +17,19 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->web(append: [
+            \App\Http\Middleware\EnsureUserIsActive::class,
+        ]);
+
+        $middleware->validateCsrfTokens(except: [
+            'api/mpesa/callback',
+        ]);
+
         $middleware->alias([
             'admin.gate' => \App\Http\Middleware\AdminGateMiddleware::class,
             'admin' => \App\Http\Middleware\EnsureIsAdmin::class,
             'active.company' => \App\Http\Middleware\EnsureHasActiveCompany::class,
             'valid.subscription' => \App\Http\Middleware\EnsureSubscriptionValid::class,
-            \App\Http\Middleware\EnsureUserIsActive::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

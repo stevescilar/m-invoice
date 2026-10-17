@@ -77,6 +77,7 @@ class ChatbotController extends Controller
 
         return [
             'authenticated' => true,
+            'company'       => true,
             'user_name'     => $user->name,
             'company_name'  => $company->name,
             'total_revenue' => number_format($totalRevenue, 2),

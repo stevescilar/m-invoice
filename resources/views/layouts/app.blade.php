@@ -312,13 +312,6 @@
             if (e.key === 'PrintScreen') { navigator.clipboard?.writeText(''); e.preventDefault(); }
             if ((e.ctrlKey && e.key === 'p') || (e.ctrlKey && e.shiftKey && e.key === 'I') || e.key === 'F12') e.preventDefault();
         });
-        (function() {
-            setInterval(() => {
-                if (window.outerWidth - window.innerWidth > 160 || window.outerHeight - window.innerHeight > 160) {
-                    document.body.innerHTML = '<div style="display:flex;height:100vh;align-items:center;justify-content:center;font-family:sans-serif;"><h2>Please close developer tools to continue.</h2></div>';
-                }
-            }, 1000);
-        })();
     </script>
 
 @include('partials.chatbot')

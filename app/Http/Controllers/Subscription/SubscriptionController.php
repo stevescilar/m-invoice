@@ -146,8 +146,13 @@ class SubscriptionController extends Controller
                 'ends_at'   => now()->addYear(),
             ]);
         } elseif ($transaction->plan === 'per_invoice') {
-            // Per invoice — just log the transaction, handled at download time
-            $subscription->update(['on_trial' => false]);
+            $subscription->update([
+                'plan'      => 'per_invoice',
+                'status'    => 'active',
+                'on_trial'  => false,
+                'starts_at' => now(),
+                'ends_at'   => now()->addDay(),
+            ]);
         }
     }
     public function activateBypass(Request $request)

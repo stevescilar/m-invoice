@@ -29,9 +29,9 @@ class SendInvoiceReminders implements ShouldQueue
         foreach ($reminders as $reminder) {
             $invoice = $reminder->invoice;
 
-            // Skip if invoice is already paid or client has no email
-            if ($invoice->status === 'paid' || !$invoice->client->email) {
-                $reminder->update(['status' => 'skipped']);
+            // Skip if invoice/client was deleted, invoice is already paid, or client has no email
+            if (!$invoice || !$invoice->client || $invoice->status === 'paid' || !$invoice->client->email) {
+                $reminder->delete();
                 continue;
             }
 
@@ -39,7 +39,7 @@ class SendInvoiceReminders implements ShouldQueue
 
             try {
                 Mail::to($invoice->client->email)
-                    ->send(new InvoiceReminderMail($invoice, $company, $reminder->reminder_type));
+                    ->send(new InvoiceReminderMail($invoice, $company->name ?? 'Invoxa'));
 
                 $reminder->update([
                     'status'  => 'sent',

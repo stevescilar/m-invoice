@@ -18,7 +18,7 @@ A new invoice has been automatically generated from your recurring invoice **{{ 
 Review Invoice
 @endcomponent
 
-The next invoice in this series will be generated on **{{ $invoice->getNextRecurringDate()->format('M j, Y') }}**.
+The next invoice in this series will be generated on **{{ ($invoice->recurring_next_date ?? $invoice->getNextRecurringDate())->format('M j, Y') }}**.
 
 Regards,
 **M-Invoice**

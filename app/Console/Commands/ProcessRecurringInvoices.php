@@ -28,12 +28,13 @@ class ProcessRecurringInvoices extends Command
 
         foreach ($due as $invoice) {
             try {
-                // Generate next invoice number
-                $company     = $invoice->company;
-                $lastInvoice = Invoice::where('company_id', $company->id)->latest()->first();
-                $nextNumber  = $lastInvoice
-                    ? 'INV-' . str_pad((intval(substr($lastInvoice->invoice_number, 4)) + 1), 5, '0', STR_PAD_LEFT)
-                    : 'INV-00001';
+                // Generate next invoice number (6-digit padding, matching InvoiceController)
+                $company    = $invoice->company;
+                $lastNumber = Invoice::where('company_id', $company->id)
+                    ->orderByDesc('id')
+                    ->value('invoice_number');
+                $nextInt    = $lastNumber ? ((int) substr($lastNumber, 4) + 1) : 1;
+                $nextNumber = 'INV-' . str_pad($nextInt, 6, '0', STR_PAD_LEFT);
 
                 // Calculate new dates
                 $newIssueDate = today();
@@ -50,6 +51,8 @@ class ProcessRecurringInvoices extends Command
                     'due_date'              => $newDueDate,
                     'status'                => 'draft',
                     'notes'                 => $invoice->notes,
+                    'discount_amount'       => $invoice->discount_amount,
+                    'discount_percentage'   => $invoice->discount_percentage,
                     'grand_total'           => $invoice->grand_total,
                     'total_cost'            => $invoice->total_cost,
                     'total_profit'          => $invoice->total_profit,
@@ -67,13 +70,15 @@ class ProcessRecurringInvoices extends Command
                 // Copy line items
                 foreach ($invoice->items as $item) {
                     InvoiceItem::create([
-                        'invoice_id'   => $newInvoice->id,
-                        'description'  => $item->description,
-                        'quantity'     => $item->quantity,
-                        'unit_price'   => $item->unit_price,
-                        'buying_price' => $item->buying_price,
-                        'total'        => $item->total,
-                        'is_labour'    => $item->is_labour,
+                        'invoice_id'      => $newInvoice->id,
+                        'catalog_item_id' => $item->catalog_item_id,
+                        'description'     => $item->description,
+                        'quantity'        => $item->quantity,
+                        'unit_price'      => $item->unit_price,
+                        'buying_price'    => $item->buying_price,
+                        'total_price'     => $item->total_price,
+                        'is_labour'       => $item->is_labour,
+                        'item_type_id'    => $item->item_type_id,
                     ]);
                 }
 

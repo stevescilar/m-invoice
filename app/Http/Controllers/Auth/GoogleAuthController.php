@@ -32,24 +32,26 @@ class GoogleAuthController extends Controller
         $user = User::where('email', $googleUser->getEmail())->first();
 
         if ($user) {
-    // Mark as verified if not already
-    if (!$user->email_verified_at) {
+            if (!$user->is_active) {
+                return redirect()->route('login')
+                    ->withErrors(['email' => 'Your account has been deactivated. Contact your company owner.']);
+            }
+
             $user->update([
-                'email_verified_at' => now(),
+                'email_verified_at' => $user->email_verified_at ?? now(),
                 'google_id'         => $googleUser->getId(),
                 'avatar'            => $googleUser->getAvatar(),
             ]);
+
+            Auth::login($user);
+            return redirect()->intended(route('dashboard'));
         }
-        Auth::login($user);
-        return redirect()->intended(route('dashboard'));
-    }
 
         // New user — create company + user + subscription
         $company = Company::create([
-            'name'  => $googleUser->getName() . "'s Business",
-            'email' => $googleUser->getEmail(),
-            'phone' => '',
-            'slug'  => Str::slug($googleUser->getName() . '-' . Str::random(6)),
+            'name'          => $googleUser->getName() . "'s Business",
+            'email'         => $googleUser->getEmail(),
+            'phone'         => '',
             'referral_code' => strtoupper(\Illuminate\Support\Str::random(8)),
         ]);
 

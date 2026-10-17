@@ -11,11 +11,12 @@ class InvoiceItem extends Model
 
     protected $fillable = [
         'invoice_id', 'catalog_item_id', 'description',
-        'quantity', 'unit_price', 'total_price', 'is_labour','item_type_id',
+        'quantity', 'unit_price', 'buying_price', 'total_price', 'is_labour', 'item_type_id',
     ];
 
     protected $casts = [
         'is_labour' => 'boolean',
+        'buying_price' => 'decimal:2',
     ];
 
     public function invoice()
