@@ -11,12 +11,18 @@ class Notification extends Model
         'user_id',
         'title',
         'message',
+        'client_comment',
+        'action_url',
+        'meta',
         'type',
         'is_read',
+        'read_at',
     ];
 
     protected $casts = [
         'is_read' => 'boolean',
+        'meta'    => 'array',
+        'read_at' => 'datetime',
     ];
 
     public function company()
@@ -28,5 +34,14 @@ class Notification extends Model
     {
         return $this->belongsTo(User::class);
     }
-}
 
+    public function markAsRead(): void
+    {
+        if (!$this->is_read) {
+            $this->update([
+                'is_read' => true,
+                'read_at' => now(),
+            ]);
+        }
+    }
+}

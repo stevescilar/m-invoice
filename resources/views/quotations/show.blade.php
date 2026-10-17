@@ -51,6 +51,39 @@
     </div>
 </div>
 
+@if($quotation->responded_at || $quotation->client_response_note)
+<div class="mb-6 rounded-xl border p-4 {{ $quotation->status === 'approved' ? 'bg-green-50 border-green-200' : ($quotation->status === 'declined' ? 'bg-red-50 border-red-200' : 'bg-blue-50 border-blue-200') }}">
+    <div class="flex items-start justify-between gap-4">
+        <div class="flex items-start gap-3">
+            <span class="text-xl mt-0.5">{{ $quotation->status === 'approved' ? '✅' : ($quotation->status === 'declined' ? '❌' : '💬') }}</span>
+            <div>
+                <h3 class="text-sm font-bold {{ $quotation->status === 'approved' ? 'text-green-900' : ($quotation->status === 'declined' ? 'text-red-900' : 'text-blue-900') }}">
+                    Client {{ ucfirst($quotation->status) }} via Public Portal
+                    @if($quotation->responded_at)
+                        <span class="font-normal text-xs opacity-75">• {{ $quotation->responded_at->format('M j, Y \a\t g:i A') }} ({{ $quotation->responded_at->diffForHumans() }})</span>
+                    @endif
+                </h3>
+                @if($quotation->client_response_note)
+                    <p class="text-sm text-gray-800 mt-1.5 bg-white/80 rounded-lg px-3 py-2 border border-gray-200/60 italic">
+                        "{{ $quotation->client_response_note }}"
+                    </p>
+                @else
+                    <p class="text-xs text-gray-600 mt-0.5">No additional comment was left by the client.</p>
+                @endif
+            </div>
+        </div>
+        @if($quotation->status === 'approved')
+            <form method="POST" action="{{ route('quotations.convert', $quotation) }}">
+                @csrf
+                <button class="bg-green-600 text-white px-3.5 py-1.5 rounded-lg text-xs font-semibold hover:bg-green-700 whitespace-nowrap shadow-sm">
+                    Convert to Invoice →
+                </button>
+            </form>
+        @endif
+    </div>
+</div>
+@endif
+
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
     <!-- Quotation Details -->

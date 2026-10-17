@@ -54,6 +54,25 @@
         </div>
     </div>
 
+    @if($invoice->client_payment_note)
+    <div class="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+        <div class="flex items-start gap-3">
+            <span class="text-xl mt-0.5">💸</span>
+            <div class="flex-1">
+                <h3 class="text-sm font-bold text-emerald-900">
+                    Client Submitted Payment Confirmation via Public Link
+                </h3>
+                <p class="text-sm text-emerald-800 mt-1 bg-white/80 rounded-lg px-3 py-2 border border-emerald-200/70 font-medium">
+                    {{ $invoice->client_payment_note }}
+                </p>
+                <p class="text-xs text-emerald-700 mt-1.5">
+                    Verify this transaction and use the <strong>Record Payment / Deposit</strong> form on the right to issue their official receipt.
+                </p>
+            </div>
+        </div>
+    </div>
+    @endif
+
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
 
         <!-- Invoice Info -->

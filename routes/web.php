@@ -18,6 +18,7 @@ use App\Http\Controllers\Expense\ExpenseController;
 use App\Http\Controllers\Subscription\SubscriptionController;
 use App\Http\Controllers\Staff\StaffController;
 use App\Http\Controllers\Report\ReportController;
+use App\Http\Controllers\Notification\NotificationController;
 use App\Http\Controllers\PublicDocumentController;
 
 
@@ -131,6 +132,12 @@ Route::middleware(['auth', 'active.company'])->group(function () {
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('/reports/export-csv', [ReportController::class, 'exportCsv'])->name('reports.export.csv');
     Route::get('/reports/export-pdf', [ReportController::class, 'exportPdf'])->name('reports.export.pdf');
+
+    // Notifications & Client Responses
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/{notification}/open', [NotificationController::class, 'open'])->name('notifications.open');
+    Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllRead'])->name('notifications.mark-all-read');
+    Route::delete('/notifications/{notification}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
 
     // Subscription
     Route::get('/subscription', [SubscriptionController::class, 'index'])->name('subscription.index');

@@ -112,8 +112,74 @@
                     </a>
                 </div>
 
+                @php
+                    $navCompany = auth()->user()->company;
+                    $navUnreadCount = $navCompany ? \App\Models\Notification::where('company_id', $navCompany->id)->where('is_read', false)->count() : 0;
+                    $navRecentNotifs = $navCompany ? \App\Models\Notification::where('company_id', $navCompany->id)->latest()->take(6)->get() : collect();
+                @endphp
+
                 {{-- Desktop right --}}
-                <div class="hidden lg:flex items-center gap-1 flex-shrink-0">
+                <div class="hidden lg:flex items-center gap-1.5 flex-shrink-0">
+                    {{-- Notification Bell Dropdown --}}
+                    <div class="relative" x-data="{ notifOpen: false }" @click.outside="notifOpen = false">
+                        <button type="button" @click="notifOpen = !notifOpen"
+                            class="relative p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-800 transition focus:outline-none"
+                            title="Notifications & Client Responses">
+                            <i data-lucide="bell" class="w-4 h-4"></i>
+                            @if($navUnreadCount > 0)
+                                <span class="absolute -top-0.5 -right-0.5 min-w-[17px] h-[17px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                                    {{ $navUnreadCount > 9 ? '9+' : $navUnreadCount }}
+                                </span>
+                            @endif
+                        </button>
+
+                        <div x-show="notifOpen" x-transition
+                            style="display: none;"
+                            class="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-50">
+                            <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+                                <span class="text-xs font-bold uppercase tracking-wide text-gray-700">
+                                    Client Notifications
+                                    @if($navUnreadCount > 0)
+                                        <span class="ml-1 bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full text-[10px]">{{ $navUnreadCount }} new</span>
+                                    @endif
+                                </span>
+                                @if($navUnreadCount > 0)
+                                    <form method="POST" action="{{ route('notifications.mark-all-read') }}">
+                                        @csrf
+                                        <button type="submit" class="text-[11px] text-green-600 hover:underline font-medium">Mark all read</button>
+                                    </form>
+                                @endif
+                            </div>
+
+                            <div class="max-h-80 overflow-y-auto divide-y divide-gray-50">
+                                @forelse($navRecentNotifs as $n)
+                                    <a href="{{ route('notifications.open', $n) }}"
+                                        class="block px-4 py-3 hover:bg-gray-50 transition {{ !$n->is_read ? 'bg-green-50/50' : '' }}">
+                                        <div class="flex items-center justify-between gap-2">
+                                            <span class="text-xs font-bold text-gray-800 truncate">{{ $n->title }}</span>
+                                            <span class="text-[10px] text-gray-400 flex-shrink-0">{{ $n->created_at->diffForHumans() }}</span>
+                                        </div>
+                                        <p class="text-xs text-gray-600 mt-0.5 line-clamp-2">{{ $n->message }}</p>
+                                        @if($n->client_comment)
+                                            <p class="text-[11px] text-amber-800 bg-amber-50 border border-amber-100 rounded px-2 py-1 mt-1 truncate">
+                                                💬 "{{ $n->client_comment }}"
+                                            </p>
+                                        @endif
+                                    </a>
+                                @empty
+                                    <div class="py-8 px-4 text-center text-xs text-gray-400">
+                                        No client responses or notifications yet.
+                                    </div>
+                                @endforelse
+                            </div>
+
+                            <a href="{{ route('notifications.index') }}"
+                                class="block text-center py-2.5 bg-gray-50 hover:bg-gray-100 text-xs font-semibold text-green-600 border-t border-gray-100">
+                                View All Notifications →
+                            </a>
+                        </div>
+                    </div>
+
                     <div class="w-7 h-7 rounded-full bg-green-100 text-green-700 flex items-center justify-center font-bold text-xs">
                         {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
                     </div>
@@ -125,8 +191,17 @@
                     </form>
                 </div>
 
-                {{-- Mobile: avatar + hamburger --}}
+                {{-- Mobile: bell + avatar + hamburger --}}
                 <div class="flex lg:hidden items-center gap-2">
+                    <a href="{{ route('notifications.index') }}"
+                        class="relative p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition">
+                        <i data-lucide="bell" class="w-5 h-5"></i>
+                        @if($navUnreadCount > 0)
+                            <span class="absolute top-0.5 right-0.5 min-w-[16px] h-[16px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                                {{ $navUnreadCount > 9 ? '9+' : $navUnreadCount }}
+                            </span>
+                        @endif
+                    </a>
                     <div class="w-8 h-8 rounded-full bg-green-100 text-green-700 flex items-center justify-center font-bold text-xs flex-shrink-0">
                         {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
                     </div>

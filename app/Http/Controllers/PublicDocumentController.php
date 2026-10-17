@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Invoice;
+use App\Models\Notification;
 use App\Models\Quotation;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
@@ -69,32 +70,49 @@ class PublicDocumentController extends Controller
 
         $company = $invoice->company;
         $code    = strtoupper(trim($request->mpesa_code));
-        $amount  = $request->amount ? number_format((float) $request->amount, 2) : number_format($invoice->balanceDue(), 2);
+        $rawAmt  = $request->amount ? (float) $request->amount : $invoice->balanceDue();
+        $amount  = number_format($rawAmt, 2);
 
-        // Save reference in invoice notes or mpesa_code if not yet set
-        if (empty($invoice->mpesa_code)) {
-            $invoice->update(['mpesa_code' => substr($code, 0, 20)]);
+        // Save reference and client note on the invoice
+        $invoice->update([
+            'mpesa_code'          => $invoice->mpesa_code ?: substr($code, 0, 20),
+            'client_payment_note' => trim("Ref: {$code} (Ksh {$amount})" . ($request->notes ? " — {$request->notes}" : '')),
+        ]);
+
+        // Create In-App Notification in the Notification Center
+        $ownerUserId = $company->owner_id ?? $invoice->created_by ?? $company->users()->value('id');
+        if ($ownerUserId) {
+            Notification::create([
+                'company_id'     => $company->id,
+                'user_id'        => $ownerUserId,
+                'type'           => 'payment_submitted',
+                'title'          => "Payment Submitted — {$invoice->invoice_number}",
+                'message'        => "{$invoice->client->name} submitted payment ref {$code} for Ksh {$amount}.",
+                'client_comment' => $request->notes,
+                'action_url'     => route('invoices.show', $invoice),
+                'meta'           => [
+                    'invoice_id'     => $invoice->id,
+                    'invoice_number' => $invoice->invoice_number,
+                    'mpesa_code'     => $code,
+                    'amount'         => $rawAmt,
+                ],
+                'is_read'        => false,
+            ]);
         }
 
-        // Notify the company owner by email
+        // Notify the company owner by email (with sendmail fallback)
         $ownerEmail = $company->notification_email ?: ($company->email ?: $company->owner?->email);
         if ($ownerEmail && filter_var($ownerEmail, FILTER_VALIDATE_EMAIL)) {
-            try {
-                $subject = "Payment Reference Submitted for {$invoice->invoice_number} ({$code})";
-                $body = "Hello {$company->name},\n\n"
-                    . "Client {$invoice->client->name} has submitted a payment confirmation on the online invoice portal:\n\n"
-                    . "Invoice #: {$invoice->invoice_number}\n"
-                    . "Reference / M-Pesa Code: {$code}\n"
-                    . "Amount Reported: Ksh {$amount}\n"
-                    . ($request->notes ? "Client Note: {$request->notes}\n" : "")
-                    . "\nView & confirm payment in your dashboard: " . route('invoices.show', $invoice);
+            $subject = "Payment Reference Submitted for {$invoice->invoice_number} ({$code})";
+            $body = "Hello {$company->name},\n\n"
+                . "Client {$invoice->client->name} has submitted a payment confirmation on the online invoice portal:\n\n"
+                . "Invoice #: {$invoice->invoice_number}\n"
+                . "Reference / M-Pesa Code: {$code}\n"
+                . "Amount Reported: Ksh {$amount}\n"
+                . ($request->notes ? "Client Note: {$request->notes}\n" : "")
+                . "\nView & confirm payment in your dashboard: " . route('invoices.show', $invoice);
 
-                Mail::raw($body, function ($msg) use ($ownerEmail, $subject) {
-                    $msg->to($ownerEmail)->subject($subject);
-                });
-            } catch (\Throwable $e) {
-                Log::warning('Failed to send client payment notification email: ' . $e->getMessage());
-            }
+            $this->sendPlainAlert($ownerEmail, $subject, $body);
         }
 
         return back()->with('success', "Thank you! Payment reference {$code} has been submitted to {$company->name} for verification.");
@@ -139,41 +157,70 @@ class PublicDocumentController extends Controller
             return back()->with('error', 'This quotation has already been converted to an invoice.');
         }
 
-        $company = $quotation->company;
+        $company    = $quotation->company;
+        $isApproved = $request->action === 'approve';
 
-        if ($request->action === 'approve') {
-            $quotation->update([
-                'status'      => 'approved',
-                'approved_at' => now(),
+        $quotation->update([
+            'status'               => $isApproved ? 'approved' : 'rejected',
+            'approved_at'          => $isApproved ? now() : $quotation->approved_at,
+            'client_response_note' => $request->comment,
+            'responded_at'         => now(),
+        ]);
+
+        $statusMsg = $isApproved
+            ? "Thank you! Quotation {$quotation->quotation_number} has been approved. {$company->name} has been notified."
+            : "Your response for Quotation {$quotation->quotation_number} has been recorded and sent to {$company->name}.";
+
+        // Create In-App Notification in the Notification Center
+        $ownerUserId = $company->owner_id ?? $quotation->created_by ?? $company->users()->value('id');
+        if ($ownerUserId) {
+            Notification::create([
+                'company_id'     => $company->id,
+                'user_id'        => $ownerUserId,
+                'type'           => $isApproved ? 'quotation_approved' : 'quotation_rejected',
+                'title'          => ($isApproved ? 'Quotation Approved — ' : 'Quotation Declined — ') . $quotation->quotation_number,
+                'message'        => "{$quotation->client->name} " . ($isApproved ? 'approved' : 'declined') . " Quotation {$quotation->quotation_number} (Ksh " . number_format($quotation->grand_total, 2) . ").",
+                'client_comment' => $request->comment,
+                'action_url'     => route('quotations.show', $quotation),
+                'meta'           => [
+                    'quotation_id'     => $quotation->id,
+                    'quotation_number' => $quotation->quotation_number,
+                    'status'           => $quotation->status,
+                ],
+                'is_read'        => false,
             ]);
-            $statusMsg = "Thank you! Quotation {$quotation->quotation_number} has been approved. {$company->name} has been notified.";
-        } else {
-            $quotation->update([
-                'status' => 'rejected',
-            ]);
-            $statusMsg = "Your response for Quotation {$quotation->quotation_number} has been recorded.";
         }
 
-        // Notify the company owner
+        // Notify the company owner by email (with sendmail fallback)
         $ownerEmail = $company->notification_email ?: ($company->email ?: $company->owner?->email);
         if ($ownerEmail && filter_var($ownerEmail, FILTER_VALIDATE_EMAIL)) {
-            try {
-                $actionLabel = $request->action === 'approve' ? 'APPROVED' : 'DECLINED / CHANGE REQUESTED';
-                $subject = "Quotation {$quotation->quotation_number} {$actionLabel} by {$quotation->client->name}";
-                $body = "Hello {$company->name},\n\n"
-                    . "Client {$quotation->client->name} has {$actionLabel} Quotation {$quotation->quotation_number} (Ksh " . number_format($quotation->grand_total, 2) . ") via the online portal.\n"
-                    . ($request->comment ? "\nClient Comment: {$request->comment}\n" : "")
-                    . "\nView quotation in your dashboard: " . route('quotations.show', $quotation);
+            $actionLabel = $isApproved ? 'APPROVED' : 'DECLINED / CHANGE REQUESTED';
+            $subject = "Quotation {$quotation->quotation_number} {$actionLabel} by {$quotation->client->name}";
+            $body = "Hello {$company->name},\n\n"
+                . "Client {$quotation->client->name} has {$actionLabel} Quotation {$quotation->quotation_number} (Ksh " . number_format($quotation->grand_total, 2) . ") via the online portal.\n"
+                . ($request->comment ? "\nClient Comment: \"{$request->comment}\"\n" : "")
+                . "\nView quotation in your dashboard: " . route('quotations.show', $quotation);
 
-                Mail::raw($body, function ($msg) use ($ownerEmail, $subject) {
-                    $msg->to($ownerEmail)->subject($subject);
-                });
-            } catch (\Throwable $e) {
-                Log::warning('Failed to send quotation response notification: ' . $e->getMessage());
-            }
+            $this->sendPlainAlert($ownerEmail, $subject, $body);
         }
 
         return back()->with('success', $statusMsg);
     }
-}
 
+    private function sendPlainAlert(string $toEmail, string $subject, string $body): void
+    {
+        try {
+            Mail::raw($body, function ($msg) use ($toEmail, $subject) {
+                $msg->to($toEmail)->subject($subject);
+            });
+        } catch (\Throwable $e) {
+            try {
+                Mail::mailer('sendmail')->raw($body, function ($msg) use ($toEmail, $subject) {
+                    $msg->to($toEmail)->subject($subject);
+                });
+            } catch (\Throwable $fallbackErr) {
+                Log::warning('Failed to send client response email notification: ' . $e->getMessage());
+            }
+        }
+    }
+}

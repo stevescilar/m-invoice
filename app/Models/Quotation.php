@@ -11,15 +11,17 @@ class Quotation extends Model
 
     protected $fillable = [
         'company_id', 'client_id', 'quotation_number', 'issue_date', 'expiry_date',
-        'status', 'approved_at', 'material_cost', 'labour_cost', 'grand_total', 'notes',
+        'status', 'approved_at', 'client_response_note', 'responded_at',
+        'material_cost', 'labour_cost', 'grand_total', 'notes',
         'converted_invoice_id', 'created_by', 'total_cost', 'total_profit', 'overall_margin',
         'discount_amount', 'discount_percentage', 'public_token',
     ];
 
     protected $casts = [
-        'issue_date'  => 'date',
-        'expiry_date' => 'date',
-        'approved_at' => 'datetime',
+        'issue_date'   => 'date',
+        'expiry_date'  => 'date',
+        'approved_at'  => 'datetime',
+        'responded_at' => 'datetime',
     ];
 
     protected static function booted(): void
