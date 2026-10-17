@@ -23,10 +23,6 @@ return [
         'model' => env('GEMINI_MODEL', 'gemini-3.8-flash'),
     ],
 
-    'groq' => [
-        'key' => env('GROQ_API_KEY')
-    ],
-
     'resend' => [
         'key' => env('RESEND_API_KEY'),
     ],

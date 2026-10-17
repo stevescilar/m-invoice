@@ -389,11 +389,13 @@ Just before </body>:  @include('partials.chatbot')
 
             if (data.error) {
                 ivxAddMsg('bot', '⚠️ ' + data.error);
-            } else {
+            } else if (data.reply && String(data.reply).trim() !== '') {
                 ivxAddMsg('bot', data.reply, true);
                 history.push({ role: 'user', content: msg });
-                history.push({ role: 'assistant', content: data.reply });
+                history.push({ role: 'model', content: data.reply });
                 if (history.length > 24) history = history.slice(-24);
+            } else {
+                ivxAddMsg('bot', '⚠️ Gemini did not return text for this message. Please try asking in a different way or check your GEMINI_API_KEY in .env.');
             }
         } catch(e) {
             ivxRemoveTyping(typingId);

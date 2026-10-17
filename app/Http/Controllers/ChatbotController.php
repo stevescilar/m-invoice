@@ -20,112 +20,150 @@ class ChatbotController extends Controller
         $context      = $this->buildContext();
         $systemPrompt = $this->buildSystemPrompt($context);
 
-        $geminiKey   = config('services.gemini.key');
-        $geminiModel = config('services.gemini.model', 'gemini-3.8-flash');
+        // Check both config and env() in case config:cache is active
+        $geminiKey   = config('services.gemini.key') ?: env('GEMINI_API_KEY');
+        $geminiModel = config('services.gemini.model') ?: env('GEMINI_MODEL', 'gemini-3.8-flash');
 
-        // Guard against deprecated Gemini models per Gemini API guidelines
-        if (preg_match('/^gemini-(1\.5|2\.0|2\.5)/i', (string) $geminiModel)) {
-            $geminiModel = 'gemini-3.8-flash';
+        if (empty($geminiKey)) {
+            return response()->json([
+                'error' => 'Gemini API key is not configured. Please add GEMINI_API_KEY=your_key in your .env file.',
+            ], 200);
         }
 
-        if (!empty($geminiKey)) {
-            return $this->chatWithGemini($geminiKey, $geminiModel, $systemPrompt, $history, $userMessage);
-        }
-
-        // Fallback to Groq if GEMINI_API_KEY is not configured yet but GROQ_API_KEY exists
-        $groqKey = config('services.groq.key');
-        if (!empty($groqKey)) {
-            return $this->chatWithGroq($groqKey, $systemPrompt, $history, $userMessage);
-        }
-
-        return response()->json([
-            'error' => 'AI Assistant key is not configured yet. Please add GEMINI_API_KEY to your .env file.',
-        ], 500);
+        return $this->chatWithGemini($geminiKey, $geminiModel, $systemPrompt, $history, $userMessage);
     }
 
     /**
-     * Call Google Gemini API using the v1beta Interactions endpoint (Api-Revision: 2026-05-20)
-     * with model gemini-3.8-flash.
+     * Call Google Gemini API directly using generateContent (primary) with interactions fallback.
      */
     private function chatWithGemini(string $apiKey, string $model, string $systemPrompt, array $history, string $userMessage)
     {
-        $inputSteps = [];
+        // 1. Build contents array with proper role mapping (user vs model)
+        $contents = [];
 
         foreach ($history as $h) {
             if (!isset($h['role'], $h['content']) || !is_string($h['content']) || trim($h['content']) === '') {
                 continue;
             }
-            if ($h['role'] === 'user') {
-                $inputSteps[] = [
-                    'type'    => 'user_input',
-                    'content' => [
-                        ['type' => 'text', 'text' => $h['content']],
-                    ],
-                ];
-            } elseif ($h['role'] === 'assistant') {
-                $inputSteps[] = [
-                    'type'    => 'model_output',
-                    'content' => [
-                        ['type' => 'text', 'text' => $h['content']],
-                    ],
-                ];
-            }
+            $role = ($h['role'] === 'assistant' || $h['role'] === 'model') ? 'model' : 'user';
+            $contents[] = [
+                'role'  => $role,
+                'parts' => [
+                    ['text' => $h['content']],
+                ],
+            ];
         }
 
-        $inputSteps[] = [
-            'type'    => 'user_input',
-            'content' => [
-                ['type' => 'text', 'text' => $userMessage],
+        $contents[] = [
+            'role'  => 'user',
+            'parts' => [
+                ['text' => $userMessage],
             ],
         ];
 
+        // Primary: generateContent endpoint (standard across all Google AI Studio keys)
+        $generateContentUrl = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
+
         try {
             $response = Http::timeout(30)->withHeaders([
-                'x-goog-api-key' => $apiKey,
-                'Content-Type'   => 'application/json',
-                'Api-Revision'   => '2026-05-20',
-            ])->post('https://generativelanguage.googleapis.com/v1beta/interactions', [
-                'model'              => $model,
-                'system_instruction' => $systemPrompt,
-                'store'              => false,
-                'input'              => $inputSteps,
-                'generation_config'  => [
-                    'thinking_level' => 'low',
+                'Content-Type' => 'application/json',
+            ])->post($generateContentUrl, [
+                'system_instruction' => [
+                    'parts' => [
+                        ['text' => $systemPrompt],
+                    ],
+                ],
+                'contents' => $contents,
+                'generationConfig' => [
+                    'temperature'     => 0.7,
+                    'maxOutputTokens' => 1200,
                 ],
             ]);
 
-            if ($response->failed()) {
-                Log::warning('Gemini Interactions API error', [
-                    'status' => $response->status(),
-                    'body'   => $response->body(),
-                ]);
-                $errMsg = $response->json('error.message') ?? 'Could not reach Gemini AI Assistant. Please verify your GEMINI_API_KEY.';
-                return response()->json(['error' => $errMsg], 500);
+            if ($response->successful()) {
+                $data  = $response->json();
+                $reply = $this->extractGeminiText($data);
+
+                if (!empty($reply)) {
+                    return response()->json([
+                        'reply' => $reply,
+                        'model' => $model,
+                    ]);
+                }
             }
 
-            $data  = $response->json();
-            $reply = $this->extractGeminiInteractionText($data);
+            // If generateContent returned an error (e.g. unknown model code on older key), try fallback model or fallback endpoint
+            Log::warning('Gemini generateContent error', [
+                'status' => $response->status(),
+                'body'   => $response->body(),
+            ]);
+
+            $errData = $response->json();
+            $errMsg  = $errData['error']['message'] ?? null;
+
+            // If the model code was not found, attempt fallback to gemini-2.5-flash / gemini-1.5-flash
+            if ($response->status() === 404 && $model !== 'gemini-2.5-flash') {
+                $fallbackResponse = Http::timeout(30)->withHeaders([
+                    'Content-Type' => 'application/json',
+                ])->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={$apiKey}", [
+                    'system_instruction' => [
+                        'parts' => [['text' => $systemPrompt]],
+                    ],
+                    'contents' => $contents,
+                    'generationConfig' => [
+                        'temperature'     => 0.7,
+                        'maxOutputTokens' => 1200,
+                    ],
+                ]);
+
+                if ($fallbackResponse->successful()) {
+                    $reply = $this->extractGeminiText($fallbackResponse->json());
+                    if (!empty($reply)) {
+                        return response()->json([
+                            'reply' => $reply,
+                            'model' => 'gemini-2.5-flash',
+                        ]);
+                    }
+                }
+            }
+
+            if ($errMsg) {
+                return response()->json(['error' => 'Gemini API: ' . $errMsg], 200);
+            }
 
             return response()->json([
-                'reply' => $reply ?: 'Sorry, I could not generate a response right now.',
-                'model' => $model,
-            ]);
+                'error' => 'Gemini API returned HTTP ' . $response->status() . '. Please verify your GEMINI_API_KEY.',
+            ], 200);
+
         } catch (\Throwable $e) {
             Log::error('Gemini Chatbot exception: ' . $e->getMessage());
             return response()->json([
-                'error' => 'Connection to Gemini AI timed out. Please try again.',
-            ], 500);
+                'error' => 'Connection to Gemini AI timed out. Please try again: ' . $e->getMessage(),
+            ], 200);
         }
     }
 
     /**
-     * Extract text from the Gemini v1beta/interactions steps response.
+     * Extract text from Gemini responses across generateContent and interactions schemas.
      */
-    private function extractGeminiInteractionText(array $data): string
+    private function extractGeminiText(array $data): string
     {
-        $texts = [];
+        // 1. generateContent schema: candidates[0].content.parts[*].text
+        if (!empty($data['candidates'][0]['content']['parts']) && is_array($data['candidates'][0]['content']['parts'])) {
+            $texts = [];
+            foreach ($data['candidates'][0]['content']['parts'] as $part) {
+                if (isset($part['text']) && is_string($part['text'])) {
+                    $texts[] = $part['text'];
+                }
+            }
+            if (!empty($texts)) {
+                return trim(implode("\n", $texts));
+            }
+        }
 
+        // 2. interactions new schema: steps[*].content[*].text
         if (!empty($data['steps']) && is_array($data['steps'])) {
+            $texts = [];
             foreach ($data['steps'] as $step) {
                 if (($step['type'] ?? '') === 'model_output' && !empty($step['content']) && is_array($step['content'])) {
                     foreach ($step['content'] as $part) {
@@ -135,53 +173,33 @@ class ChatbotController extends Controller
                     }
                 }
             }
+            if (!empty($texts)) {
+                return trim(implode("\n", $texts));
+            }
         }
 
-        if (!empty($texts)) {
-            return trim(implode("\n", $texts));
+        // 3. interactions legacy schema: outputs[*].text
+        if (!empty($data['outputs']) && is_array($data['outputs'])) {
+            $texts = [];
+            foreach ($data['outputs'] as $out) {
+                if (isset($out['text']) && is_string($out['text'])) {
+                    $texts[] = $out['text'];
+                }
+            }
+            if (!empty($texts)) {
+                return trim(implode("\n", $texts));
+            }
         }
 
-        // Defensive fallback if output_text is ever returned at root
+        // 4. Root convenience fields
         if (!empty($data['output_text']) && is_string($data['output_text'])) {
             return trim($data['output_text']);
         }
+        if (!empty($data['text']) && is_string($data['text'])) {
+            return trim($data['text']);
+        }
 
         return '';
-    }
-
-    /**
-     * Legacy fallback if only GROQ_API_KEY is present.
-     */
-    private function chatWithGroq(string $groqKey, string $systemPrompt, array $history, string $userMessage)
-    {
-        $messages = [];
-        foreach ($history as $h) {
-            if (isset($h['role'], $h['content']) && in_array($h['role'], ['user', 'assistant'])) {
-                $messages[] = ['role' => $h['role'], 'content' => $h['content']];
-            }
-        }
-        $messages[] = ['role' => 'user', 'content' => $userMessage];
-
-        $response = Http::timeout(25)->withHeaders([
-            'Authorization' => 'Bearer ' . $groqKey,
-            'Content-Type'  => 'application/json',
-        ])->post('https://api.groq.com/openai/v1/chat/completions', [
-            'model'      => 'llama-3.1-8b-instant',
-            'max_tokens' => 700,
-            'messages'   => array_merge(
-                [['role' => 'system', 'content' => $systemPrompt]],
-                $messages
-            ),
-        ]);
-
-        if ($response->failed()) {
-            return response()->json(['error' => 'Could not reach assistant. Try again.'], 500);
-        }
-
-        $data  = $response->json();
-        $reply = $data['choices'][0]['message']['content'] ?? 'Sorry, I could not process that.';
-
-        return response()->json(['reply' => $reply]);
     }
 
     private function buildContext(): array
