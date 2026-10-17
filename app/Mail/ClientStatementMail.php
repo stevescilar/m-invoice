@@ -72,3 +72,4 @@ class ClientStatementMail extends Mailable
         ];
     }
 }
+

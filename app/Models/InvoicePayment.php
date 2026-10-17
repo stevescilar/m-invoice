@@ -52,3 +52,4 @@ class InvoicePayment extends Model
         };
     }
 }
+

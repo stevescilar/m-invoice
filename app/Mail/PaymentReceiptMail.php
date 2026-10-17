@@ -65,3 +65,4 @@ class PaymentReceiptMail extends Mailable
         ];
     }
 }
+

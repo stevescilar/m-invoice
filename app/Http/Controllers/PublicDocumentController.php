@@ -176,3 +176,4 @@ class PublicDocumentController extends Controller
         return back()->with('success', $statusMsg);
     }
 }
+
