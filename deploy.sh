@@ -6,9 +6,9 @@ if [ ! -f .env ] && [ -f .env.production.example ]; then
 fi
 
 if [ -f composer.phar ]; then
-    php composer.phar install --no-dev --optimize-autoloader --no-interaction
+    php composer.phar install --no-dev --optimize-autoloader --no-interaction --ignore-platform-req=ext-iconv
 elif command -v composer >/dev/null 2>&1; then
-    composer install --no-dev --optimize-autoloader --no-interaction
+    composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-req=ext-iconv
 fi
 
 php artisan storage:link || true
