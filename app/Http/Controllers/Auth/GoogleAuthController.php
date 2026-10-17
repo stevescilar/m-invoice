@@ -16,16 +16,28 @@ class GoogleAuthController extends Controller
     public function redirect(Request $request)
     {
         session(['google_ref' => $request->query('ref')]);
-        return Socialite::driver('google')->redirect();
+        return Socialite::driver('google')
+            ->redirectUrl(url('/auth/google/callback'))
+            ->redirect();
     }
 
     public function callback()
     {
         try {
-            $googleUser = Socialite::driver('google')->user();
+            try {
+                $googleUser = Socialite::driver('google')
+                    ->redirectUrl(url('/auth/google/callback'))
+                    ->user();
+            } catch (\Laravel\Socialite\Two\InvalidStateException $e) {
+                $googleUser = Socialite::driver('google')
+                    ->redirectUrl(url('/auth/google/callback'))
+                    ->stateless()
+                    ->user();
+            }
         } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Google OAuth failed: ' . $e->getMessage());
             return redirect()->route('login')
-                ->with('error', 'Google login failed. Please try again.');
+                ->with('error', 'Google login failed: ' . $e->getMessage());
         }
 
         // Check if user exists
