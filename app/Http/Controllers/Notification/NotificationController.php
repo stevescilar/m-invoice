@@ -68,3 +68,4 @@ class NotificationController extends Controller
         return back()->with('success', 'Notification removed.');
     }
 }
+
