@@ -22,11 +22,24 @@ class RegisterController extends Controller
 
     public function register(Request $request)
     {
+        // Honeypot & automated bot protection
+        if ($request->filled('website_url')) {
+            abort(422, 'Spam detected.');
+        }
+
+        $formTime = (int) $request->input('_form_ts', 0);
+        if ($formTime > 0 && (time() - $formTime) < 2) {
+            return back()->withErrors(['email' => 'Please wait a moment before submitting the form.'])->withInput();
+        }
+
         $request->validate([
-            'name'         => 'required|string|max:255',
+            'name'         => ['required', 'string', 'max:255', 'not_regex:/^[a-z]{10}$/'],
             'email'        => 'required|email|unique:users,email',
             'password'     => 'required|min:8|confirmed',
-            'company_name' => 'required|string|max:255',
+            'company_name' => ['required', 'string', 'max:255', 'not_regex:/^[a-z]{10}$/'],
+        ], [
+            'name.not_regex'         => 'Please enter a valid full name.',
+            'company_name.not_regex' => 'Please enter a valid company name.',
         ]);
 
         // Check referral code

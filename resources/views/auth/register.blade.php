@@ -77,7 +77,7 @@
         <!-- Logo -->
         <div style="position:relative;z-index:1;">
             <a href="/" style="text-decoration:none;">
-                <span style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.4rem;color:#fff;">M-<span style="background:linear-gradient(135deg,#22c55e,#facc15);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Invoice</span></span>
+                <span style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.4rem;color:#fff;">Invo<span style="background:linear-gradient(135deg,#22c55e,#facc15);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">xa</span></span>
             </a>
         </div>
 
@@ -162,6 +162,11 @@
 
             <form method="POST" action="{{ route('register') }}" style="display:flex;flex-direction:column;gap:0.9rem;">
                 @csrf
+                <input type="hidden" name="_form_ts" value="{{ time() }}">
+                <div style="position:absolute;left:-9999px;top:-9999px;" aria-hidden="true">
+                    <label for="website_url">Website</label>
+                    <input type="text" id="website_url" name="website_url" tabindex="-1" autocomplete="off">
+                </div>
                 @if(isset($ref) && $ref)
                 <input type="hidden" name="ref" value="{{ $ref }}">
                 @endif
