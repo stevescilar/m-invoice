@@ -2,7 +2,7 @@
 @section('title', 'Quotation ' . $quotation->quotation_number)
 @section('content')
 
-<div class="flex justify-between items-center mb-6">
+<div class="flex flex-wrap justify-between items-center gap-3 mb-6" x-data="{ copied: false }">
     <div class="flex items-center gap-3">
         <a href="{{ route('quotations.index') }}" class="text-gray-400 hover:text-gray-600">← Back</a>
         <h1 class="text-2xl font-bold text-gray-800">{{ $quotation->quotation_number }}</h1>
@@ -16,10 +16,24 @@
             {{ ucfirst($quotation->status) }}
         </span>
     </div>
-    <div class="flex gap-2">
+    <div class="flex flex-wrap gap-2">
+        <button type="button"
+            @click="navigator.clipboard.writeText('{{ $quotation->public_url }}'); copied = true; setTimeout(() => copied = false, 2500)"
+            class="bg-white border border-gray-300 text-gray-700 px-3.5 py-2 rounded-lg text-sm hover:bg-gray-50 font-medium transition">
+            <span x-show="!copied">🔗 Copy Client Link</span>
+            <span x-show="copied" class="text-green-600 font-semibold">✅ Link Copied!</span>
+        </button>
+        <a href="{{ $quotation->public_url }}" target="_blank"
+            class="bg-gray-100 text-gray-700 px-3.5 py-2 rounded-lg text-sm hover:bg-gray-200 font-medium">
+            🌐 Public View
+        </a>
+        <a href="{{ route('quotations.delivery-note', $quotation) }}"
+            class="bg-amber-50 border border-amber-200 text-amber-800 px-3.5 py-2 rounded-lg text-sm hover:bg-amber-100 font-medium">
+            📦 Delivery Note PDF
+        </a>
         <a href="{{ route('quotations.download', $quotation) }}"
-            class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">
-            Download PDF
+            class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 font-medium">
+            ⬇ Quotation PDF
         </a>
         @if(!in_array($quotation->status, ['converted', 'approved']))
         <a href="{{ route('quotations.edit', $quotation) }}"

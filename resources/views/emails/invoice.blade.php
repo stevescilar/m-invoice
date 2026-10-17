@@ -49,6 +49,14 @@ Please find attached your invoice **{{ $invoice->invoice_number }}** from **{{ $
 | VAT (16%) | Ksh {{ number_format($invoice->vat_amount, 2) }} |
 @endif
 | **Grand Total** | **Ksh {{ number_format($invoice->grand_total, 2) }}** |
+@if($invoice->totalPaidAmount() > 0)
+| Amount Paid | - Ksh {{ number_format($invoice->totalPaidAmount(), 2) }} |
+| **Balance Due** | **Ksh {{ number_format($invoice->balanceDue(), 2) }}** |
+@endif
+@endcomponent
+
+@component('mail::button', ['url' => $invoice->public_url, 'color' => 'success'])
+View Invoice & Pay Online
 @endcomponent
 
 ---

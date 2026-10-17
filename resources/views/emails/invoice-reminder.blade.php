@@ -48,7 +48,7 @@
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">Amount Due</span>
-                    <span class="detail-val">Ksh {{ number_format($invoice->grand_total, 2) }}</span>
+                    <span class="detail-val">Ksh {{ number_format($invoice->balanceDue(), 2) }}</span>
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">Due Date</span>
@@ -62,6 +62,13 @@
                         {{ strtoupper($invoice->status) }}
                     </span>
                 </div>
+            </div>
+
+            <div style="margin: 20px 0;">
+                <a href="{{ $invoice->public_url }}"
+                   style="display: inline-block; background: #16a34a; color: #ffffff; text-decoration: none; padding: 11px 22px; border-radius: 8px; font-size: 13px; font-weight: bold;">
+                    View Invoice &amp; Pay Online
+                </a>
             </div>
 
             @if($invoice->company->mpesa_paybill)

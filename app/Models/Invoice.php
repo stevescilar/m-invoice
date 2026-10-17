@@ -16,19 +16,43 @@ class Invoice extends Model
         'profit_from_quotation', 'notes', 'is_recurring', 'recurrence_interval',
         'next_recurrence_date', 'mpesa_code', 'paid_at', 'created_by','recurring_frequency',
         'recurring_next_date', 'recurring_ends_at', 'recurring_active', 'recurring_parent_id',
-        'discount_amount','discount_percentage',
+        'discount_amount','discount_percentage', 'amount_paid', 'public_token',
     ];
 
     protected $casts = [
-    'issue_date'          => 'date',
-    'due_date'            => 'date',
-    'recurring_next_date' => 'date',
-    'recurring_ends_at'   => 'date',
-    'paid_at'             => 'datetime',
-    'etr_enabled'         => 'boolean',
-    'is_recurring'        => 'boolean',
-    'recurring_active'    => 'boolean',
-];
+        'issue_date'          => 'date',
+        'due_date'            => 'date',
+        'recurring_next_date' => 'date',
+        'recurring_ends_at'   => 'date',
+        'paid_at'             => 'datetime',
+        'etr_enabled'         => 'boolean',
+        'is_recurring'        => 'boolean',
+        'recurring_active'    => 'boolean',
+        'amount_paid'         => 'decimal:2',
+    ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (Invoice $invoice) {
+            if (empty($invoice->public_token)) {
+                $invoice->public_token = \Illuminate\Support\Str::random(32);
+            }
+        });
+    }
+
+    public function ensurePublicToken(): string
+    {
+        if (empty($this->public_token)) {
+            $this->public_token = \Illuminate\Support\Str::random(32);
+            $this->saveQuietly();
+        }
+        return $this->public_token;
+    }
+
+    public function getPublicUrlAttribute(): string
+    {
+        return route('public.invoice.show', $this->ensurePublicToken());
+    }
 
     public function company()
     {
@@ -45,6 +69,11 @@ class Invoice extends Model
         return $this->hasMany(InvoiceItem::class);
     }
 
+    public function payments()
+    {
+        return $this->hasMany(InvoicePayment::class)->orderByDesc('paid_at')->orderByDesc('id');
+    }
+
     public function reminders()
     {
         return $this->hasMany(InvoiceReminder::class);
@@ -58,6 +87,24 @@ class Invoice extends Model
     public function createdBy()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function totalPaidAmount(): float
+    {
+        if ($this->status === 'paid') {
+            return (float) $this->grand_total;
+        }
+        return min((float) $this->grand_total, max(0, (float) ($this->amount_paid ?? 0)));
+    }
+
+    public function balanceDue(): float
+    {
+        return max(0, round((float) $this->grand_total - $this->totalPaidAmount(), 2));
+    }
+
+    public function isPartiallyPaid(): bool
+    {
+        return $this->status !== 'paid' && $this->totalPaidAmount() > 0 && $this->balanceDue() > 0;
     }
 
     public function isOverdue(): bool
@@ -79,6 +126,7 @@ class Invoice extends Model
     {
         return $query->whereIn('status', ['sent', 'overdue', 'stalled']);
     }
+
     public function recurringChildren()
     {
         return $this->hasMany(Invoice::class, 'recurring_parent_id');
@@ -89,15 +137,15 @@ class Invoice extends Model
         return $this->belongsTo(Invoice::class, 'recurring_parent_id');
     }
 
- public function getNextRecurringDate(): \Carbon\Carbon
-{
-    $date = $this->recurring_next_date ?? $this->due_date ?? now();
-    $date = \Carbon\Carbon::parse($date);
-    return match($this->recurring_frequency) {
-        'weekly'    => $date->copy()->addWeek(),
-        'quarterly' => $date->copy()->addMonths(3),
-        'yearly'    => $date->copy()->addYear(),
-        default     => $date->copy()->addMonth(),
-    };
-}
+    public function getNextRecurringDate(): \Carbon\Carbon
+    {
+        $date = $this->recurring_next_date ?? $this->due_date ?? now();
+        $date = \Carbon\Carbon::parse($date);
+        return match($this->recurring_frequency) {
+            'weekly'    => $date->copy()->addWeek(),
+            'quarterly' => $date->copy()->addMonths(3),
+            'yearly'    => $date->copy()->addYear(),
+            default     => $date->copy()->addMonth(),
+        };
+    }
 }

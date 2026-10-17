@@ -87,6 +87,10 @@
                         class="nav-link {{ request()->routeIs('expenses*') ? 'active' : '' }}">
                         <i data-lucide="wallet" class="w-4 h-4"></i> Expenses
                     </a>
+                    <a href="{{ route('reports.index') }}"
+                        class="nav-link {{ request()->routeIs('reports*') ? 'active' : '' }}">
+                        <i data-lucide="bar-chart-3" class="w-4 h-4"></i> Reports
+                    </a>
                     <a href="{{ route('categories.index') }}"
                         class="nav-link {{ request()->routeIs('categories*') ? 'active' : '' }}">
                         <i data-lucide="package" class="w-4 h-4"></i> Catalog
@@ -187,6 +191,11 @@
                     class="m-link {{ request()->routeIs('expenses*') ? 'active' : '' }}">
                     <i data-lucide="wallet" class="w-5 h-5 flex-shrink-0"></i>
                     <span>Expenses</span>
+                </a>
+                <a href="{{ route('reports.index') }}" @click="open=false"
+                    class="m-link {{ request()->routeIs('reports*') ? 'active' : '' }}">
+                    <i data-lucide="bar-chart-3" class="w-5 h-5 flex-shrink-0"></i>
+                    <span>Reports &amp; Tax</span>
                 </a>
                 <a href="{{ route('categories.index') }}" @click="open=false"
                     class="m-link {{ request()->routeIs('categories*') ? 'active' : '' }}">

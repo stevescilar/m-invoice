@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Invoice;
 use App\Http\Controllers\Controller;
 use App\Mail\InvoiceMail;
 use App\Mail\InvoiceReminderMail;
+use App\Mail\PaymentReceiptMail;
 use App\Models\Client;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
+use App\Models\InvoicePayment;
 use App\Models\InvoiceReminder;
 use App\Models\ServiceCategory;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -165,7 +167,7 @@ class InvoiceController extends Controller
         $this->authorizeInvoice($invoice);
         $this->requireActiveSubscription('view invoices');
 
-        $invoice->load('client', 'items', 'items.catalogItem', 'items.itemType');
+        $invoice->load('client', 'items', 'items.catalogItem', 'items.itemType', 'payments', 'payments.recordedBy');
         $company = Auth::user()->company;
 
         return view('invoices.show', compact('invoice', 'company'));
@@ -366,7 +368,7 @@ class InvoiceController extends Controller
             ? Carbon::parse($invoice->due_date)->format('d M Y')
             : 'soon';
 
-        $amount = number_format($invoice->grand_total, 2);
+        $amount = number_format($invoice->balanceDue(), 2);
         $status = $invoice->status === 'overdue' ? 'overdue' : 'due';
 
         $mpesa = '';
@@ -381,8 +383,9 @@ class InvoiceController extends Controller
 
         $message = "Hello {$invoice->client->name},\n\n"
             . "I hope you're doing well! This is a friendly reminder that Invoice "
-            . "*{$invoice->invoice_number}* for *Ksh {$amount}* is {$status}{$dueLine}"
+            . "*{$invoice->invoice_number}* (Balance Due: *Ksh {$amount}*) is {$status}{$dueLine}"
             . $mpesa
+            . "\n\n🔗 *View & Download Invoice Online:*\n{$invoice->public_url}"
             . "\n\nKindly arrange payment at your earliest convenience. "
             . "Please reach out if you have any questions.\n\n"
             . "Thank you!\n{$company->name}";
@@ -391,7 +394,7 @@ class InvoiceController extends Controller
     }
 
     // -------------------------------------------------------------------------
-    // Mark Paid
+    // Payments, Partial Deposits & Receipts
     // -------------------------------------------------------------------------
 
     public function markPaid(Request $request, Invoice $invoice): RedirectResponse
@@ -399,20 +402,174 @@ class InvoiceController extends Controller
         $this->authorizeInvoice($invoice);
 
         $request->validate([
-            'mpesa_code' => 'nullable|string|max:20',
+            'mpesa_code' => 'nullable|string|max:40',
         ]);
+
+        $remaining = $invoice->balanceDue();
+        if ($remaining > 0) {
+            InvoicePayment::create([
+                'invoice_id'     => $invoice->id,
+                'company_id'     => $invoice->company_id,
+                'receipt_number' => $this->generateReceiptNumber($invoice->company_id),
+                'amount'         => $remaining,
+                'payment_method' => $request->mpesa_code ? 'mpesa' : 'cash',
+                'reference'      => $request->mpesa_code ? strtoupper(trim($request->mpesa_code)) : null,
+                'paid_at'        => now(),
+                'notes'          => 'Full balance payment',
+                'recorded_by'    => Auth::id(),
+            ]);
+        }
 
         $invoice->update([
-            'status'     => 'paid',
-            'mpesa_code' => $request->mpesa_code,
-            'paid_at'    => now(),
+            'status'      => 'paid',
+            'amount_paid' => $invoice->grand_total,
+            'mpesa_code'  => $request->mpesa_code ?: $invoice->mpesa_code,
+            'paid_at'     => now(),
         ]);
 
-        return back()->with('success', 'Invoice marked as paid.');
+        return back()->with('success', 'Invoice marked as paid in full.');
+    }
+
+    public function recordPayment(Request $request, Invoice $invoice): RedirectResponse
+    {
+        $this->authorizeInvoice($invoice);
+
+        $maxBalance = max(0.01, $invoice->balanceDue());
+
+        $request->validate([
+            'amount'         => "required|numeric|min:1|max:{$maxBalance}",
+            'payment_method' => 'required|in:mpesa,bank,cash,cheque,other',
+            'reference'      => 'nullable|string|max:60',
+            'paid_at'        => 'nullable|date',
+            'notes'          => 'nullable|string|max:300',
+            'send_receipt'   => 'nullable|boolean',
+        ]);
+
+        $company = Auth::user()->company;
+        $amount  = round((float) $request->amount, 2);
+
+        $payment = DB::transaction(function () use ($request, $invoice, $amount) {
+            $payment = InvoicePayment::create([
+                'invoice_id'     => $invoice->id,
+                'company_id'     => $invoice->company_id,
+                'receipt_number' => $this->generateReceiptNumber($invoice->company_id),
+                'amount'         => $amount,
+                'payment_method' => $request->payment_method,
+                'reference'      => $request->reference ? strtoupper(trim($request->reference)) : null,
+                'paid_at'        => $request->paid_at ? Carbon::parse($request->paid_at) : now(),
+                'notes'          => $request->notes,
+                'recorded_by'    => Auth::id(),
+            ]);
+
+            $totalPaid = round((float) $invoice->payments()->sum('amount'), 2);
+            $isPaidFull = $totalPaid >= round((float) $invoice->grand_total, 2);
+
+            $invoice->update([
+                'amount_paid' => min((float) $invoice->grand_total, $totalPaid),
+                'status'      => $isPaidFull ? 'paid' : ($invoice->status === 'draft' ? 'sent' : $invoice->status),
+                'paid_at'     => $isPaidFull ? ($invoice->paid_at ?? now()) : $invoice->paid_at,
+                'mpesa_code'  => $request->reference ?: $invoice->mpesa_code,
+            ]);
+
+            return $payment;
+        });
+
+        $msg = 'Payment of Ksh ' . number_format($amount, 2) . " recorded (Receipt #{$payment->receipt_number}).";
+
+        if ($request->boolean('send_receipt') && $invoice->client->email) {
+            try {
+                $invoice->refresh();
+                $company->sendMail(
+                    $invoice->client->email,
+                    new PaymentReceiptMail($invoice, $company, $payment),
+                    Auth::user()
+                );
+                $msg .= ' Receipt emailed to ' . $invoice->client->email . '.';
+            } catch (\Throwable $e) {
+                $msg .= ' (Could not email receipt: ' . $e->getMessage() . ')';
+            }
+        }
+
+        return back()->with('success', $msg);
+    }
+
+    public function deletePayment(Invoice $invoice, InvoicePayment $payment): RedirectResponse
+    {
+        $this->authorizeInvoice($invoice);
+
+        if ($payment->invoice_id !== $invoice->id) {
+            abort(403);
+        }
+
+        DB::transaction(function () use ($invoice, $payment) {
+            $payment->delete();
+
+            $totalPaid = round((float) $invoice->payments()->sum('amount'), 2);
+            $isPaidFull = $totalPaid >= round((float) $invoice->grand_total, 2);
+
+            $invoice->update([
+                'amount_paid' => $totalPaid,
+                'status'      => $isPaidFull ? 'paid' : ($invoice->due_date?->isPast() ? 'overdue' : 'sent'),
+                'paid_at'     => $isPaidFull ? $invoice->paid_at : null,
+            ]);
+        });
+
+        return back()->with('success', 'Payment entry removed and invoice balance updated.');
+    }
+
+    public function downloadReceipt(Invoice $invoice, ?InvoicePayment $payment = null)
+    {
+        $this->authorizeInvoice($invoice);
+
+        if ($payment && $payment->invoice_id !== $invoice->id) {
+            abort(403);
+        }
+
+        $invoice->load('client', 'items', 'items.itemType', 'payments');
+        $company = Auth::user()->company;
+        $payment = $payment ?? $invoice->payments->first();
+
+        $receiptNo = $payment?->receipt_number ?? ('RCP-' . str_replace('INV-', '', $invoice->invoice_number));
+
+        $pdf = Pdf::loadView('invoices.receipt-pdf', compact('invoice', 'company', 'payment'));
+
+        return $pdf->download('receipt-' . $receiptNo . '.pdf');
+    }
+
+    public function emailReceipt(Invoice $invoice, ?InvoicePayment $payment = null): RedirectResponse
+    {
+        $this->authorizeInvoice($invoice);
+
+        if (!$invoice->client->email) {
+            return back()->with('error', 'This client has no email address.');
+        }
+
+        if ($payment && $payment->invoice_id !== $invoice->id) {
+            abort(403);
+        }
+
+        $invoice->load('client', 'items', 'items.itemType', 'payments');
+        $company = Auth::user()->company;
+        $payment = $payment ?? $invoice->payments->first();
+
+        try {
+            $company->sendMail(
+                $invoice->client->email,
+                new PaymentReceiptMail($invoice, $company, $payment),
+                Auth::user()
+            );
+
+            $copies = $company->getCopyRecipients($invoice->client->email, Auth::user());
+            $copyNote = !empty($copies) ? ' (Copy sent to ' . implode(', ', $copies) . ')' : '';
+
+            return back()->with('success', 'Payment receipt sent to ' . $invoice->client->email . $copyNote);
+        } catch (\Throwable $e) {
+            return back()->with('error', 'Failed to send receipt: ' . $e->getMessage());
+        }
     }
 
     // -------------------------------------------------------------------------
-    // PDF Download
+    // PDF Download & Delivery Note
     // -------------------------------------------------------------------------
 
     public function download(Invoice $invoice)
@@ -433,6 +590,25 @@ class InvoiceController extends Controller
         return $this->download($invoice);
     }
 
+    public function downloadDeliveryNote(Invoice $invoice)
+    {
+        $this->authorizeInvoice($invoice);
+
+        $invoice->load('client', 'items', 'items.itemType');
+        $company = Auth::user()->company;
+
+        $pdf = Pdf::loadView('pdf.delivery-note', [
+            'company'        => $company,
+            'client'         => $invoice->client,
+            'items'          => $invoice->items,
+            'documentNumber' => $invoice->invoice_number,
+            'notes'          => $invoice->notes,
+            'invoice'        => $invoice,
+        ]);
+
+        return $pdf->download('delivery-note-' . $invoice->invoice_number . '.pdf');
+    }
+
     // -------------------------------------------------------------------------
     // Duplicate
     // -------------------------------------------------------------------------
@@ -444,7 +620,9 @@ class InvoiceController extends Controller
         DB::transaction(function () use ($invoice) {
             $newInvoice                 = $invoice->replicate();
             $newInvoice->invoice_number = $this->generateInvoiceNumber();
+            $newInvoice->public_token   = \Illuminate\Support\Str::random(32);
             $newInvoice->status         = 'draft';
+            $newInvoice->amount_paid    = 0;
             $newInvoice->issue_date     = now();
             $newInvoice->paid_at        = null;
             $newInvoice->mpesa_code     = null;
@@ -458,6 +636,12 @@ class InvoiceController extends Controller
         });
 
         return redirect()->route('invoices.index')->with('success', 'Invoice duplicated successfully.');
+    }
+
+    private function generateReceiptNumber(int $companyId): string
+    {
+        $count = InvoicePayment::where('company_id', $companyId)->count() + 1;
+        return 'RCP-' . str_pad($count, 5, '0', STR_PAD_LEFT);
     }
 
     // -------------------------------------------------------------------------

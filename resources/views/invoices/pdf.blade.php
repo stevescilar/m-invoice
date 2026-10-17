@@ -637,6 +637,24 @@
                         Ksh {{ number_format($invoice->grand_total, 2) }}
                     </td>
                 </tr>
+                @if($invoice->totalPaidAmount() > 0)
+                <tr>
+                    <td style="border: none; padding: 4px 8px; font-size: 11px; color: #16a34a;">
+                        Amount Paid
+                    </td>
+                    <td style="border: none; padding: 4px 8px; font-size: 11px; color: #16a34a; font-weight: bold; text-align: right;">
+                        - Ksh {{ number_format($invoice->totalPaidAmount(), 2) }}
+                    </td>
+                </tr>
+                <tr>
+                    <td style="border: none; padding: 6px 8px; font-size: 13px; font-weight: bold; color: {{ $invoice->balanceDue() > 0 ? '#dc2626' : '#16a34a' }}; border-top: 1px dashed #ccc;">
+                        Balance Due
+                    </td>
+                    <td style="border: none; padding: 6px 8px; font-size: 13px; font-weight: bold; color: {{ $invoice->balanceDue() > 0 ? '#dc2626' : '#16a34a' }}; text-align: right; border-top: 1px dashed #ccc;">
+                        Ksh {{ number_format($invoice->balanceDue(), 2) }}
+                    </td>
+                </tr>
+                @endif
             </table>
         </td>
     </tr>

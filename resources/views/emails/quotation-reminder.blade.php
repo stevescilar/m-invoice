@@ -46,6 +46,13 @@
                 </div>
             </div>
 
+            <div style="margin: 20px 0;">
+                <a href="{{ $quotation->public_url }}"
+                   style="display: inline-block; background: #16a34a; color: #ffffff; text-decoration: none; padding: 11px 22px; border-radius: 8px; font-size: 13px; font-weight: bold;">
+                    View &amp; Approve Quotation Online
+                </a>
+            </div>
+
             <p>
                 Please feel free to reach out if you have any questions or would like to discuss
                 the details further. I look forward to hearing from you.

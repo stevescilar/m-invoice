@@ -329,9 +329,9 @@ class QuotationController extends Controller
         $message = "Hello {$quotation->client->name},\n\n"
             . "I hope you're doing well! I wanted to follow up on Quotation "
             . "*{$quotation->quotation_number}* for *Ksh {$amount}* that I sent you.\n\n"
-            . "The quotation is valid until *{$expiry}*. "
+            . "The quotation is valid until *{$expiry}*.\n\n"
+            . "✅ *View & Approve Quotation Online:*\n{$quotation->public_url}\n\n"
             . "Please let me know if you have any questions or would like to proceed.\n\n"
-            . "Looking forward to hearing from you!\n\n"
             . "Regards,\n{$company->name}";
 
         return redirect('https://wa.me/' . $phone . '?text=' . urlencode($message));
@@ -405,7 +405,7 @@ class QuotationController extends Controller
     }
 
     // -------------------------------------------------------------------------
-    // PDF Download
+    // PDF Download & Delivery Note
     // -------------------------------------------------------------------------
 
     public function download(Quotation $quotation)
@@ -421,6 +421,25 @@ class QuotationController extends Controller
         return $pdf->download('quotation-' . $quotation->quotation_number . '.pdf');
     }
 
+    public function downloadDeliveryNote(Quotation $quotation)
+    {
+        $this->authorizeQuotation($quotation);
+
+        $quotation->load('client', 'items', 'items.itemType');
+        $company = Auth::user()->company;
+
+        $pdf = Pdf::loadView('pdf.delivery-note', [
+            'company'        => $company,
+            'client'         => $quotation->client,
+            'items'          => $quotation->items,
+            'documentNumber' => $quotation->quotation_number,
+            'notes'          => $quotation->notes,
+            'quotation'      => $quotation,
+        ]);
+
+        return $pdf->download('delivery-note-' . $quotation->quotation_number . '.pdf');
+    }
+
     // -------------------------------------------------------------------------
     // Duplicate
     // -------------------------------------------------------------------------
@@ -432,13 +451,15 @@ class QuotationController extends Controller
         $quotation->load('items');
 
         DB::transaction(function () use ($quotation) {
-            $newQuotation                      = $quotation->replicate();
-            $newQuotation->quotation_number    = $this->generateQuotationNumber();
-            $newQuotation->status              = 'draft';
-            $newQuotation->issue_date          = now()->toDateString();
-            $newQuotation->expiry_date         = now()->addDays(30)->toDateString();
+            $newQuotation                       = $quotation->replicate();
+            $newQuotation->quotation_number     = $this->generateQuotationNumber();
+            $newQuotation->public_token         = \Illuminate\Support\Str::random(32);
+            $newQuotation->status               = 'draft';
+            $newQuotation->approved_at          = null;
+            $newQuotation->issue_date           = now()->toDateString();
+            $newQuotation->expiry_date          = now()->addDays(30)->toDateString();
             $newQuotation->converted_invoice_id = null;
-            $newQuotation->created_by          = Auth::id();
+            $newQuotation->created_by           = Auth::id();
             $newQuotation->save();
 
             foreach ($quotation->items as $item) {

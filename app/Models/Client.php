@@ -40,16 +40,18 @@ class Client extends Model
 
     public function totalBilled(): float
     {
-        return $this->invoices()->sum('grand_total');
+        return (float) $this->invoices()->sum('grand_total');
     }
 
     public function totalPaid(): float
     {
-        return $this->invoices()->where('status', 'paid')->sum('grand_total');
+        $paidInvoicesTotal = (float) $this->invoices()->where('status', 'paid')->sum('grand_total');
+        $partialPaidTotal = (float) $this->invoices()->where('status', '!=', 'paid')->sum('amount_paid');
+        return $paidInvoicesTotal + $partialPaidTotal;
     }
 
     public function outstandingBalance(): float
     {
-        return $this->totalBilled() - $this->totalPaid();
+        return max(0, $this->totalBilled() - $this->totalPaid());
     }
 }

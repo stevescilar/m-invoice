@@ -45,6 +45,10 @@ Please find attached your quotation **{{ $quotation->quotation_number }}** from 
 | **Grand Total** | **Ksh {{ number_format($quotation->grand_total, 2) }}** |
 @endcomponent
 
+@component('mail::button', ['url' => $quotation->public_url, 'color' => 'success'])
+View & Approve Quotation Online
+@endcomponent
+
 ---
 
 @if($company->mpesa_paybill || $company->mpesa_till || $company->mpesa_number || $company->bank_name)

@@ -3,9 +3,12 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
+use App\Mail\ClientStatementMail;
 use App\Models\Client;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class ClientController extends Controller
 {
@@ -119,6 +122,69 @@ class ClientController extends Controller
         $this->authorizeClient($client);
         $client->delete();
         return redirect()->route('clients.index')->with('success', 'Client deleted.');
+    }
+
+    public function downloadStatement(Request $request, Client $client)
+    {
+        $this->authorizeClient($client);
+
+        [$invoices, $totalBilled, $totalPaid, $balanceDue, $fromDate, $toDate] = $this->buildStatementData($request, $client);
+        $company = Auth::user()->company;
+
+        $pdf = Pdf::loadView('clients.statement-pdf', compact(
+            'client', 'company', 'invoices', 'totalBilled', 'totalPaid', 'balanceDue', 'fromDate', 'toDate'
+        ));
+
+        $slug = Str::slug($client->name ?: 'client');
+        return $pdf->download("statement-of-account-{$slug}.pdf");
+    }
+
+    public function emailStatement(Request $request, Client $client)
+    {
+        $this->authorizeClient($client);
+
+        if (!$client->email) {
+            return back()->with('error', 'This client has no email address on record.');
+        }
+
+        [$invoices, $totalBilled, $totalPaid, $balanceDue, $fromDate, $toDate] = $this->buildStatementData($request, $client);
+        $company = Auth::user()->company;
+
+        try {
+            $company->sendMail(
+                $client->email,
+                new ClientStatementMail($client, $company, $invoices, $totalBilled, $totalPaid, $balanceDue, $fromDate, $toDate),
+                Auth::user()
+            );
+
+            $copies = $company->getCopyRecipients($client->email, Auth::user());
+            $copyNote = !empty($copies) ? ' (Copy sent to ' . implode(', ', $copies) . ')' : '';
+
+            return back()->with('success', 'Statement of Account sent to ' . $client->email . $copyNote);
+        } catch (\Throwable $e) {
+            return back()->with('error', 'Failed to send statement: ' . $e->getMessage());
+        }
+    }
+
+    private function buildStatementData(Request $request, Client $client): array
+    {
+        $fromDate = $request->get('from');
+        $toDate   = $request->get('to');
+
+        $query = $client->invoices()->orderBy('issue_date', 'asc')->orderBy('id', 'asc');
+        if ($fromDate) {
+            $query->whereDate('issue_date', '>=', $fromDate);
+        }
+        if ($toDate) {
+            $query->whereDate('issue_date', '<=', $toDate);
+        }
+
+        $invoices    = $query->get();
+        $totalBilled = (float) $invoices->sum('grand_total');
+        $totalPaid   = (float) $invoices->sum(fn ($inv) => $inv->totalPaidAmount());
+        $balanceDue  = max(0, $totalBilled - $totalPaid);
+
+        return [$invoices, $totalBilled, $totalPaid, $balanceDue, $fromDate, $toDate];
     }
 
     private function authorizeClient(Client $client)

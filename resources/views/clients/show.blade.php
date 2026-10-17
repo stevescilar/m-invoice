@@ -42,18 +42,31 @@
             </div>
         </div>
 
-        <!-- Quick Actions -->
-        <div class="bg-white rounded-xl shadow p-5">
+        <!-- Quick Actions & Statement of Account -->
+        <div class="bg-white rounded-xl shadow p-5" x-data="{ showStatement: false }">
             <h2 class="font-semibold text-gray-700 mb-4">Quick Actions</h2>
             <div class="space-y-2">
                 <a href="{{ route('invoices.create') }}?client_id={{ $client->id }}"
-                    class="block w-full text-center bg-green-600 text-white py-2 rounded-lg text-sm hover:bg-green-700">
+                    class="block w-full text-center bg-green-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-green-700">
                     + New Invoice
                 </a>
                 <a href="{{ route('quotations.create') }}?client_id={{ $client->id }}"
-                    class="block w-full text-center bg-blue-500 text-white py-2 rounded-lg text-sm hover:bg-blue-600">
+                    class="block w-full text-center bg-blue-500 text-white py-2 rounded-lg text-sm font-medium hover:bg-blue-600">
                     + New Quotation
                 </a>
+                <a href="{{ route('clients.statement.download', $client) }}"
+                    class="block w-full text-center bg-gray-800 text-white py-2 rounded-lg text-sm font-medium hover:bg-gray-900">
+                    📄 Download Statement PDF
+                </a>
+                @if ($client->email)
+                    <form method="POST" action="{{ route('clients.statement.email', $client) }}">
+                        @csrf
+                        <button type="submit"
+                            class="w-full bg-indigo-50 text-indigo-600 py-2 rounded-lg text-sm font-medium hover:bg-indigo-100">
+                            ✉️ Email Statement to Client
+                        </button>
+                    </form>
+                @endif
             </div>
         </div>
     </div>

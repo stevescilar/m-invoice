@@ -17,6 +17,8 @@ use App\Http\Controllers\Quotation\QuotationController;
 use App\Http\Controllers\Expense\ExpenseController;
 use App\Http\Controllers\Subscription\SubscriptionController;
 use App\Http\Controllers\Staff\StaffController;
+use App\Http\Controllers\Report\ReportController;
+use App\Http\Controllers\PublicDocumentController;
 
 
 // Root
@@ -95,6 +97,8 @@ Route::middleware(['auth', 'active.company'])->group(function () {
 
     // Clients
     Route::resource('clients', ClientController::class);
+    Route::get('clients/{client}/statement/download', [ClientController::class, 'downloadStatement'])->name('clients.statement.download');
+    Route::post('clients/{client}/statement/email', [ClientController::class, 'emailStatement'])->name('clients.statement.email');
 
     // Catalog
     Route::resource('catalog/categories', ServiceCategoryController::class)->names('categories');
@@ -104,6 +108,11 @@ Route::middleware(['auth', 'active.company'])->group(function () {
     Route::resource('invoices', InvoiceController::class);
     Route::post('invoices/{invoice}/send', [InvoiceController::class, 'send'])->name('invoices.send');
     Route::post('invoices/{invoice}/mark-paid', [InvoiceController::class, 'markPaid'])->name('invoices.mark-paid');
+    Route::post('invoices/{invoice}/payments', [InvoiceController::class, 'recordPayment'])->name('invoices.payments.store');
+    Route::delete('invoices/{invoice}/payments/{payment}', [InvoiceController::class, 'deletePayment'])->name('invoices.payments.destroy');
+    Route::get('invoices/{invoice}/receipt/{payment?}', [InvoiceController::class, 'downloadReceipt'])->name('invoices.receipt.download');
+    Route::post('invoices/{invoice}/receipt/{payment?}/email', [InvoiceController::class, 'emailReceipt'])->name('invoices.receipt.email');
+    Route::get('invoices/{invoice}/delivery-note', [InvoiceController::class, 'downloadDeliveryNote'])->name('invoices.delivery-note');
     Route::get('invoices/{invoice}/download', [InvoiceController::class, 'download'])->name('invoices.download');
     Route::post('invoices/{invoice}/duplicate', [InvoiceController::class, 'duplicate'])->name('invoices.duplicate');
 
@@ -112,10 +121,16 @@ Route::middleware(['auth', 'active.company'])->group(function () {
     Route::post('quotations/{quotation}/send', [QuotationController::class, 'send'])->name('quotations.send');
     Route::post('quotations/{quotation}/convert', [QuotationController::class, 'convertToInvoice'])->name('quotations.convert');
     Route::get('quotations/{quotation}/download', [QuotationController::class, 'download'])->name('quotations.download');
+    Route::get('quotations/{quotation}/delivery-note', [QuotationController::class, 'downloadDeliveryNote'])->name('quotations.delivery-note');
     Route::post('quotations/{quotation}/duplicate', [QuotationController::class, 'duplicate'])->name('quotations.duplicate');
 
     // Expenses
     Route::resource('expenses', ExpenseController::class);
+
+    // Reports & KRA Tax Summary
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('/reports/export-csv', [ReportController::class, 'exportCsv'])->name('reports.export.csv');
+    Route::get('/reports/export-pdf', [ReportController::class, 'exportPdf'])->name('reports.export.pdf');
 
     // Subscription
     Route::get('/subscription', [SubscriptionController::class, 'index'])->name('subscription.index');
@@ -139,6 +154,18 @@ Route::middleware(['auth', 'active.company'])->group(function () {
     Route::post('quotations/{quotation}/remind', [QuotationController::class, 'sendReminder'])->name('quotations.remind');
     Route::get('quotations/{quotation}/whatsapp', [QuotationController::class, 'whatsappReminder'])->name('quotations.whatsapp');
 
+});
+
+// Public Shareable Client Portal (no auth required)
+Route::prefix('p')->name('public.')->group(function () {
+    Route::get('/invoice/{token}', [PublicDocumentController::class, 'showInvoice'])->name('invoice.show');
+    Route::get('/invoice/{token}/pdf', [PublicDocumentController::class, 'downloadInvoicePdf'])->name('invoice.pdf');
+    Route::get('/invoice/{token}/receipt', [PublicDocumentController::class, 'downloadInvoiceReceipt'])->name('invoice.receipt');
+    Route::post('/invoice/{token}/notify-payment', [PublicDocumentController::class, 'notifyInvoicePayment'])->middleware('throttle:10,1')->name('invoice.notify-payment');
+
+    Route::get('/quotation/{token}', [PublicDocumentController::class, 'showQuotation'])->name('quotation.show');
+    Route::get('/quotation/{token}/pdf', [PublicDocumentController::class, 'downloadQuotationPdf'])->name('quotation.pdf');
+    Route::post('/quotation/{token}/respond', [PublicDocumentController::class, 'respondQuotation'])->middleware('throttle:10,1')->name('quotation.respond');
 });
 
 // M-Pesa Callback (no auth — called by Safaricom)

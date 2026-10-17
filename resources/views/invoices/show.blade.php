@@ -2,27 +2,42 @@
 @section('title', 'Invoice ' . $invoice->invoice_number)
 @section('content')
 
-    <div class="flex justify-between items-center mb-6">
+    <div class="flex flex-wrap justify-between items-center gap-3 mb-6" x-data="{ copied: false }">
         <div class="flex items-center gap-3">
             <a href="{{ route('invoices.index') }}" class="text-gray-400 hover:text-gray-600">← Back</a>
             <h1 class="text-2xl font-bold text-gray-800">{{ $invoice->invoice_number }}</h1>
             <span
-                class="text-xs px-3 py-1 rounded-full
+                class="text-xs px-3 py-1 rounded-full font-medium
             {{ $invoice->status === 'paid' ? 'bg-green-100 text-green-600' : '' }}
-            {{ $invoice->status === 'overdue' ? 'bg-red-100 text-red-600' : '' }}
-            {{ $invoice->status === 'sent' ? 'bg-blue-100 text-blue-600' : '' }}
-            {{ $invoice->status === 'draft' ? 'bg-gray-100 text-gray-600' : '' }}
-            {{ $invoice->status === 'stalled' ? 'bg-yellow-100 text-yellow-600' : '' }}">
-                {{ ucfirst($invoice->status) }}
+            {{ $invoice->isPartiallyPaid() ? 'bg-amber-100 text-amber-700' : '' }}
+            {{ !$invoice->isPartiallyPaid() && $invoice->status === 'overdue' ? 'bg-red-100 text-red-600' : '' }}
+            {{ !$invoice->isPartiallyPaid() && $invoice->status === 'sent' ? 'bg-blue-100 text-blue-600' : '' }}
+            {{ !$invoice->isPartiallyPaid() && $invoice->status === 'draft' ? 'bg-gray-100 text-gray-600' : '' }}
+            {{ !$invoice->isPartiallyPaid() && $invoice->status === 'stalled' ? 'bg-yellow-100 text-yellow-600' : '' }}">
+                {{ $invoice->isPartiallyPaid() ? 'Partially Paid' : ucfirst($invoice->status) }}
             </span>
             @if ($invoice->etr_enabled)
                 <span class="text-xs bg-purple-100 text-purple-600 px-2 py-0.5 rounded-full">ETR</span>
             @endif
         </div>
-        <div class="flex gap-2">
+        <div class="flex flex-wrap gap-2">
+            <button type="button"
+                @click="navigator.clipboard.writeText('{{ $invoice->public_url }}'); copied = true; setTimeout(() => copied = false, 2500)"
+                class="bg-white border border-gray-300 text-gray-700 px-3.5 py-2 rounded-lg text-sm hover:bg-gray-50 font-medium transition">
+                <span x-show="!copied">🔗 Copy Client Link</span>
+                <span x-show="copied" class="text-green-600 font-semibold">✅ Link Copied!</span>
+            </button>
+            <a href="{{ $invoice->public_url }}" target="_blank"
+                class="bg-gray-100 text-gray-700 px-3.5 py-2 rounded-lg text-sm hover:bg-gray-200 font-medium">
+                🌐 Public View
+            </a>
+            <a href="{{ route('invoices.delivery-note', $invoice) }}"
+                class="bg-amber-50 border border-amber-200 text-amber-800 px-3.5 py-2 rounded-lg text-sm hover:bg-amber-100 font-medium">
+                📦 Delivery Note PDF
+            </a>
             <a href="{{ route('invoices.download', $invoice) }}"
-                class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700">
-                Download PDF
+                class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700 font-medium">
+                ⬇ Invoice PDF
             </a>
             @if ($invoice->status !== 'paid')
                 <a href="{{ route('invoices.edit', $invoice) }}"
@@ -38,8 +53,6 @@
             </form>
         </div>
     </div>
-
-   
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
 
@@ -135,7 +148,78 @@
                     <span>Grand Total</span>
                     <span class="sensitive">Ksh {{ number_format($invoice->grand_total, 2) }}</span>
                 </div>
+
+                @if ($invoice->totalPaidAmount() > 0)
+                    <div class="flex justify-between text-green-600 font-medium">
+                        <span>Amount Paid</span>
+                        <span>- Ksh {{ number_format($invoice->totalPaidAmount(), 2) }}</span>
+                    </div>
+                    <div class="flex justify-between font-bold border-t border-dashed pt-2 text-base {{ $invoice->balanceDue() > 0 ? 'text-red-600' : 'text-green-600' }}">
+                        <span>Balance Due</span>
+                        <span>Ksh {{ number_format($invoice->balanceDue(), 2) }}</span>
+                    </div>
+                @endif
             </div>
+
+            {{-- Payment History & Receipts --}}
+            @if ($invoice->payments->count() > 0 || $invoice->status === 'paid')
+                <div class="mt-6 border-t pt-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wide">Payments &amp; Receipts</h3>
+                        <a href="{{ route('invoices.receipt.download', $invoice) }}"
+                            class="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-lg font-medium hover:bg-emerald-100">
+                            🧾 Download Latest Receipt PDF
+                        </a>
+                    </div>
+                    @if ($invoice->payments->count() > 0)
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-xs">
+                                <thead class="bg-gray-50 text-gray-500 uppercase">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left">Receipt #</th>
+                                        <th class="px-3 py-2 text-left">Date</th>
+                                        <th class="px-3 py-2 text-left">Method / Ref</th>
+                                        <th class="px-3 py-2 text-right">Amount</th>
+                                        <th class="px-3 py-2 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    @foreach ($invoice->payments as $pmt)
+                                        <tr>
+                                            <td class="px-3 py-2.5 font-semibold text-gray-800">{{ $pmt->receipt_number }}</td>
+                                            <td class="px-3 py-2.5 text-gray-500">{{ $pmt->paid_at->format('M j, Y') }}</td>
+                                            <td class="px-3 py-2.5 text-gray-600">
+                                                {{ $pmt->methodLabel() }}
+                                                @if ($pmt->reference)
+                                                    <span class="font-mono text-gray-800 ml-1">({{ $pmt->reference }})</span>
+                                                @endif
+                                            </td>
+                                            <td class="px-3 py-2.5 text-right font-bold text-green-600">Ksh {{ number_format($pmt->amount, 2) }}</td>
+                                            <td class="px-3 py-2.5 text-right">
+                                                <div class="inline-flex items-center gap-1.5">
+                                                    <a href="{{ route('invoices.receipt.download', [$invoice, $pmt]) }}"
+                                                        class="text-emerald-600 hover:underline font-medium">PDF</a>
+                                                    @if ($invoice->client->email)
+                                                        <form method="POST" action="{{ route('invoices.receipt.email', [$invoice, $pmt]) }}" class="inline">
+                                                            @csrf
+                                                            <button type="submit" class="text-blue-600 hover:underline font-medium">Email</button>
+                                                        </form>
+                                                    @endif
+                                                    <form method="POST" action="{{ route('invoices.payments.destroy', [$invoice, $pmt]) }}" class="inline"
+                                                        onsubmit="return confirm('Remove this payment entry?')">
+                                                        @csrf @method('DELETE')
+                                                        <button type="submit" class="text-red-500 hover:underline">Delete</button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @endif
+                </div>
+            @endif
 
             @if ($invoice->notes)
                 <div class="mt-4 border-t pt-4">
@@ -166,21 +250,53 @@
                         </form>
                     @endif
 
-                    <form action="{{ route('invoices.mark-paid', $invoice) }}" method="POST" x-data="{ open: false }">
-                        @csrf
-                        <button type="button" @click="open = !open"
-                            class="w-full bg-green-600 text-white py-2 rounded-lg text-sm hover:bg-green-700 mb-2 font-medium">
-                            ✅ Mark as Paid
+                    <!-- Record Full or Partial Payment / Deposit -->
+                    <div x-data="{ openPay: false }" class="mb-2">
+                        <button type="button" @click="openPay = !openPay"
+                            class="w-full bg-green-600 text-white py-2 rounded-lg text-sm hover:bg-green-700 font-medium">
+                            💳 Record Payment / Deposit
                         </button>
-                        <div x-show="open" x-cloak class="mt-2 space-y-2 mb-2">
-                            <input type="text" name="mpesa_code" placeholder="M-Pesa code (optional)"
-                                class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400">
+                        <form x-show="openPay" x-cloak action="{{ route('invoices.payments.store', $invoice) }}" method="POST"
+                            class="mt-2 p-3 bg-green-50/60 border border-green-200 rounded-xl space-y-2.5">
+                            @csrf
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Amount Received (Ksh)</label>
+                                <input type="number" step="0.01" name="amount" value="{{ $invoice->balanceDue() }}" max="{{ $invoice->balanceDue() }}" required
+                                    class="w-full border bg-white rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-400">
+                                <p class="text-[11px] text-gray-500 mt-0.5">Enter full balance or a partial deposit.</p>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Payment Method</label>
+                                <select name="payment_method" class="w-full border bg-white rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-400">
+                                    <option value="mpesa">M-Pesa</option>
+                                    <option value="bank">Bank Transfer</option>
+                                    <option value="cash">Cash</option>
+                                    <option value="cheque">Cheque</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">M-Pesa Code / Reference</label>
+                                <input type="text" name="reference" placeholder="e.g. QKH45T9XYZ (optional)"
+                                    class="w-full border bg-white rounded-lg px-3 py-1.5 text-sm uppercase focus:outline-none focus:ring-2 focus:ring-green-400">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Notes (Optional)</label>
+                                <input type="text" name="notes" placeholder="e.g. 50% Deposit"
+                                    class="w-full border bg-white rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-400">
+                            </div>
+                            @if ($invoice->client->email)
+                                <label class="flex items-center gap-2 text-xs text-gray-700 cursor-pointer pt-1">
+                                    <input type="checkbox" name="send_receipt" value="1" checked class="rounded text-green-600 focus:ring-green-500">
+                                    <span>Email Payment Receipt PDF to client</span>
+                                </label>
+                            @endif
                             <button type="submit"
-                                class="w-full bg-green-700 text-white py-2 rounded-lg text-sm hover:bg-green-800">
-                                Confirm Payment
+                                class="w-full bg-green-700 text-white py-2 rounded-lg text-sm font-semibold hover:bg-green-800">
+                                Save Payment &amp; Generate Receipt
                             </button>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
 
                     @if ($invoice->client->email)
                         <form action="{{ route('invoices.remind', $invoice) }}" method="POST" class="mb-2">
@@ -217,12 +333,26 @@
             @endif
 
             @if ($invoice->status === 'paid')
-                <div class="bg-green-50 rounded-xl p-5 border border-green-200">
-                    <p class="text-green-700 font-semibold text-sm">✅ Paid</p>
-                    <p class="text-xs text-green-600 mt-1">{{ $invoice->paid_at?->format('M j, Y g:i A') }}</p>
+                <div class="bg-green-50 rounded-xl p-5 border border-green-200 space-y-2">
+                    <p class="text-green-700 font-semibold text-sm">✅ Paid in Full</p>
+                    <p class="text-xs text-green-600">{{ $invoice->paid_at?->format('M j, Y g:i A') }}</p>
                     @if ($invoice->mpesa_code)
-                        <p class="text-xs text-green-600">M-Pesa: {{ $invoice->mpesa_code }}</p>
+                        <p class="text-xs text-green-600">Ref / M-Pesa: {{ $invoice->mpesa_code }}</p>
                     @endif
+                    <div class="pt-2 space-y-1.5">
+                        <a href="{{ route('invoices.receipt.download', $invoice) }}"
+                            class="block w-full text-center bg-green-600 text-white py-2 rounded-lg text-xs font-semibold hover:bg-green-700">
+                            🧾 Download Payment Receipt PDF
+                        </a>
+                        @if ($invoice->client->email)
+                            <form method="POST" action="{{ route('invoices.receipt.email', $invoice) }}">
+                                @csrf
+                                <button type="submit" class="w-full bg-white border border-green-300 text-green-700 py-1.5 rounded-lg text-xs font-semibold hover:bg-green-100">
+                                    ✉️ Email Receipt to Client
+                                </button>
+                            </form>
+                        @endif
+                    </div>
                 </div>
             @endif
             
