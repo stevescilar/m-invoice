@@ -2,7 +2,7 @@
     RewriteEngine On
 
     # Block direct access to sensitive files and internal directories if document root is not set to /public
-    RewriteRule ^(\.git|\.env.*|\.cpanel\.yml|composer\.(json|lock|phar)|package(-lock)?\.json|artisan|.*\.sql|.*\.txt)$ - [F,L,NC]
+    RewriteRule ^(\.git|\.env.*|\.cpanel\.yml|deploy\.sh|composer\.(json|lock|phar)|package(-lock)?\.json|artisan|.*\.sql|.*\.txt)$ - [F,L,NC]
     RewriteRule ^(app|bootstrap|config|database|resources|routes|tests|vendor)/ - [F,L,NC]
     RewriteRule ^storage/(app|framework|logs)/ - [F,L,NC]
 
@@ -11,7 +11,7 @@
     RewriteRule ^(.*)$ public/$1 [L,QSA]
 </IfModule>
 
-<FilesMatch "^(\.env.*|\.cpanel\.yml|composer\.(json|lock|phar)|.*\.sql)$">
+<FilesMatch "^(\.env.*|\.cpanel\.yml|deploy\.sh|composer\.(json|lock|phar)|.*\.sql)$">
     <IfModule mod_authz_core.c>
         Require all denied
     </IfModule>
